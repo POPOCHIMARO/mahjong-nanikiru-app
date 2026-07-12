@@ -198,9 +198,13 @@ check("完全イーシャンテン形", shantenOf("123m456m789m1245p"), 1);
 }
 
 // --- 問題生成（形式チェックを複数回） ---
+check("牌効率問題の高難度出題率は50%", Engine.EFFICIENCY_HARD_RATE, 0.5);
+
 for (let i = 0; i < 20; i++) {
-  const p = Engine.generateEfficiencyProblem();
+  const difficulty = i % 2 === 0 ? "standard" : "hard";
+  const p = Engine.generateEfficiencyProblem(difficulty);
   assert.ok(p, "牌効率問題が生成できる");
+  assert.strictEqual(p.difficulty, difficulty, "指定した難易度で生成される");
   assert.strictEqual(p.hand.length, 14, "手牌は14枚");
   assert.strictEqual(p.baseHand.length, 13, "ツモ前の手牌は13枚");
   assert.deepStrictEqual(p.hand, p.baseHand.concat([p.drawnTile]), "14枚目は実際のツモ牌");
@@ -223,10 +227,17 @@ for (let i = 0; i < 20; i++) {
   assert.ok(!p.bestDiscards.includes(p.drawnTile), "ツモ切りでは2シャンテンに戻るため正解にならない");
 
   const second = p.analysis.filter((r) => r.ukeire < bestU);
-  assert.ok(second.length > 0 && bestU - second[0].ukeire >= 3, "2位と3枚以上差");
+  assert.ok(second.length > 0, "不正解の打牌候補がある");
+  const gap = bestU - second[0].ukeire;
+  assert.strictEqual(p.ukeireGap, gap, "正解と最大の不正解の受け入れ枚数差を保持する");
+  if (difficulty === "hard") {
+    assert.ok(gap >= 1 && gap <= 2, "高難度は不正解との受け入れ枚数差が1〜2枚");
+  } else {
+    assert.ok(gap >= 3, "通常難度は不正解との受け入れ枚数差が3枚以上");
+  }
 }
 passed++;
-console.log("ok - 牌効率問題の生成（2シャンテン→1シャンテンを20回確認）");
+console.log("ok - 牌効率問題の生成（通常・高難度を各10回確認）");
 
 for (let i = 0; i < 20; i++) {
   const p = Engine.generateChinitsuProblem();

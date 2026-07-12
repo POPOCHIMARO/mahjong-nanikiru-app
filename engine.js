@@ -372,8 +372,16 @@
   // 条件: ツモ前は2シャンテン、打牌後は1シャンテン。
   // 正解 = 1シャンテンに進む打牌のうち、テンパイへの受け入れ枚数が最大の打牌。
   // 最大受け入れが同率の場合はすべて正解とする。
+  // 通常問題（次点と3枚以上差）と高難度問題（次点と1〜2枚差）を半数ずつ出題する。
   // ---------------------------------------------------------------
-  function generateEfficiencyProblem() {
+  var EFFICIENCY_HARD_RATE = 0.5;
+
+  function generateEfficiencyProblem(difficulty) {
+    // テストでは難易度を固定できる。通常の画面からは未指定なので半数ずつ選ばれる。
+    var targetDifficulty = difficulty === "hard" || difficulty === "standard"
+      ? difficulty
+      : (Math.random() < EFFICIENCY_HARD_RATE ? "hard" : "standard");
+
     for (var attempt = 0; attempt < 1200; attempt++) {
       var wall = newWall();
       var hand = buildStructuredHand(wall);
@@ -388,7 +396,9 @@
       var second = an.keep.filter(function (r) { return r.ukeire < bestU; });
       if (bests.length > 2) continue;                       // 正解が多すぎる手は避ける
       if (second.length === 0) continue;                    // 全部同点なら出題しない
-      if (bestU - second[0].ukeire < 3) continue;           // 僅差の問題は避ける
+      var ukeireGap = bestU - second[0].ukeire;
+      if (targetDifficulty === "hard" && ukeireGap > 2) continue;
+      if (targetDifficulty === "standard" && ukeireGap < 3) continue;
 
       // この14枚を作った実際のツモが、2シャンテンの13枚からの進展牌か確認する
       var split = splitImprovingDraw(hand, 2);
@@ -401,6 +411,8 @@
         fromShanten: 2,
         toShanten: 1,
         shanten: 1,
+        difficulty: targetDifficulty,
+        ukeireGap: ukeireGap,
         bestDiscards: bests.map(function (r) { return r.discard; }),
         analysis: an.keep,
         redFlags: assignRedFives(split.hand),
@@ -732,6 +744,7 @@
     classifyDanger: classifyDanger,
     evaluatePushFold: evaluatePushFold,
     generateEfficiencyProblem: generateEfficiencyProblem,
+    EFFICIENCY_HARD_RATE: EFFICIENCY_HARD_RATE,
     generateChinitsuProblem: generateChinitsuProblem,
     generatePushFoldProblem: generatePushFoldProblem,
     DANGER_RATES: DANGER_RATES,
