@@ -86,6 +86,40 @@ check("完全イーシャンテン形", shantenOf("123m456m789m1245p"), 1);
   check("7p切りがシャンテン維持候補に含まれる", keeps.includes("7p"), true);
 }
 
+// --- 変化ポテンシャルと出題ガード ---
+{
+  // 報告された局面: 2m4m5m6m7m 5p6p6p7p 1s2s3s 北 白（ツモ6m後の14枚）
+  // 6p切り(受け入れ10枚)が北・白切り(9枚)を1枚だけ上回るが、
+  // 5667pを残す北・白切りは変化（4p/8pなどで受け入れが大きく伸びるツモ）で勝る。
+  // 受け入れ枚数だけでは正解を主張できないため、この形は出題ガードで弾く。
+  const counts = Engine.toCounts(parse("24567m5667p123s45z"));
+  const an = Engine.analyzeDiscards(counts, null);
+  const byTile = {};
+  for (const r of an.keep) byTile[Engine.tileShort(r.discard)] = r;
+  check("報告局面: 6p切りの受け入れは10枚", byTile["6p"].ukeire, 10);
+  check("報告局面: 北切りの受け入れは9枚", byTile["北"].ukeire, 9);
+  check("報告局面: 白切りの受け入れは9枚", byTile["白"].ukeire, 9);
+
+  const potOf = (tile) => {
+    counts[tile]--;
+    const pot = Engine.improvementPotential(counts, byTile[Engine.tileShort(tile)].ukeire);
+    counts[tile]++;
+    return pot;
+  };
+  const pot6p = potOf(14); // 6p
+  const potKita = potOf(30); // 北
+  check("報告局面: 北切りの変化ポテンシャルが6p切りを上回る", potKita > pot6p, true);
+  check("報告局面: 出題ガードが不出題と判定する", Engine.efficiencyAnswerIsSound(counts, an.keep), false);
+}
+{
+  // 健全な僅差問題は引き続き出題できることの確認:
+  // 1m2m3m4m4m 4p6p7p8p8p 5s6s7s 北 は北切り(受け入れ最大)が変化でも劣らない。
+  const counts = Engine.toCounts(parse("12344m46788p567s4z"));
+  const an = Engine.analyzeDiscards(counts, null);
+  check("健全な僅差問題の受け入れ最大は北切り", Engine.tileShort(an.keep[0].discard), "北");
+  check("健全な僅差問題は出題ガードを通る", Engine.efficiencyAnswerIsSound(counts, an.keep), true);
+}
+
 // --- 清一色の暗槓分析 ---
 {
   // 11223345689999m は、9m切りなら7m/8mの7枚、9m暗槓なら8mの3枚。

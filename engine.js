@@ -169,6 +169,73 @@
     return { shanten: base, total: total, tiles: tiles };
   }
 
+  // ---------------------------------------------------------------
+  // 変化（改良ツモ）の評価
+  // 打牌後の13枚について「シャンテンは進まないが、引いて最良の打牌をすると
+  // 受け入れが2枚以上増えるツモ」の残り枚数を合計する。
+  // 例: 5667p のような形は、4p/8p などを引くと受け入れが大きく伸びる。
+  // この“隠れた価値”は1段階の受け入れ枚数には現れないため、別に数える。
+  // ---------------------------------------------------------------
+  function improvementPotential(counts13, currentUkeire) {
+    var base = shanten(counts13);
+    var total = 0;
+    for (var t = 0; t < 34; t++) {
+      if (counts13[t] >= 4) continue;
+      counts13[t]++;
+      if (shanten(counts13) >= base) {
+        // シャンテンが進まないツモ。最良の応手で受け入れが2枚以上増えるか調べる
+        var improved = false;
+        for (var d = 0; d < 34 && !improved; d++) {
+          if (counts13[d] === 0) continue;
+          if (d === t) continue; // ツモ切りは元の形に戻るだけなので見ない
+          counts13[d]--;
+          // シャンテンが落ちる打牌は受け入れを数えるまでもなく対象外（高速化）
+          if (shanten(counts13) === base) {
+            var u = ukeire(counts13, null);
+            if (u.total >= currentUkeire + 2) improved = true;
+          }
+          counts13[d]++;
+        }
+        if (improved) total += 4 - (counts13[t] - 1);
+      }
+      counts13[t]--;
+    }
+    return total;
+  }
+
+  // 牌効率問題の出題可否チェック。
+  // 受け入れ最大の打牌が、僅差（3枚以内）の対抗打牌に変化ポテンシャルで
+  // 大きく劣る局面は「受け入れ枚数だけでは正解と言えない」ため出題しない。
+  // 換算レートは 受け入れ1枚 ≒ 変化4枚 とする。
+  // 例: 2m4m5m6m7m 5p6p6p7p 1s2s3s 北白 から 6p切り(受10) vs 北切り(受9) は、
+  //     北切りの変化が大きく上回るため出題対象から外れる。
+  function efficiencyAnswerIsSound(counts14, keepRows) {
+    var bestU = keepRows[0].ukeire;
+
+    // 同率正解（どれを選んでも正解扱い）の中で最大の変化ポテンシャルを基準にする
+    var bestPot = -1;
+    for (var i = 0; i < keepRows.length; i++) {
+      var row = keepRows[i];
+      if (row.ukeire !== bestU) break; // keepRows は受け入れ降順
+      counts14[row.discard]--;
+      var pot = improvementPotential(counts14, row.ukeire);
+      counts14[row.discard]++;
+      if (pot > bestPot) bestPot = pot;
+    }
+
+    for (i = 0; i < keepRows.length; i++) {
+      row = keepRows[i];
+      if (row.ukeire === bestU) continue;      // 同率はどちらも正解なので比較不要
+      var gap = bestU - row.ukeire;
+      if (gap > 3) break;                      // 大差の候補は受け入れ枚数で決着済み
+      counts14[row.discard]--;
+      var rivalPot = improvementPotential(counts14, row.ukeire);
+      counts14[row.discard]++;
+      if (rivalPot - bestPot > 4 * gap) return false;
+    }
+    return true;
+  }
+
   // 14枚の手牌について、打牌候補ごとの（シャンテン, 受け入れ）を一覧にする
   function analyzeDiscards(counts14, visibleOutside) {
     var rows = [];
@@ -403,6 +470,9 @@
       // この14枚を作った実際のツモが、2シャンテンの13枚からの進展牌か確認する
       var split = splitImprovingDraw(hand, 2);
       if (!split) continue;
+
+      // 受け入れ枚数の僅差だけでは決まらない局面（変化で逆転する形）は出題しない
+      if (!efficiencyAnswerIsSound(counts, an.keep)) continue;
 
       return {
         hand: split.hand,
@@ -738,6 +808,8 @@
     shantenChiitoi: shantenChiitoi,
     shantenKokushi: shantenKokushi,
     ukeire: ukeire,
+    improvementPotential: improvementPotential,
+    efficiencyAnswerIsSound: efficiencyAnswerIsSound,
     analyzeDiscards: analyzeDiscards,
     analyzeChinitsuActions: analyzeChinitsuActions,
     assignRedFives: assignRedFives,
