@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>麻雀なに切るアプリ</title>
+  <!-- Tailwind CSS（CDN版・ビルド不要） -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* 牌の見た目は自前CSSで描く（画像不要・オフラインでも崩れない） */
+    .tile {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: clamp(2rem, 7vw, 2.6rem);
+      height: clamp(2.8rem, 9.8vw, 3.6rem);
+      background: linear-gradient(180deg, #ffffff 0%, #f1f0ea 100%);
+      border: 1px solid #b9b5a7;
+      border-bottom: 4px solid #d8b56c; /* 牌の側面（竹色） */
+      border-radius: 0.4rem;
+      box-shadow: 0 2px 3px rgba(0, 0, 0, 0.35);
+      font-weight: 700;
+      line-height: 1;
+      user-select: none;
+      flex-shrink: 0;
+    }
+    /* 絵柄は app.js が生成するSVG。牌面いっぱいに描く */
+    .tile svg { width: 92%; height: 94%; display: block; }
+
+    button.tile-btn { cursor: pointer; transition: transform 0.08s ease; }
+    button.tile-btn:hover { transform: translateY(-4px); }
+    button.tile-btn:disabled { cursor: default; }
+    button.tile-btn:disabled:hover { transform: none; }
+
+    /* リーチ宣言牌は横向きに */
+    .tile-riichi { transform: rotate(90deg); margin: 0 0.35rem; }
+
+    /* 回答後の正解・不正解マーク */
+    .tile-correct { outline: 3px solid #22c55e; outline-offset: 2px; }
+    .tile-wrong { outline: 3px solid #ef4444; outline-offset: 2px; }
+    .tile-focus { outline: 3px solid #f59e0b; outline-offset: 2px; }
+
+    /* 小さい牌（解説の受け入れ一覧用） */
+    .tile-mini {
+      width: 1.5rem;
+      height: 2.05rem;
+      border-bottom-width: 3px;
+      border-radius: 0.3rem;
+    }
+    .tile-mini .num { font-size: 0.7rem; }
+    .tile-mini .suit { font-size: 0.55rem; margin-top: 1px; }
+    .tile-mini .honor { font-size: 0.8rem; }
+  </style>
+</head>
+<body class="min-h-screen bg-emerald-950 text-gray-100" style="background: radial-gradient(ellipse at 50% -20%, #065f46 0%, #022c22 70%);">
+  <div class="max-w-3xl mx-auto px-3 py-5 sm:py-8">
+    <!-- ヘッダー -->
+    <header class="text-center mb-5">
+      <h1 class="text-2xl sm:text-3xl font-bold tracking-wide">麻雀なに切るアプリ</h1>
+      <p class="text-emerald-300/80 text-xs sm:text-sm mt-1">vault「麻雀強者の考え方」の知見にもとづく練習問題</p>
+    </header>
+
+    <!-- モード切り替えタブ -->
+    <nav class="flex gap-2 mb-4">
+      <button id="tab-eff" class="flex-1 py-2.5 rounded-lg font-bold text-sm sm:text-base transition-colors">
+        牌効率モード<span class="block text-[11px] font-normal opacity-80">受け入れ最大の一打を選ぶ</span>
+      </button>
+      <button id="tab-push" class="flex-1 py-2.5 rounded-lg font-bold text-sm sm:text-base transition-colors">
+        押し引きモード<span class="block text-[11px] font-normal opacity-80">リーチに押すか、オリるか</span>
+      </button>
+    </nav>
+
+    <!-- 成績表示 -->
+    <div id="scoreboard" class="text-right text-sm text-emerald-200/90 mb-2"></div>
+
+    <!-- 問題エリア（app.js が描画する） -->
+    <main id="app" class="space-y-4"></main>
+
+    <footer class="mt-8 text-center text-[11px] text-emerald-300/60 leading-relaxed">
+      正解基準 — 牌効率: シャンテン維持で受け入れ枚数最大 ／ 押し引き: 局収支EVの高い方（概算モデル）<br>
+      放銃率・打点は統計にもとづく近似値です。詳細は README を参照。
+    </footer>
+  </div>
+
+  <script src="engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
