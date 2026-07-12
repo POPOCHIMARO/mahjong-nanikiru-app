@@ -176,9 +176,12 @@
   // 例: 5667p のような形は、4p/8p などを引くと受け入れが大きく伸びる。
   // この“隠れた価値”は1段階の受け入れ枚数には現れないため、別に数える。
   // ---------------------------------------------------------------
-  function improvementPotential(counts13, currentUkeire) {
+  // 内訳（どの牌のツモで・何枚残っているか）まで返す版。
+  // 解説表示（どの牌を引けば伸びるかを見せる）と出題ガードの両方から使う。
+  function improvementDetail(counts13, currentUkeire) {
     var base = shanten(counts13);
     var total = 0;
+    var tiles = [];
     for (var t = 0; t < 34; t++) {
       if (counts13[t] >= 4) continue;
       counts13[t]++;
@@ -196,11 +199,21 @@
           }
           counts13[d]++;
         }
-        if (improved) total += 4 - (counts13[t] - 1);
+        if (improved) {
+          var left = 4 - (counts13[t] - 1);
+          if (left > 0) {
+            tiles.push({ tile: t, count: left });
+            total += left;
+          }
+        }
       }
       counts13[t]--;
     }
-    return total;
+    return { total: total, tiles: tiles };
+  }
+
+  function improvementPotential(counts13, currentUkeire) {
+    return improvementDetail(counts13, currentUkeire).total;
   }
 
   // 牌効率問題の出題可否チェック。
@@ -473,6 +486,14 @@
 
       // 受け入れ枚数の僅差だけでは決まらない局面（変化で逆転する形）は出題しない
       if (!efficiencyAnswerIsSound(counts, an.keep)) continue;
+
+      // 解説表示用に、候補ごとの変化（好形へ伸びるツモ）の内訳を付与する。
+      // 出題が確定した後の1回だけの計算なので、候補数（通常2〜3件）分のコストで済む。
+      an.keep.forEach(function (r) {
+        counts[r.discard]--;
+        r.variation = improvementDetail(counts, r.ukeire);
+        counts[r.discard]++;
+      });
 
       return {
         hand: split.hand,
@@ -809,6 +830,7 @@
     shantenKokushi: shantenKokushi,
     ukeire: ukeire,
     improvementPotential: improvementPotential,
+    improvementDetail: improvementDetail,
     efficiencyAnswerIsSound: efficiencyAnswerIsSound,
     analyzeDiscards: analyzeDiscards,
     analyzeChinitsuActions: analyzeChinitsuActions,

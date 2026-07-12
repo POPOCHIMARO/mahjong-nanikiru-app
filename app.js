@@ -15,6 +15,31 @@
   var stats = loadStats();
   var current = null;   // 表示中の問題
   var answered = false; // 回答済みかどうか
+  var pendingNext = null; // 先読みしておいた次の問題 { mode, problem }
+
+  // 解説を表示している間に、裏で次の問題を生成しておく（体感待ちを減らす）。
+  // 問題生成は同期処理で数百msかかることがあるため、setTimeoutで
+  // 描画（解説の表示）を先に終わらせてから生成する。
+  function schedulePrefetch() {
+    var modeAtSchedule = mode;
+    setTimeout(function () {
+      if (mode !== modeAtSchedule) return; // 生成が終わる前にタブが切り替わっていたら破棄
+      var problem = modeAtSchedule === "push" ? E.generatePushFoldProblem()
+        : modeAtSchedule === "chin" ? E.generateChinitsuProblem()
+        : E.generateEfficiencyProblem();
+      if (problem) pendingNext = { mode: modeAtSchedule, problem: problem };
+    }, 0);
+  }
+
+  // 先読み済みの問題があれば取り出して消費する。無ければ null
+  function takePrefetched(forMode) {
+    if (pendingNext && pendingNext.mode === forMode) {
+      var p = pendingNext.problem;
+      pendingNext = null;
+      return p;
+    }
+    return null;
+  }
 
   function loadStats() {
     try {
@@ -187,6 +212,23 @@
     }).join("");
   }
 
+  // 「変化」列のセル。枚数の多い牌から最大4種を表示し、残りは件数だけ添える
+  function variationCellHTML(variation) {
+    if (!variation || variation.total <= 0) {
+      return '<span class="text-emerald-300/50">なし</span>';
+    }
+    var sorted = variation.tiles.slice().sort(function (a, b) { return b.count - a.count; });
+    var shown = sorted.slice(0, 4);
+    var restCount = sorted.length - shown.length;
+    return (
+      '<div class="flex items-center gap-1 flex-wrap">' +
+      '<span class="font-bold text-sky-300 whitespace-nowrap">' + variation.total + "枚</span>" +
+      '<div class="flex flex-wrap gap-0.5">' + tileListHTML(shown) + "</div>" +
+      (restCount > 0 ? '<span class="text-emerald-300/60 text-xs whitespace-nowrap">他' + restCount + "種</span>" : "") +
+      "</div>"
+    );
+  }
+
   // ---------------------------------------------------------------
   // 共通UI
   // ---------------------------------------------------------------
@@ -254,7 +296,8 @@
   // 清一色だけは暗槓も選べるが、問題カードと解説表の骨格は同じなので描画を共用する。
   // ---------------------------------------------------------------
   function newEffProblem() {
-    current = mode === "chin" ? E.generateChinitsuProblem() : E.generateEfficiencyProblem();
+    current = takePrefetched(mode) ||
+      (mode === "chin" ? E.generateChinitsuProblem() : E.generateEfficiencyProblem());
     answered = false;
     current.bestActionsForUi = current.bestActions || current.bestDiscards.map(function (t) {
       return { type: "discard", tile: t };
@@ -300,6 +343,9 @@
       var answerReason = p.toShanten === 0
         ? "テンパイに進み、和了牌の受け入れ枚数が最大になります。"
         : "1シャンテンに取り、テンパイへの受け入れ枚数が最大になります。";
+      // 牌効率モードのみ、候補打牌ごとの「変化」（シャンテンは進まないが
+      // 引いて最良の打牌をすると受け入れが伸びるツモ）の内訳を持つ
+      var hasVariation = mode === "eff" && !!(p.analysis[0] && p.analysis[0].variation);
       var expl =
         resultBanner(ok) +
         '<div class="text-sm mb-3">正解は <span class="font-bold text-amber-300">' +
@@ -307,7 +353,8 @@
         "</span>。" + answerReason + "</div>" +
         '<div class="overflow-x-auto"><table class="w-full text-sm">' +
         '<thead><tr class="text-emerald-300/80 text-left border-b border-emerald-700">' +
-        '<th class="py-1.5 pr-2">行動</th><th class="py-1.5 pr-2">受け入れ</th><th class="py-1.5">受け入れ牌</th></tr></thead><tbody>' +
+        '<th class="py-1.5 pr-2">行動</th><th class="py-1.5 pr-2">受け入れ</th><th class="py-1.5 pr-2">受け入れ牌</th>' +
+        (hasVariation ? '<th class="py-1.5">変化</th>' : "") + "</tr></thead><tbody>" +
         p.analysis.map(function (r) {
           var action = rowAction(r);
           var isBest = isBestAction(action.type, action.tile);
@@ -316,12 +363,15 @@
             '<span>' + (action.type === "ankan" ? "暗槓" : "切り") + "</span>" +
             (isBest ? ' <span class="text-amber-300 font-bold">◎</span>' : "") + "</div></td>" +
             '<td class="py-1.5 pr-2 font-bold whitespace-nowrap">' + r.ukeire + "枚</td>" +
-            '<td class="py-1.5"><div class="flex flex-wrap gap-0.5">' + tileListHTML(r.tiles) + "</div></td></tr>";
+            '<td class="py-1.5 pr-2"><div class="flex flex-wrap gap-0.5">' + tileListHTML(r.tiles) + "</div></td>" +
+            (hasVariation ? '<td class="py-1.5">' + variationCellHTML(r.variation) + "</td>" : "") + "</tr>";
         }).join("") +
         "</tbody></table></div>" +
         '<div class="text-xs text-emerald-300/70 mt-3">※ ' + toLabel + "に進む" +
         (mode === "chin" ? "打牌・暗槓" : "打牌") + "の中で受け入れ枚数を比較しています。" +
-        (mode === "chin" ? "暗槓は槓子を固定面子として別計算し、槓した4枚と萬子以外は受け入れに数えません。" : "") + "</div>" +
+        (mode === "chin" ? "暗槓は槓子を固定面子として別計算し、槓した4枚と萬子以外は受け入れに数えません。" : "") +
+        (hasVariation ? "「変化」は、テンパイには進まないが引くと最良の打牌で受け入れが2枚以上伸びるツモの残り枚数です。受け入れが僅差のときは変化の多い形を残すのが実戦的です。" : "") +
+        "</div>" +
         nextButtonHTML();
       html += card(expl);
     }
@@ -341,6 +391,7 @@
       });
     } else {
       document.getElementById("btn-next").addEventListener("click", newEffProblem);
+      schedulePrefetch(); // 解説を読んでいる間に次の問題を裏で作っておく
     }
   }
 
@@ -385,7 +436,7 @@
   // 押し引きモード
   // ---------------------------------------------------------------
   function newPushProblem() {
-    current = E.generatePushFoldProblem();
+    current = takePrefetched("push") || E.generatePushFoldProblem();
     answered = false;
     renderPush(null);
   }
@@ -474,6 +525,7 @@
       });
     } else {
       document.getElementById("btn-next").addEventListener("click", newPushProblem);
+      schedulePrefetch(); // 解説を読んでいる間に次の問題を裏で作っておく
     }
   }
 

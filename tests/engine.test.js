@@ -211,7 +211,8 @@ check("完全イーシャンテン形", shantenOf("123m456m789m1245p"), 1);
 }
 {
   // 5系の牌が無い手では赤5は一切付かない
-  const hand = parse("123m456p789s11z22z");
+  // （"456p"などは5pを含んでしまうため、4・6・7pのように5を避けて構成する）
+  const hand = parse("123m467p789s11z22z");
   const redAt = Engine.assignRedFives(hand);
   check("5系の牌が無ければ赤5は0枚", redAt.filter(Boolean).length, 0);
 }
@@ -255,7 +256,22 @@ for (let i = 0; i < 20; i++) {
   for (const row of p.analysis) {
     assert.strictEqual(row.shanten, 1, "候補打牌はすべて1シャンテンに進む");
     assert.ok(row.ukeire <= bestU, "受け入れ降順");
+    // 解説の「変化」列用に、候補ごとの変化内訳が付与されている
+    assert.ok(row.variation, "各候補行に変化の内訳が付与される");
+    assert.ok(row.variation.total >= 0, "変化の合計枚数は0以上");
+    const sumOfTiles = row.variation.tiles.reduce((s, x) => s + x.count, 0);
+    assert.strictEqual(sumOfTiles, row.variation.total, "変化の内訳合計が総数と一致する");
+    for (const x of row.variation.tiles) {
+      assert.ok(x.tile >= 0 && x.tile < 34, "変化牌のインデックスが有効範囲内");
+      assert.ok(x.count >= 1 && x.count <= 4, "変化牌の残り枚数は1〜4枚");
+    }
   }
+  // 出題ガードにより、正解と僅差の対抗打牌が変化で大きく上回ることはない
+  assert.strictEqual(
+    Engine.efficiencyAnswerIsSound(Engine.toCounts(p.hand), p.analysis),
+    true,
+    "生成された問題は出題ガードを満たす"
+  );
   const expectedBest = p.analysis.filter((r) => r.ukeire === bestU).map((r) => r.discard).sort((a, b) => a - b);
   assert.deepStrictEqual([...p.bestDiscards].sort((a, b) => a - b), expectedBest, "受け入れ最大打牌だけが正解");
   assert.ok(!p.bestDiscards.includes(p.drawnTile), "ツモ切りでは2シャンテンに戻るため正解にならない");
