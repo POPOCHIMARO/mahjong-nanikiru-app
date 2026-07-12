@@ -499,6 +499,7 @@
         "</div>" +
         '<ul class="text-sm space-y-1.5 text-emerald-100/90">' +
         li("勝負牌 " + E.tileName(p.pushTile) + " は「" + p.categoryLabel + "」— 放銃率 約" + p.dangerRate + "%") +
+        li("イーシャンテンを保てる打牌は他も含めてすべて放銃率" + p.safestKeepRate + "%以上 — 安全に手を進める逃げ道はない局面") +
         li("押し切った場合の総放銃リスク: 約" + Math.round(ev.pDeal * 100) + "%（放銃時 平均 −" + ev.dealLoss.toLocaleString() + "点）") +
         li("押した場合の自分の和了率: 約" + Math.round(ev.pWin * 100) + "%（打点期待 約" + p.ownValue.toLocaleString() + "点 + 供託）") +
         li("リーチ者の和了率: 約" + Math.round(ev.pOppWin * 100) + "%") +

@@ -722,7 +722,8 @@
     var target = Math.random() < 0.5 ? "push" : "fold";
     var fallback = null;
 
-    for (var attempt = 0; attempt < 600; attempt++) {
+    // 無理押しガードで候補がかなり絞られるため、試行上限は多めに取る
+    for (var attempt = 0; attempt < 2000; attempt++) {
       var wall = newWall();
       var hand = buildStructuredHand(wall);
       if (hand.length !== 14) continue;
@@ -749,10 +750,31 @@
       var visible = new Array(34).fill(0);
       for (t = 0; t < 34; t++) visible[t] = counts[t] + outside[t];
 
-      // イーシャンテン維持で受け入れ最大の打牌 = 勝負牌
+      // イーシャンテン維持打牌の候補全部に危険度を付ける
       var an = analyzeDiscards(counts, outside);
       if (an.minShanten !== 1 || an.keep.length === 0) continue;
-      var pushRow = an.keep[0];
+      var keepRates = an.keep.map(function (row) {
+        return DANGER_RATES[classifyDanger(row.discard, riverCounts, visible)].rate;
+      });
+
+      // 無理押しガード:
+      // 手牌に「イーシャンテンを保ったまま切れるほぼ安全な牌」（現物・字牌・
+      // 筋・ワンチャンスなど、Mリーグ危険度分類のsafe/guarded相当）が1枚でも
+      // あるなら、それを切ればよいだけで危険牌との押し引き局面にならない。
+      // 実際のMリーグの危険押し（moderate/high risk押し）に合わせ、
+      // 手を保つ打牌がすべて放銃率3%以上の危険牌である牌姿だけを出題する。
+      var PUSH_MIN_RATE = 3.0;
+      var hasSafeEscape = keepRates.some(function (r) { return r < PUSH_MIN_RATE; });
+      if (hasSafeEscape) continue;
+
+      // 勝負牌 = 受け入れ最大の打牌。同数タイなら最も安全な牌を選ぶ
+      // （同じ受け入れでより危険な牌を切らせるのは無理押しになるため）
+      var pushIdx = 0;
+      for (var k = 1; k < an.keep.length; k++) {
+        if (an.keep[k].ukeire !== an.keep[0].ukeire) break;
+        if (keepRates[k] < keepRates[pushIdx]) pushIdx = k;
+      }
+      var pushRow = an.keep[pushIdx];
       var pushTile = pushRow.discard;
       if (riverCounts[pushTile] > 0) continue; // 勝負牌が現物なら問題にならない
 
@@ -765,7 +787,6 @@
 
       var category = classifyDanger(pushTile, riverCounts, visible);
       var rate = DANGER_RATES[category].rate;
-      if (rate <= 0.1) continue; // ほぼ安全な牌では押し引き問題にならない
 
       // 自分の打点期待: リーチ前提の概算（子4500+ドラ1500 / 親は1.5倍）
       // 赤5（アカドラ）も通常のドラと同枚数扱いで加算する
@@ -802,6 +823,7 @@
         category: category,
         categoryLabel: DANGER_RATES[category].label,
         dangerRate: rate,
+        safestKeepRate: Math.min.apply(null, keepRates),
         ownValue: Math.round(ownValue),
         ev: ev,
         answer: ev.answer,

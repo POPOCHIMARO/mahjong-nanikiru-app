@@ -343,8 +343,24 @@ for (let i = 0; i < 20; i++) {
   assert.ok(p.river.some((r) => r.riichi), "河にリーチ宣言牌がある");
   assert.ok(["push", "fold"].includes(p.answer), "答えはpush/fold");
   assert.ok(Math.abs(p.ev.diff) >= 300, "EV差300点以上の局面のみ出題");
+
+  // 無理押しガード: イーシャンテンを保てる打牌の中に、ほぼ安全な牌
+  // （現物・字牌・筋など放銃率3%未満）が残っている牌姿は出題されない。
+  // 安全な逃げ道があるのに無スジを切らせる二択は実態に即さないため。
+  const counts = Engine.toCounts(p.hand);
+  const outside = riverCounts.slice();
+  outside[p.doraIndicator]++;
+  const visible = counts.map((c, t) => c + outside[t]);
+  const an = Engine.analyzeDiscards(counts, outside);
+  const keepRates = an.keep.map(
+    (row) => Engine.DANGER_RATES[Engine.classifyDanger(row.discard, riverCounts, visible)].rate
+  );
+  assert.ok(keepRates.every((r) => r >= 3.0), "手を保つ打牌はすべて放銃率3%以上（安全な逃げ道なし）");
+  assert.ok(p.dangerRate >= 3.0, "勝負牌は危険押し相当（放銃率3%以上）");
+  assert.strictEqual(p.pushUkeire, an.keep[0].ukeire, "勝負牌は受け入れ最大");
+  assert.ok(p.safestKeepRate >= 3.0, "safestKeepRateもガード条件を満たす");
 }
 passed++;
-console.log("ok - 押し引き問題の生成（20回の形式チェック）");
+console.log("ok - 押し引き問題の生成（20回の形式＋無理押しガードチェック）");
 
 console.log(`\nすべて成功 (${passed} 件)`);
