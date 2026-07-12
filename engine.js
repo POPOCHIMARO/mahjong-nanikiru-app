@@ -284,46 +284,78 @@
     return redAt;
   }
 
+  // 14枚の中から「ツモ前に指定シャンテンだった13枚」を復元する。
+  // 戻り値の hand は、最初の13枚がツモ前の手牌、最後の1枚がツモ牌になる。
+  function splitImprovingDraw(hand14, fromShanten) {
+    var counts = toCounts(hand14);
+    var drawCandidates = [];
+
+    for (var i = 0; i < hand14.length; i++) {
+      var t = hand14[i];
+      counts[t]--;
+      if (shanten(counts) === fromShanten) drawCandidates.push(i);
+      counts[t]++;
+    }
+    if (drawCandidates.length === 0) return null;
+
+    var drawIndex = pick(drawCandidates);
+    var baseHand = hand14.slice();
+    var drawnTile = baseHand.splice(drawIndex, 1)[0];
+    return {
+      baseHand: baseHand,
+      drawnTile: drawnTile,
+      hand: baseHand.concat([drawnTile]),
+    };
+  }
+
   // ---------------------------------------------------------------
   // 牌効率モードの問題生成
-  // 条件: 1〜2シャンテン、最大受け入れの打牌が明確（同率2種以下・2位と3枚以上差）
-  // 正解 = シャンテンを維持しつつ受け入れ枚数が最大の打牌（同数はすべて正解）
+  // 条件: ツモ前は2シャンテン、打牌後は1シャンテン。
+  // 正解 = 1シャンテンに進む打牌のうち、テンパイへの受け入れ枚数が最大の打牌。
+  // 最大受け入れが同率の場合はすべて正解とする。
   // ---------------------------------------------------------------
   function generateEfficiencyProblem() {
-    for (var attempt = 0; attempt < 400; attempt++) {
+    for (var attempt = 0; attempt < 1200; attempt++) {
       var wall = newWall();
       var hand = buildStructuredHand(wall);
       if (hand.length !== 14) continue;
       var counts = toCounts(hand);
-      var s = shanten(counts);
-      if (s < 1 || s > 2) continue;
-
       var an = analyzeDiscards(counts, null);
+      if (an.minShanten !== 1) continue;
       if (an.keep.length < 2) continue; // 候補が1つだけでは問題にならない
       var bestU = an.keep[0].ukeire;
+      if (bestU <= 0) continue;
       var bests = an.keep.filter(function (r) { return r.ukeire === bestU; });
       var second = an.keep.filter(function (r) { return r.ukeire < bestU; });
       if (bests.length > 2) continue;                       // 正解が多すぎる手は避ける
       if (second.length === 0) continue;                    // 全部同点なら出題しない
       if (bestU - second[0].ukeire < 3) continue;           // 僅差の問題は避ける
 
+      // この14枚を作った実際のツモが、2シャンテンの13枚からの進展牌か確認する
+      var split = splitImprovingDraw(hand, 2);
+      if (!split) continue;
+
       return {
-        hand: hand,
-        shanten: s,
+        hand: split.hand,
+        baseHand: split.baseHand,
+        drawnTile: split.drawnTile,
+        fromShanten: 2,
+        toShanten: 1,
+        shanten: 1,
         bestDiscards: bests.map(function (r) { return r.discard; }),
         analysis: an.keep,
-        redFlags: assignRedFives(hand),
+        redFlags: assignRedFives(split.hand),
       };
     }
-    return null; // 400回試して見つからないことは実質ない
+    return null; // 条件を満たす問題が見つからなかった場合は呼び出し側で再試行できる
   }
 
   // ---------------------------------------------------------------
   // 清一色（萬子）モードの問題生成
-  // 条件: 萬子のみ14枚・イーシャンテン。
-  // 正解 = イーシャンテンを維持しつつテンパイへの受け入れ枚数が最大の打牌（同数はすべて正解）。
-  // 受け入れは萬子のみを数える（六対子形などでは字牌・他色でも七対子テンパイに
-  // なり得るが、清一色が崩れるため受け入れに含めない）。
+  // 条件: 萬子のみで、ツモ前は1シャンテン、打牌後はテンパイ。
+  // 正解 = テンパイに進む打牌のうち、和了牌の受け入れ枚数が最大の打牌。
+  // 最大受け入れが同率の場合はすべて正解とする。
+  // 清一色モードの制約を計算にも明示するため、受け入れは萬子のみを数える。
   // 清一色は受け入れ同率の打牌が出やすいため、出題の明確さ条件は
   // 牌効率モードより緩め（同率3種以下・2位と2枚以上差）にしている。
   // ---------------------------------------------------------------
@@ -345,10 +377,8 @@
       if (hand.length !== 14) continue;
       hand.sort(function (a, b) { return a - b; });
       var counts = toCounts(hand);
-      if (shanten(counts) !== 1) continue;
-
       var an = analyzeDiscards(counts, nonManzuOut);
-      if (an.minShanten !== 1 || an.keep.length < 2) continue;
+      if (an.minShanten !== 0 || an.keep.length < 2) continue;
       var bestU = an.keep[0].ukeire;
       if (bestU <= 0) continue; // 萬子の受け入れが無い形（純カラ）は出題しない
       var bests = an.keep.filter(function (r) { return r.ukeire === bestU; });
@@ -357,12 +387,20 @@
       if (second.length === 0) continue;          // 全部同点なら出題しない
       if (bestU - second[0].ukeire < 2) continue; // 僅差の問題は避ける
 
+      // 表示するツモ牌を、1シャンテンの13枚から実際に引いた牌として確定する
+      var split = splitImprovingDraw(hand, 1);
+      if (!split) continue;
+
       return {
-        hand: hand,
-        shanten: 1,
+        hand: split.hand,
+        baseHand: split.baseHand,
+        drawnTile: split.drawnTile,
+        fromShanten: 1,
+        toShanten: 0,
+        shanten: 0,
         bestDiscards: bests.map(function (r) { return r.discard; }),
         analysis: an.keep,
-        redFlags: assignRedFives(hand),
+        redFlags: assignRedFives(split.hand),
       };
     }
     return null; // 1000回試して見つからないことは実質ない

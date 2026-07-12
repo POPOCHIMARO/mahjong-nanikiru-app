@@ -154,39 +154,67 @@ for (let i = 0; i < 20; i++) {
   const p = Engine.generateEfficiencyProblem();
   assert.ok(p, "牌効率問題が生成できる");
   assert.strictEqual(p.hand.length, 14, "手牌は14枚");
-  assert.ok(p.shanten >= 1 && p.shanten <= 2, "1〜2シャンテン");
+  assert.strictEqual(p.baseHand.length, 13, "ツモ前の手牌は13枚");
+  assert.deepStrictEqual(p.hand, p.baseHand.concat([p.drawnTile]), "14枚目は実際のツモ牌");
+  assert.strictEqual(p.fromShanten, 2, "ツモ前は2シャンテン");
+  assert.strictEqual(p.toShanten, 1, "打牌後は1シャンテン");
+  assert.strictEqual(Engine.shanten(Engine.toCounts(p.baseHand)), 2, "ツモ前13枚を再計算しても2シャンテン");
   assert.ok(p.bestDiscards.length >= 1 && p.bestDiscards.length <= 2, "正解打牌は1〜2種");
   assert.strictEqual(p.redFlags.length, 14, "赤5フラグは手牌と同じ14要素");
-  // 正解の受け入れが他候補以上であること
+
+  const analysis = Engine.analyzeDiscards(Engine.toCounts(p.hand));
+  assert.strictEqual(analysis.minShanten, 1, "このツモから1シャンテンに進める");
   const bestU = p.analysis[0].ukeire;
-  for (const row of p.analysis) assert.ok(row.ukeire <= bestU, "受け入れ降順");
+  assert.ok(bestU > 0, "テンパイへの最大受け入れは1枚以上");
+  for (const row of p.analysis) {
+    assert.strictEqual(row.shanten, 1, "候補打牌はすべて1シャンテンに進む");
+    assert.ok(row.ukeire <= bestU, "受け入れ降順");
+  }
+  const expectedBest = p.analysis.filter((r) => r.ukeire === bestU).map((r) => r.discard).sort((a, b) => a - b);
+  assert.deepStrictEqual([...p.bestDiscards].sort((a, b) => a - b), expectedBest, "受け入れ最大打牌だけが正解");
+  assert.ok(!p.bestDiscards.includes(p.drawnTile), "ツモ切りでは2シャンテンに戻るため正解にならない");
+
+  const second = p.analysis.filter((r) => r.ukeire < bestU);
+  assert.ok(second.length > 0 && bestU - second[0].ukeire >= 3, "2位と3枚以上差");
 }
 passed++;
-console.log("ok - 牌効率問題の生成（20回の形式チェック）");
+console.log("ok - 牌効率問題の生成（2シャンテン→1シャンテンを20回確認）");
 
 for (let i = 0; i < 20; i++) {
   const p = Engine.generateChinitsuProblem();
   assert.ok(p, "清一色問題が生成できる");
   assert.strictEqual(p.hand.length, 14, "手牌は14枚");
+  assert.strictEqual(p.baseHand.length, 13, "ツモ前の手牌は13枚");
+  assert.deepStrictEqual(p.hand, p.baseHand.concat([p.drawnTile]), "14枚目は実際のツモ牌");
   assert.ok(p.hand.every((t) => t >= 0 && t <= 8), "すべて萬子");
-  assert.strictEqual(Engine.shanten(Engine.toCounts(p.hand)), 1, "全問イーシャンテン");
+  assert.strictEqual(p.fromShanten, 1, "ツモ前は1シャンテン");
+  assert.strictEqual(p.toShanten, 0, "打牌後はテンパイ");
+  assert.strictEqual(Engine.shanten(Engine.toCounts(p.baseHand)), 1, "ツモ前13枚を再計算しても1シャンテン");
   assert.ok(p.bestDiscards.length >= 1 && p.bestDiscards.length <= 3, "正解打牌は1〜3種");
   assert.strictEqual(p.redFlags.length, 14, "赤5フラグは手牌と同じ14要素");
-  // 正解候補はすべてイーシャンテン維持（受け入れ＝テンパイになる牌）で、受け入れ降順
+
+  const nonManzuOut = new Array(34).fill(4);
+  for (let m = 0; m < 9; m++) nonManzuOut[m] = 0;
+  const analysis = Engine.analyzeDiscards(Engine.toCounts(p.hand), nonManzuOut);
+  assert.strictEqual(analysis.minShanten, 0, "このツモからテンパイに進める");
   const bestU = p.analysis[0].ukeire;
-  assert.ok(bestU > 0, "最大受け入れは1枚以上");
+  assert.ok(bestU > 0, "和了牌の最大受け入れは1枚以上");
   for (const row of p.analysis) {
-    assert.strictEqual(row.shanten, 1, "候補打牌はイーシャンテン維持");
+    assert.strictEqual(row.shanten, 0, "候補打牌はすべてテンパイに進む");
     assert.ok(row.ukeire <= bestU, "受け入れ降順");
-    // 清一色が崩れる萬子以外（六対子形の七対子テンパイなど）は受け入れに数えない
+    // 清一色が崩れる萬子以外は和了牌の受け入れに数えない
     for (const x of row.tiles) assert.ok(x.tile <= 8, "受け入れ牌も萬子のみ");
   }
+  const expectedBest = p.analysis.filter((r) => r.ukeire === bestU).map((r) => r.discard).sort((a, b) => a - b);
+  assert.deepStrictEqual([...p.bestDiscards].sort((a, b) => a - b), expectedBest, "和了牌の受け入れ最大打牌だけが正解");
+  assert.ok(!p.bestDiscards.includes(p.drawnTile), "ツモ切りでは1シャンテンに戻るため正解にならない");
+
   // 2位と2枚以上の差がある（出題の明確さ条件）
   const second = p.analysis.filter((r) => r.ukeire < bestU);
   assert.ok(second.length > 0 && bestU - second[0].ukeire >= 2, "2位と2枚以上差");
 }
 passed++;
-console.log("ok - 清一色問題の生成（20回の形式チェック）");
+console.log("ok - 清一色問題の生成（1シャンテン→テンパイを20回確認）");
 
 for (let i = 0; i < 20; i++) {
   const p = Engine.generatePushFoldProblem();

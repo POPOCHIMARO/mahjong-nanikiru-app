@@ -236,23 +236,26 @@
   function newEffProblem() {
     current = mode === "chin" ? E.generateChinitsuProblem() : E.generateEfficiencyProblem();
     answered = false;
-    // 表示用: ソート済み13枚 + ツモ牌1枚に分ける（見た目だけの演出）
-    // 赤5フラグも同じ位置で一緒に分割する（値ではなく位置で赤の牌1枚を特定するため）
-    var hand = current.hand.slice();
-    var redFlags = current.redFlags.slice();
-    var tsumoIdx = Math.floor(Math.random() * hand.length);
-    current.displayTsumo = hand.splice(tsumoIdx, 1)[0];
-    current.displayTsumoRed = redFlags.splice(tsumoIdx, 1)[0];
-    current.displayHand = hand;
-    current.displayHandRed = redFlags;
+    // 問題生成時に確定した「ツモ前13枚」と「実際のツモ牌」をそのまま表示する
+    current.displayHand = current.baseHand.slice();
+    current.displayTsumo = current.drawnTile;
+    current.displayHandRed = current.redFlags.slice(0, 13);
+    current.displayTsumoRed = current.redFlags[13];
     renderEff();
+  }
+
+  function shantenLabel(value) {
+    return value === 0 ? "テンパイ" : value + "シャンテン";
   }
 
   function renderEff(clicked) {
     var p = current;
+    var fromLabel = shantenLabel(p.fromShanten);
+    var toLabel = shantenLabel(p.toShanten);
     var qHtml =
       '<div class="text-sm text-emerald-200/90 mb-3">' +
-      "<span class='font-bold text-amber-300'>" + (mode === "chin" ? "清一色（萬子）の" : "") + p.shanten + "シャンテン。</span> 何を切る？（牌をタップ）" +
+      "<span class='font-bold text-amber-300'>" + (mode === "chin" ? "清一色（萬子）の" : "") + fromLabel + "。</span> " +
+      toLabel + "に進められるツモです。何を切る？（牌をタップ）" +
       "</div>" +
       '<div class="flex flex-wrap items-center gap-1" id="hand-area">' +
       p.displayHand.map(function (t, i) { return handTileBtn(t, "h" + i, clicked, p.displayHandRed[i]); }).join("") +
@@ -264,11 +267,14 @@
 
     if (answered) {
       var ok = p.bestDiscards.indexOf(clicked) >= 0;
+      var answerReason = p.toShanten === 0
+        ? "テンパイに取り、和了牌の受け入れ枚数が最大になります。"
+        : "1シャンテンに取り、テンパイへの受け入れ枚数が最大になります。";
       var expl =
         resultBanner(ok) +
         '<div class="text-sm mb-3">正解は <span class="font-bold text-amber-300">' +
         p.bestDiscards.map(E.tileName).join(" または ") +
-        "切り</span>。シャンテンを維持しつつ受け入れ枚数が最大になります。</div>" +
+        "切り</span>。" + answerReason + "</div>" +
         '<div class="overflow-x-auto"><table class="w-full text-sm">' +
         '<thead><tr class="text-emerald-300/80 text-left border-b border-emerald-700">' +
         '<th class="py-1.5 pr-2">打牌</th><th class="py-1.5 pr-2">受け入れ</th><th class="py-1.5">受け入れ牌</th></tr></thead><tbody>' +
@@ -281,7 +287,7 @@
             '<td class="py-1.5"><div class="flex flex-wrap gap-0.5">' + tileListHTML(r.tiles) + "</div></td></tr>";
         }).join("") +
         "</tbody></table></div>" +
-        '<div class="text-xs text-emerald-300/70 mt-3">※ 同じシャンテン数を保つ打牌の中で受け入れ枚数を比較しています（上位6候補まで表示）。' +
+        '<div class="text-xs text-emerald-300/70 mt-3">※ ' + toLabel + "に進む打牌の中で受け入れ枚数を比較しています（上位6候補まで表示）。" +
         (mode === "chin" ? "清一色が崩れる萬子以外の受け入れは数えません。" : "") + "</div>" +
         nextButtonHTML();
       html += card(expl);
