@@ -165,6 +165,30 @@ passed++;
 console.log("ok - 牌効率問題の生成（20回の形式チェック）");
 
 for (let i = 0; i < 20; i++) {
+  const p = Engine.generateChinitsuProblem();
+  assert.ok(p, "清一色問題が生成できる");
+  assert.strictEqual(p.hand.length, 14, "手牌は14枚");
+  assert.ok(p.hand.every((t) => t >= 0 && t <= 8), "すべて萬子");
+  assert.strictEqual(Engine.shanten(Engine.toCounts(p.hand)), 1, "全問イーシャンテン");
+  assert.ok(p.bestDiscards.length >= 1 && p.bestDiscards.length <= 3, "正解打牌は1〜3種");
+  assert.strictEqual(p.redFlags.length, 14, "赤5フラグは手牌と同じ14要素");
+  // 正解候補はすべてイーシャンテン維持（受け入れ＝テンパイになる牌）で、受け入れ降順
+  const bestU = p.analysis[0].ukeire;
+  assert.ok(bestU > 0, "最大受け入れは1枚以上");
+  for (const row of p.analysis) {
+    assert.strictEqual(row.shanten, 1, "候補打牌はイーシャンテン維持");
+    assert.ok(row.ukeire <= bestU, "受け入れ降順");
+    // 清一色が崩れる萬子以外（六対子形の七対子テンパイなど）は受け入れに数えない
+    for (const x of row.tiles) assert.ok(x.tile <= 8, "受け入れ牌も萬子のみ");
+  }
+  // 2位と2枚以上の差がある（出題の明確さ条件）
+  const second = p.analysis.filter((r) => r.ukeire < bestU);
+  assert.ok(second.length > 0 && bestU - second[0].ukeire >= 2, "2位と2枚以上差");
+}
+passed++;
+console.log("ok - 清一色問題の生成（20回の形式チェック）");
+
+for (let i = 0; i < 20; i++) {
   const p = Engine.generatePushFoldProblem();
   assert.ok(p, "押し引き問題が生成できる");
   assert.strictEqual(p.hand.length, 14, "手牌は14枚");

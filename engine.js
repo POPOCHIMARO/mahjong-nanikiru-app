@@ -319,6 +319,56 @@
   }
 
   // ---------------------------------------------------------------
+  // 清一色（萬子）モードの問題生成
+  // 条件: 萬子のみ14枚・イーシャンテン。
+  // 正解 = イーシャンテンを維持しつつテンパイへの受け入れ枚数が最大の打牌（同数はすべて正解）。
+  // 受け入れは萬子のみを数える（六対子形などでは字牌・他色でも七対子テンパイに
+  // なり得るが、清一色が崩れるため受け入れに含めない）。
+  // 清一色は受け入れ同率の打牌が出やすいため、出題の明確さ条件は
+  // 牌効率モードより緩め（同率3種以下・2位と2枚以上差）にしている。
+  // ---------------------------------------------------------------
+  function generateChinitsuProblem() {
+    // 萬子以外を「4枚全部見えている」扱いにして受け入れ計算から除外する
+    var nonManzuOut = new Array(34).fill(4);
+    for (var m = 0; m < 9; m++) nonManzuOut[m] = 0;
+
+    for (var attempt = 0; attempt < 1000; attempt++) {
+      // 萬子36枚（9種×4枚）だけの山から14枚引く
+      var wall = new Array(34).fill(0);
+      for (var t = 0; t < 9; t++) wall[t] = 4;
+      var hand = [];
+      for (var i = 0; i < 14; i++) {
+        var d = drawWeighted(wall, function () { return 1; });
+        if (d < 0) break;
+        hand.push(d);
+      }
+      if (hand.length !== 14) continue;
+      hand.sort(function (a, b) { return a - b; });
+      var counts = toCounts(hand);
+      if (shanten(counts) !== 1) continue;
+
+      var an = analyzeDiscards(counts, nonManzuOut);
+      if (an.minShanten !== 1 || an.keep.length < 2) continue;
+      var bestU = an.keep[0].ukeire;
+      if (bestU <= 0) continue; // 萬子の受け入れが無い形（純カラ）は出題しない
+      var bests = an.keep.filter(function (r) { return r.ukeire === bestU; });
+      var second = an.keep.filter(function (r) { return r.ukeire < bestU; });
+      if (bests.length > 3) continue;             // 同率正解が多すぎる手は避ける
+      if (second.length === 0) continue;          // 全部同点なら出題しない
+      if (bestU - second[0].ukeire < 2) continue; // 僅差の問題は避ける
+
+      return {
+        hand: hand,
+        shanten: 1,
+        bestDiscards: bests.map(function (r) { return r.discard; }),
+        analysis: an.keep,
+        redFlags: assignRedFives(hand),
+      };
+    }
+    return null; // 1000回試して見つからないことは実質ない
+  }
+
+  // ---------------------------------------------------------------
   // 危険牌の分類と放銃率
   // vault: data/mleague/danger/danger_summary.json のカテゴリ体系に対応。
   // 放銃率(%)は『科学する麻雀』系の統計に基づく一般的な近似値。
@@ -581,6 +631,7 @@
     classifyDanger: classifyDanger,
     evaluatePushFold: evaluatePushFold,
     generateEfficiencyProblem: generateEfficiencyProblem,
+    generateChinitsuProblem: generateChinitsuProblem,
     generatePushFoldProblem: generatePushFoldProblem,
     DANGER_RATES: DANGER_RATES,
   };

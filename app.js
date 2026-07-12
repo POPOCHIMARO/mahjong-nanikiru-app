@@ -8,6 +8,7 @@
   var scoreboard = document.getElementById("scoreboard");
   var tabEff = document.getElementById("tab-eff");
   var tabPush = document.getElementById("tab-push");
+  var tabChin = document.getElementById("tab-chin");
 
   // 現在のモードと成績（成績は localStorage に保存して次回も引き継ぐ）
   var mode = "eff";
@@ -18,9 +19,13 @@
   function loadStats() {
     try {
       var s = JSON.parse(localStorage.getItem("nanikiru-stats"));
-      if (s && s.eff && s.push) return s;
+      if (s && s.eff && s.push) {
+        // 清一色モード追加前の保存データには chin が無いので補う
+        if (!s.chin) s.chin = { ok: 0, total: 0 };
+        return s;
+      }
     } catch (e) { /* 壊れていたら初期化 */ }
-    return { eff: { ok: 0, total: 0 }, push: { ok: 0, total: 0 } };
+    return { eff: { ok: 0, total: 0 }, push: { ok: 0, total: 0 }, chin: { ok: 0, total: 0 } };
   }
   function saveStats() {
     try { localStorage.setItem("nanikiru-stats", JSON.stringify(stats)); } catch (e) { /* 保存不可でも動作は続ける */ }
@@ -189,14 +194,17 @@
     var active = "flex-1 py-2.5 rounded-lg font-bold text-sm sm:text-base transition-colors bg-amber-400 text-emerald-950 shadow-lg";
     var inactive = "flex-1 py-2.5 rounded-lg font-bold text-sm sm:text-base transition-colors bg-emerald-800/60 text-emerald-100 hover:bg-emerald-700/60";
     tabEff.className = mode === "eff" ? active : inactive;
+    tabChin.className = mode === "chin" ? active : inactive;
     tabPush.className = mode === "push" ? active : inactive;
   }
+
+  var MODE_LABELS = { eff: "牌効率", chin: "清一色", push: "押し引き" };
 
   function updateScoreboard() {
     var s = stats[mode];
     var pct = s.total > 0 ? Math.round((s.ok / s.total) * 100) : 0;
     scoreboard.textContent =
-      (mode === "eff" ? "牌効率" : "押し引き") + "の成績: " + s.ok + " / " + s.total + " 問正解" +
+      MODE_LABELS[mode] + "の成績: " + s.ok + " / " + s.total + " 問正解" +
       (s.total > 0 ? "（正解率 " + pct + "%）" : "");
   }
 
@@ -222,10 +230,11 @@
   }
 
   // ---------------------------------------------------------------
-  // 牌効率モード
+  // 牌効率モード・清一色モード
+  // 出題形式（14枚から1枚切る・受け入れ最大が正解）が同じなので描画を共用する。
   // ---------------------------------------------------------------
   function newEffProblem() {
-    current = E.generateEfficiencyProblem();
+    current = mode === "chin" ? E.generateChinitsuProblem() : E.generateEfficiencyProblem();
     answered = false;
     // 表示用: ソート済み13枚 + ツモ牌1枚に分ける（見た目だけの演出）
     // 赤5フラグも同じ位置で一緒に分割する（値ではなく位置で赤の牌1枚を特定するため）
@@ -243,7 +252,7 @@
     var p = current;
     var qHtml =
       '<div class="text-sm text-emerald-200/90 mb-3">' +
-      "<span class='font-bold text-amber-300'>" + p.shanten + "シャンテン。</span> 何を切る？（牌をタップ）" +
+      "<span class='font-bold text-amber-300'>" + (mode === "chin" ? "清一色（萬子）の" : "") + p.shanten + "シャンテン。</span> 何を切る？（牌をタップ）" +
       "</div>" +
       '<div class="flex flex-wrap items-center gap-1" id="hand-area">' +
       p.displayHand.map(function (t, i) { return handTileBtn(t, "h" + i, clicked, p.displayHandRed[i]); }).join("") +
@@ -272,7 +281,8 @@
             '<td class="py-1.5"><div class="flex flex-wrap gap-0.5">' + tileListHTML(r.tiles) + "</div></td></tr>";
         }).join("") +
         "</tbody></table></div>" +
-        '<div class="text-xs text-emerald-300/70 mt-3">※ 同じシャンテン数を保つ打牌の中で受け入れ枚数を比較しています（上位6候補まで表示）。</div>' +
+        '<div class="text-xs text-emerald-300/70 mt-3">※ 同じシャンテン数を保つ打牌の中で受け入れ枚数を比較しています（上位6候補まで表示）。' +
+        (mode === "chin" ? "清一色が崩れる萬子以外の受け入れは数えません。" : "") + "</div>" +
         nextButtonHTML();
       html += card(expl);
     }
@@ -446,10 +456,11 @@
     mode = m;
     updateTabs();
     updateScoreboard();
-    if (m === "eff") newEffProblem(); else newPushProblem();
+    if (m === "push") newPushProblem(); else newEffProblem();
   }
 
   tabEff.addEventListener("click", function () { switchMode("eff"); });
+  tabChin.addEventListener("click", function () { switchMode("chin"); });
   tabPush.addEventListener("click", function () { switchMode("push"); });
 
   // 牌デザインの確認用ギャラリー（index.html?gallery=1 で全34種を一覧表示）
