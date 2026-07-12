@@ -50,8 +50,10 @@
   // -1=和了形, 0=テンパイ, 1=イーシャンテン, ...
   // ---------------------------------------------------------------
 
-  // 一般手のシャンテン。counts は34種の枚数配列
-  function shantenRegular(counts) {
+  // 一般手のシャンテン。counts は34種の枚数配列。
+  // fixedMelds は暗槓などですでに完成している面子数（通常の門前手は0）。
+  function shantenRegular(counts, fixedMelds) {
+    fixedMelds = fixedMelds || 0;
     var c = counts.slice();
     var best = 8;
 
@@ -104,7 +106,7 @@
       c[i] = saved;
     }
 
-    walk(0, 0, 0, false);
+    walk(0, fixedMelds, 0, false);
     return best;
   }
 
@@ -130,24 +132,30 @@
     return 13 - kinds - (hasPair ? 1 : 0);
   }
 
-  // 3種の最小シャンテンを返す
-  function shanten(counts) {
+  // 3種の最小シャンテンを返す。
+  // 固定面子がある手では七対子・国士にはならないため、一般手だけを計算する。
+  function shanten(counts, fixedMelds) {
+    fixedMelds = fixedMelds || 0;
+    if (fixedMelds > 0) return shantenRegular(counts, fixedMelds);
     return Math.min(shantenRegular(counts), shantenChiitoi(counts), shantenKokushi(counts));
   }
 
   // ---------------------------------------------------------------
   // 受け入れ計算
-  // 13枚の手牌に対して「引くとシャンテンが進む牌」と残り枚数を数える。
-  // visibleOutside: 手牌以外で見えている枚数（河・ドラ表示牌など）。省略可
+  // 13枚相当の手（固定面子がある場合は残りの手牌）について、
+  // 「引くとシャンテンが進む牌」と残り枚数を数える。
+  // visibleOutside: 手牌以外で見えている枚数（河・ドラ表示牌・槓子など）。省略可
+  // fixedMelds: 暗槓などですでに完成している面子数。省略時は0
   // ---------------------------------------------------------------
-  function ukeire(counts13, visibleOutside) {
-    var base = shanten(counts13);
+  function ukeire(counts13, visibleOutside, fixedMelds) {
+    fixedMelds = fixedMelds || 0;
+    var base = shanten(counts13, fixedMelds);
     var tiles = [];
     var total = 0;
     for (var t = 0; t < 34; t++) {
       if (counts13[t] >= 4) continue;
       counts13[t]++;
-      var s = shanten(counts13);
+      var s = shanten(counts13, fixedMelds);
       counts13[t]--;
       if (s < base) {
         var seen = counts13[t] + (visibleOutside ? visibleOutside[t] : 0);
@@ -177,6 +185,57 @@
     var keep = rows.filter(function (r) { return r.shanten === minShanten; });
     keep.sort(function (a, b) { return b.ukeire - a.ukeire; });
     return { minShanten: minShanten, all: rows, keep: keep };
+  }
+
+  // ---------------------------------------------------------------
+  // 清一色モードの行動分析
+  // 打牌と暗槓は手牌の状態が異なるため、それぞれ独立に受け入れを計算する。
+  // ---------------------------------------------------------------
+  function analyzeChinitsuActions(counts14, visibleOutside) {
+    var discardAnalysis = analyzeDiscards(counts14, visibleOutside);
+    var rows = discardAnalysis.all.map(function (r) {
+      return {
+        type: "discard",
+        tile: r.discard,
+        discard: r.discard, // 既存の表示・テストとの互換用
+        shanten: r.shanten,
+        ukeire: r.ukeire,
+        tiles: r.tiles,
+      };
+    });
+    var kanOptions = [];
+
+    for (var k = 0; k < 9; k++) {
+      if (counts14[k] !== 4) continue;
+      kanOptions.push(k);
+
+      // 暗槓した4枚を手牌から除き、固定面子1組として計算する。
+      // 槓子の4枚はすでに見えているため、受け入れの残り枚数からも必ず引く。
+      var afterKan = counts14.slice();
+      afterKan[k] -= 4;
+      var outsideAfterKan = visibleOutside ? visibleOutside.slice() : new Array(34).fill(0);
+      outsideAfterKan[k] += 4;
+      var u = ukeire(afterKan, outsideAfterKan, 1);
+      rows.push({
+        type: "ankan",
+        tile: k,
+        shanten: u.shanten,
+        ukeire: u.total,
+        tiles: u.tiles,
+      });
+    }
+
+    var minShanten = 99;
+    rows.forEach(function (r) {
+      if (r.shanten < minShanten) minShanten = r.shanten;
+    });
+    var keep = rows.filter(function (r) { return r.shanten === minShanten; });
+    keep.sort(function (a, b) {
+      if (b.ukeire !== a.ukeire) return b.ukeire - a.ukeire;
+      if (a.type !== b.type) return a.type === "discard" ? -1 : 1;
+      return a.tile - b.tile;
+    });
+    return { minShanten: minShanten, all: rows, keep: keep, kanOptions: kanOptions };
   }
 
   // ---------------------------------------------------------------
@@ -352,8 +411,8 @@
 
   // ---------------------------------------------------------------
   // 清一色（萬子）モードの問題生成
-  // 条件: 萬子のみで、ツモ前は1シャンテン、打牌後はテンパイ。
-  // 正解 = テンパイに進む打牌のうち、和了牌の受け入れ枚数が最大の打牌。
+  // 条件: 萬子のみで、ツモ前は1シャンテン、打牌・暗槓後はテンパイ。
+  // 正解 = テンパイに進む打牌・暗槓のうち、和了牌の受け入れ枚数が最大の行動。
   // 最大受け入れが同率の場合はすべて正解とする。
   // 清一色モードの制約を計算にも明示するため、受け入れは萬子のみを数える。
   // 清一色は受け入れ同率の打牌が出やすいため、出題の明確さ条件は
@@ -377,7 +436,7 @@
       if (hand.length !== 14) continue;
       hand.sort(function (a, b) { return a - b; });
       var counts = toCounts(hand);
-      var an = analyzeDiscards(counts, nonManzuOut);
+      var an = analyzeChinitsuActions(counts, nonManzuOut);
       if (an.minShanten !== 0 || an.keep.length < 2) continue;
       var bestU = an.keep[0].ukeire;
       if (bestU <= 0) continue; // 萬子の受け入れが無い形（純カラ）は出題しない
@@ -398,7 +457,10 @@
         fromShanten: 1,
         toShanten: 0,
         shanten: 0,
-        bestDiscards: bests.map(function (r) { return r.discard; }),
+        bestActions: bests.map(function (r) { return { type: r.type, tile: r.tile }; }),
+        // 打牌だけを参照する既存コードとの互換用。正解が暗槓だけなら空配列になる。
+        bestDiscards: bests.filter(function (r) { return r.type === "discard"; }).map(function (r) { return r.tile; }),
+        kanOptions: an.kanOptions,
         analysis: an.keep,
         redFlags: assignRedFives(split.hand),
       };
@@ -665,6 +727,7 @@
     shantenKokushi: shantenKokushi,
     ukeire: ukeire,
     analyzeDiscards: analyzeDiscards,
+    analyzeChinitsuActions: analyzeChinitsuActions,
     assignRedFives: assignRedFives,
     classifyDanger: classifyDanger,
     evaluatePushFold: evaluatePushFold,

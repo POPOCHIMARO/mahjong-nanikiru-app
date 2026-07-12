@@ -229,13 +229,38 @@
     updateScoreboard();
   }
 
+  // 「同じ牌を切る」と「同じ牌を暗槓する」を区別するため、回答は種類と牌で識別する。
+  function actionKey(type, tile) {
+    return type + ":" + tile;
+  }
+
+  function rowAction(row) {
+    return {
+      type: row.type || "discard",
+      tile: row.tile !== undefined ? row.tile : row.discard,
+    };
+  }
+
+  function actionLabel(action) {
+    return E.tileName(action.tile) + (action.type === "ankan" ? "を暗槓" : "切り");
+  }
+
+  function isBestAction(type, tile) {
+    return current.bestActionKeys.indexOf(actionKey(type, tile)) >= 0;
+  }
+
   // ---------------------------------------------------------------
   // 牌効率モード・清一色モード
-  // 出題形式（14枚から1枚切る・受け入れ最大が正解）が同じなので描画を共用する。
+  // 清一色だけは暗槓も選べるが、問題カードと解説表の骨格は同じなので描画を共用する。
   // ---------------------------------------------------------------
   function newEffProblem() {
     current = mode === "chin" ? E.generateChinitsuProblem() : E.generateEfficiencyProblem();
     answered = false;
+    current.bestActionsForUi = current.bestActions || current.bestDiscards.map(function (t) {
+      return { type: "discard", tile: t };
+    });
+    current.bestActionKeys = current.bestActionsForUi.map(function (a) { return actionKey(a.type, a.tile); });
+    current.kanOptions = current.kanOptions || [];
     // 問題生成時に確定した「ツモ前13枚」と「実際のツモ牌」をそのまま表示する
     current.displayHand = current.baseHand.slice();
     current.displayTsumo = current.drawnTile;
@@ -248,47 +273,55 @@
     return value === 0 ? "テンパイ" : value + "シャンテン";
   }
 
-  function renderEff(clicked) {
+  function renderEff(chosen) {
     var p = current;
     var fromLabel = shantenLabel(p.fromShanten);
     var toLabel = shantenLabel(p.toShanten);
+    var hasKanChoice = mode === "chin" && p.kanOptions.length > 0;
     var qHtml =
       '<div class="text-sm text-emerald-200/90 mb-3">' +
       "<span class='font-bold text-amber-300'>" + (mode === "chin" ? "清一色（萬子）の" : "") + fromLabel + "。</span> " +
-      toLabel + "に進められるツモです。何を切る？（牌をタップ）" +
+      toLabel + "に進められるツモです。" + (hasKanChoice ? "何を切る？ 暗槓する？" : "何を切る？") + "（選択肢をタップ）" +
       "</div>" +
       '<div class="flex flex-wrap items-center gap-1" id="hand-area">' +
-      p.displayHand.map(function (t, i) { return handTileBtn(t, "h" + i, clicked, p.displayHandRed[i]); }).join("") +
+      p.displayHand.map(function (t, i) { return handTileBtn(t, "h" + i, chosen, p.displayHandRed[i]); }).join("") +
       '<span class="w-3"></span>' +
-      handTileBtn(p.displayTsumo, "tsumo", clicked, p.displayTsumoRed) +
-      "</div>";
+      handTileBtn(p.displayTsumo, "tsumo", chosen, p.displayTsumoRed) +
+      "</div>" +
+      (hasKanChoice
+        ? '<div class="mt-4 flex flex-wrap items-center gap-2"><span class="text-xs text-emerald-300/80">暗槓：</span>' +
+          p.kanOptions.map(function (t) { return kanButtonHTML(t, chosen); }).join("") + "</div>"
+        : "");
 
     var html = card(qHtml);
 
     if (answered) {
-      var ok = p.bestDiscards.indexOf(clicked) >= 0;
+      var ok = isBestAction(chosen.type, chosen.tile);
       var answerReason = p.toShanten === 0
-        ? "テンパイに取り、和了牌の受け入れ枚数が最大になります。"
+        ? "テンパイに進み、和了牌の受け入れ枚数が最大になります。"
         : "1シャンテンに取り、テンパイへの受け入れ枚数が最大になります。";
       var expl =
         resultBanner(ok) +
         '<div class="text-sm mb-3">正解は <span class="font-bold text-amber-300">' +
-        p.bestDiscards.map(E.tileName).join(" または ") +
-        "切り</span>。" + answerReason + "</div>" +
+        p.bestActionsForUi.map(actionLabel).join(" または ") +
+        "</span>。" + answerReason + "</div>" +
         '<div class="overflow-x-auto"><table class="w-full text-sm">' +
         '<thead><tr class="text-emerald-300/80 text-left border-b border-emerald-700">' +
-        '<th class="py-1.5 pr-2">打牌</th><th class="py-1.5 pr-2">受け入れ</th><th class="py-1.5">受け入れ牌</th></tr></thead><tbody>' +
-        p.analysis.slice(0, 6).map(function (r) {
-          var isBest = p.bestDiscards.indexOf(r.discard) >= 0;
+        '<th class="py-1.5 pr-2">行動</th><th class="py-1.5 pr-2">受け入れ</th><th class="py-1.5">受け入れ牌</th></tr></thead><tbody>' +
+        p.analysis.map(function (r) {
+          var action = rowAction(r);
+          var isBest = isBestAction(action.type, action.tile);
           return '<tr class="border-b border-emerald-800/60 ' + (isBest ? "bg-emerald-800/40" : "") + '">' +
-            '<td class="py-1.5 pr-2 whitespace-nowrap">' + tileHTML(r.discard, { mini: true }) +
-            (isBest ? ' <span class="text-amber-300 font-bold">◎</span>' : "") + "</td>" +
+            '<td class="py-1.5 pr-2 whitespace-nowrap"><div class="flex items-center gap-1">' + tileHTML(action.tile, { mini: true }) +
+            '<span>' + (action.type === "ankan" ? "暗槓" : "切り") + "</span>" +
+            (isBest ? ' <span class="text-amber-300 font-bold">◎</span>' : "") + "</div></td>" +
             '<td class="py-1.5 pr-2 font-bold whitespace-nowrap">' + r.ukeire + "枚</td>" +
             '<td class="py-1.5"><div class="flex flex-wrap gap-0.5">' + tileListHTML(r.tiles) + "</div></td></tr>";
         }).join("") +
         "</tbody></table></div>" +
-        '<div class="text-xs text-emerald-300/70 mt-3">※ ' + toLabel + "に進む打牌の中で受け入れ枚数を比較しています（上位6候補まで表示）。" +
-        (mode === "chin" ? "清一色が崩れる萬子以外の受け入れは数えません。" : "") + "</div>" +
+        '<div class="text-xs text-emerald-300/70 mt-3">※ ' + toLabel + "に進む" +
+        (mode === "chin" ? "打牌・暗槓" : "打牌") + "の中で受け入れ枚数を比較しています。" +
+        (mode === "chin" ? "暗槓は槓子を固定面子として別計算し、槓した4枚と萬子以外は受け入れに数えません。" : "") + "</div>" +
         nextButtonHTML();
       html += card(expl);
     }
@@ -296,13 +329,14 @@
     app.innerHTML = html;
 
     if (!answered) {
-      app.querySelectorAll("button[data-tile]").forEach(function (btn) {
+      app.querySelectorAll("button[data-action]").forEach(function (btn) {
         btn.addEventListener("click", function () {
           if (answered) return;
           answered = true;
           var t = Number(btn.getAttribute("data-tile"));
-          record(current.bestDiscards.indexOf(t) >= 0);
-          renderEff(t);
+          var action = { type: btn.getAttribute("data-action"), tile: t };
+          record(isBestAction(action.type, action.tile));
+          renderEff(action);
         });
       });
     } else {
@@ -311,16 +345,40 @@
   }
 
   // 手牌1枚分のボタン。回答後は正解◎・自分の選択に枠を付ける
-  function handTileBtn(t, key, clicked, isRed) {
+  function handTileBtn(t, key, chosen, isRed) {
     var extra = "";
     if (answered) {
-      var isBest = current.bestDiscards.indexOf(t) >= 0;
+      var isBest = isBestAction("discard", t);
       if (isBest) extra = "tile-correct";
-      else if (t === clicked) extra = "tile-wrong";
+      else if (chosen.type === "discard" && t === chosen.tile) extra = "tile-wrong";
     }
     var inner = tileHTML(t, { extraClass: extra, red: isRed });
-    return '<button class="tile-btn bg-transparent border-0 p-0" data-tile="' + t + '" data-key="' + key + '"' +
+    return '<button class="tile-btn bg-transparent border-0 p-0" data-action="discard" data-tile="' + t + '" data-key="' + key + '"' +
       (answered ? " disabled" : "") + ">" + inner + "</button>";
+  }
+
+  // 同じ牌を切る操作と混同しないよう、暗槓は独立したボタンとして表示する。
+  function kanButtonHTML(t, chosen) {
+    var style;
+    if (!answered) {
+      style = "bg-indigo-900/60 border-indigo-400/70 hover:bg-indigo-800/70";
+    } else if (isBestAction("ankan", t)) {
+      style = "bg-green-900/60 border-green-400";
+    } else if (chosen.type === "ankan" && chosen.tile === t) {
+      style = "bg-red-900/60 border-red-400";
+    } else {
+      style = "bg-emerald-900/40 border-emerald-700 opacity-60";
+    }
+    var hasRed = false;
+    for (var r = 0; r < current.hand.length; r++) {
+      if (current.hand[r] === t && current.redFlags[r]) hasRed = true;
+    }
+    var fourTiles = "";
+    for (var i = 0; i < 4; i++) fourTiles += tileHTML(t, { mini: true, red: hasRed && i === 0 });
+    return '<button data-action="ankan" data-tile="' + t + '" aria-label="' + E.tileName(t) + 'を暗槓" ' +
+      'class="flex items-center gap-2 rounded-lg border px-3 py-2 transition-colors ' + style + '"' +
+      (answered ? " disabled" : "") + '><span class="flex gap-0.5">' + fourTiles +
+      '</span><span class="font-bold text-sm">暗槓</span></button>';
   }
 
   // ---------------------------------------------------------------

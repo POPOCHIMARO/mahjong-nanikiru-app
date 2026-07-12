@@ -26,6 +26,16 @@ function shantenOf(str) {
   return Engine.shanten(Engine.toCounts(parse(str)));
 }
 
+function chinitsuOutside() {
+  const outside = new Array(34).fill(4);
+  for (let m = 0; m < 9; m++) outside[m] = 0;
+  return outside;
+}
+
+function actionKey(action) {
+  return `${action.type}:${action.tile}`;
+}
+
 let passed = 0;
 function check(name, actual, expected) {
   assert.deepStrictEqual(actual, expected, `${name}: got ${JSON.stringify(actual)}, want ${JSON.stringify(expected)}`);
@@ -74,6 +84,44 @@ check("完全イーシャンテン形", shantenOf("123m456m789m1245p"), 1);
   // 7p切り（123m456m789m 12p 45p）が受け入れ最大級で残るはず
   const keeps = an.keep.map((r) => Engine.tileShort(r.discard));
   check("7p切りがシャンテン維持候補に含まれる", keeps.includes("7p"), true);
+}
+
+// --- 清一色の暗槓分析 ---
+{
+  // 11223345689999m は、9m切りなら7m/8mの7枚、9m暗槓なら8mの3枚。
+  // 四枚使いでも、切る場合と暗槓する場合の形を別々に計算できることを確認する。
+  const counts = Engine.toCounts(parse("11223345689999m"));
+  const analysis = Engine.analyzeChinitsuActions(counts, chinitsuOutside());
+  const discard9 = analysis.keep.find((r) => r.type === "discard" && r.tile === 8);
+  const ankan9 = analysis.keep.find((r) => r.type === "ankan" && r.tile === 8);
+
+  check("9m四枚使いの最小シャンテンは0", analysis.minShanten, 0);
+  check("四枚ある9mが暗槓選択肢になる", analysis.kanOptions, [8]);
+  check("9m切りの受け入れは7枚", discard9.ukeire, 7);
+  check("9m切りの受け入れ牌は7mと8m", discard9.tiles.map((x) => Engine.tileShort(x.tile)), ["7m", "8m"]);
+  check("9m暗槓の受け入れは3枚", ankan9.ukeire, 3);
+  check("9m暗槓の受け入れ牌は8mだけ", ankan9.tiles.map((x) => Engine.tileShort(x.tile)), ["8m"]);
+  check("この形の最大受け入れは9m切りだけ", analysis.keep.filter((r) => r.ukeire === analysis.keep[0].ukeire).map(actionKey), ["discard:8"]);
+}
+{
+  // 13444555679999m は9m切りと9m暗槓がともに2mの4枚待ち。
+  // 打点差は評価せず、受け入れ同数なら両方を正解候補にする。
+  const counts = Engine.toCounts(parse("13444555679999m"));
+  const analysis = Engine.analyzeChinitsuActions(counts, chinitsuOutside());
+  const bestUkeire = analysis.keep[0].ukeire;
+  const bestActions = analysis.keep.filter((r) => r.ukeire === bestUkeire).map(actionKey);
+
+  check("切りと暗槓が同数の受け入れは4枚", bestUkeire, 4);
+  check("同数なら9m切りと9m暗槓が両方最大", bestActions, ["discard:8", "ankan:8"]);
+}
+{
+  // 暗槓後に9mが待ちへ見えても、実物4枚はすべて槓子に使っているため残り0枚。
+  const counts = Engine.toCounts(parse("11133555789999m"));
+  const analysis = Engine.analyzeChinitsuActions(counts, chinitsuOutside());
+  const ankan9 = analysis.all.find((r) => r.type === "ankan" && r.tile === 8);
+
+  check("槓した9mを受け入れへ再加算しない", ankan9.tiles.map((x) => Engine.tileShort(x.tile)), ["6m"]);
+  check("槓子の4枚を除いた暗槓受け入れは4枚", ankan9.ukeire, 4);
 }
 
 // --- 危険牌分類 ---
@@ -188,25 +236,32 @@ for (let i = 0; i < 20; i++) {
   assert.deepStrictEqual(p.hand, p.baseHand.concat([p.drawnTile]), "14枚目は実際のツモ牌");
   assert.ok(p.hand.every((t) => t >= 0 && t <= 8), "すべて萬子");
   assert.strictEqual(p.fromShanten, 1, "ツモ前は1シャンテン");
-  assert.strictEqual(p.toShanten, 0, "打牌後はテンパイ");
+  assert.strictEqual(p.toShanten, 0, "打牌・暗槓後はテンパイ");
   assert.strictEqual(Engine.shanten(Engine.toCounts(p.baseHand)), 1, "ツモ前13枚を再計算しても1シャンテン");
-  assert.ok(p.bestDiscards.length >= 1 && p.bestDiscards.length <= 3, "正解打牌は1〜3種");
+  assert.ok(p.bestActions.length >= 1 && p.bestActions.length <= 3, "正解行動は1〜3種");
   assert.strictEqual(p.redFlags.length, 14, "赤5フラグは手牌と同じ14要素");
 
-  const nonManzuOut = new Array(34).fill(4);
-  for (let m = 0; m < 9; m++) nonManzuOut[m] = 0;
-  const analysis = Engine.analyzeDiscards(Engine.toCounts(p.hand), nonManzuOut);
+  const counts = Engine.toCounts(p.hand);
+  const analysis = Engine.analyzeChinitsuActions(counts, chinitsuOutside());
   assert.strictEqual(analysis.minShanten, 0, "このツモからテンパイに進める");
+  const expectedKanOptions = [];
+  for (let m = 0; m < 9; m++) if (counts[m] === 4) expectedKanOptions.push(m);
+  assert.deepStrictEqual(p.kanOptions, expectedKanOptions, "四枚使いだけが暗槓ボタンの候補");
   const bestU = p.analysis[0].ukeire;
   assert.ok(bestU > 0, "和了牌の最大受け入れは1枚以上");
   for (const row of p.analysis) {
-    assert.strictEqual(row.shanten, 0, "候補打牌はすべてテンパイに進む");
+    assert.ok(["discard", "ankan"].includes(row.type), "候補は打牌または暗槓");
+    assert.strictEqual(row.shanten, 0, "候補行動はすべてテンパイに進む");
     assert.ok(row.ukeire <= bestU, "受け入れ降順");
+    if (row.type === "ankan") assert.strictEqual(counts[row.tile], 4, "暗槓候補は手牌に4枚ある");
     // 清一色が崩れる萬子以外は和了牌の受け入れに数えない
     for (const x of row.tiles) assert.ok(x.tile <= 8, "受け入れ牌も萬子のみ");
   }
-  const expectedBest = p.analysis.filter((r) => r.ukeire === bestU).map((r) => r.discard).sort((a, b) => a - b);
-  assert.deepStrictEqual([...p.bestDiscards].sort((a, b) => a - b), expectedBest, "和了牌の受け入れ最大打牌だけが正解");
+  const expectedBest = p.analysis.filter((r) => r.ukeire === bestU).map(actionKey).sort();
+  const actualBest = p.bestActions.map(actionKey).sort();
+  assert.deepStrictEqual(actualBest, expectedBest, "和了牌の受け入れ最大行動だけが正解");
+  const expectedBestDiscards = p.bestActions.filter((a) => a.type === "discard").map((a) => a.tile).sort((a, b) => a - b);
+  assert.deepStrictEqual([...p.bestDiscards].sort((a, b) => a - b), expectedBestDiscards, "互換用の正解打牌も一致");
   assert.ok(!p.bestDiscards.includes(p.drawnTile), "ツモ切りでは1シャンテンに戻るため正解にならない");
 
   // 2位と2枚以上の差がある（出題の明確さ条件）
