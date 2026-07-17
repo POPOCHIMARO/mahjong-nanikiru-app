@@ -1,0 +1,105 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"../VirtualOffice/scripts/hook-to-runtime.js\" --provider codex --agent mj-app-dev",
+            "commandWindows": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& '..\\VirtualOffice\\scripts\\run-office-hook.ps1' -Provider codex -Agent mj-app-dev\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"../VirtualOffice/scripts/hook-to-runtime.js\" --provider codex --agent mj-app-dev",
+            "commandWindows": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& '..\\VirtualOffice\\scripts\\run-office-hook.ps1' -Provider codex -Agent mj-app-dev\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"../VirtualOffice/scripts/hook-to-runtime.js\" --provider codex --agent mj-app-dev",
+            "commandWindows": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& '..\\VirtualOffice\\scripts\\run-office-hook.ps1' -Provider codex -Agent mj-app-dev\"",
+            "timeout": 10
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"../VirtualOffice/scripts/hook-to-runtime.js\" --provider codex --agent mj-app-dev",
+            "commandWindows": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& '..\\VirtualOffice\\scripts\\run-office-hook.ps1' -Provider codex -Agent mj-app-dev\"",
+            "timeout": 10
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"../VirtualOffice/scripts/hook-to-runtime.js\" --provider codex --agent mj-app-dev",
+            "commandWindows": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& '..\\VirtualOffice\\scripts\\run-office-hook.ps1' -Provider codex -Agent mj-app-dev\"",
+            "timeout": 10
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"../VirtualOffice/scripts/hook-to-runtime.js\" --provider codex --agent pool-luna",
+            "commandWindows": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& '..\\VirtualOffice\\scripts\\run-office-hook.ps1' -Provider codex -Agent pool-luna\"",
+            "timeout": 10
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"../VirtualOffice/scripts/hook-to-runtime.js\" --provider codex --agent pool-luna",
+            "commandWindows": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& '..\\VirtualOffice\\scripts\\run-office-hook.ps1' -Provider codex -Agent pool-luna\"",
+            "timeout": 10
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"../VirtualOffice/scripts/hook-to-runtime.js\" --provider codex --agent mj-app-dev",
+            "commandWindows": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& '..\\VirtualOffice\\scripts\\run-office-hook.ps1' -Provider codex -Agent mj-app-dev\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

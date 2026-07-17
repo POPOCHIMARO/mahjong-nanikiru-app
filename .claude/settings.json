@@ -1,0 +1,254 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": [
+              "-NoProfile",
+              "-ExecutionPolicy",
+              "Bypass",
+              "-File",
+              "${CLAUDE_PROJECT_DIR}/../VirtualOffice/scripts/run-office-hook.ps1",
+              "-Provider",
+              "claude",
+              "-Agent",
+              "mj-app-dev"
+            ],
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": [
+              "-NoProfile",
+              "-ExecutionPolicy",
+              "Bypass",
+              "-File",
+              "${CLAUDE_PROJECT_DIR}/../VirtualOffice/scripts/run-office-hook.ps1",
+              "-Provider",
+              "claude",
+              "-Agent",
+              "mj-app-dev"
+            ],
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": [
+              "-NoProfile",
+              "-ExecutionPolicy",
+              "Bypass",
+              "-File",
+              "${CLAUDE_PROJECT_DIR}/../VirtualOffice/scripts/run-office-hook.ps1",
+              "-Provider",
+              "claude",
+              "-Agent",
+              "mj-app-dev"
+            ],
+            "timeout": 10
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": [
+              "-NoProfile",
+              "-ExecutionPolicy",
+              "Bypass",
+              "-File",
+              "${CLAUDE_PROJECT_DIR}/../VirtualOffice/scripts/run-office-hook.ps1",
+              "-Provider",
+              "claude",
+              "-Agent",
+              "mj-app-dev"
+            ],
+            "timeout": 10
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": [
+              "-NoProfile",
+              "-ExecutionPolicy",
+              "Bypass",
+              "-File",
+              "${CLAUDE_PROJECT_DIR}/../VirtualOffice/scripts/run-office-hook.ps1",
+              "-Provider",
+              "claude",
+              "-Agent",
+              "mj-app-dev"
+            ],
+            "timeout": 10
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": [
+              "-NoProfile",
+              "-ExecutionPolicy",
+              "Bypass",
+              "-File",
+              "${CLAUDE_PROJECT_DIR}/../VirtualOffice/scripts/run-office-hook.ps1",
+              "-Provider",
+              "claude",
+              "-Agent",
+              "mj-app-dev"
+            ],
+            "timeout": 10
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "PermissionDenied": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": [
+              "-NoProfile",
+              "-ExecutionPolicy",
+              "Bypass",
+              "-File",
+              "${CLAUDE_PROJECT_DIR}/../VirtualOffice/scripts/run-office-hook.ps1",
+              "-Provider",
+              "claude",
+              "-Agent",
+              "mj-app-dev"
+            ],
+            "timeout": 10
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": [
+              "-NoProfile",
+              "-ExecutionPolicy",
+              "Bypass",
+              "-File",
+              "${CLAUDE_PROJECT_DIR}/../VirtualOffice/scripts/run-office-hook.ps1",
+              "-Provider",
+              "claude",
+              "-Agent",
+              "mj-app-test"
+            ],
+            "timeout": 10
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": [
+              "-NoProfile",
+              "-ExecutionPolicy",
+              "Bypass",
+              "-File",
+              "${CLAUDE_PROJECT_DIR}/../VirtualOffice/scripts/run-office-hook.ps1",
+              "-Provider",
+              "claude",
+              "-Agent",
+              "mj-app-test"
+            ],
+            "timeout": 10
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": [
+              "-NoProfile",
+              "-ExecutionPolicy",
+              "Bypass",
+              "-File",
+              "${CLAUDE_PROJECT_DIR}/../VirtualOffice/scripts/run-office-hook.ps1",
+              "-Provider",
+              "claude",
+              "-Agent",
+              "mj-app-dev"
+            ],
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": [
+              "-NoProfile",
+              "-ExecutionPolicy",
+              "Bypass",
+              "-File",
+              "${CLAUDE_PROJECT_DIR}/../VirtualOffice/scripts/run-office-hook.ps1",
+              "-Provider",
+              "claude",
+              "-Agent",
+              "mj-app-dev"
+            ],
+            "timeout": 10
+          }
+        ],
+        "matcher": "*"
+      }
+    ]
+  }
+}
