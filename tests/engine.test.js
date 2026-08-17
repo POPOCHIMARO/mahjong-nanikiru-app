@@ -119,6 +119,50 @@ check("完全イーシャンテン形", shantenOf("123m456m789m1245p"), 1);
   check("健全な僅差問題の受け入れ最大は北切り", Engine.tileShort(an.keep[0].discard), "北");
   check("健全な僅差問題は出題ガードを通る", Engine.efficiencyAnswerIsSound(counts, an.keep), true);
 }
+// --- 罠型の判定（固定の手牌で4種を1つずつ確認する） ---
+// 問題生成はランダムなので、罠型の正しさは生成結果の割合ではなく
+// ここの固定手牌で担保する。各手牌は狙った1種類だけが付くように選んである。
+{
+  // 123m456m789m + 孤立した5p + 孤立した東。孤立字牌を切るのが正解の形。
+  const counts = Engine.toCounts(parse("123m456m789m5p123s1z"));
+  const traps = Engine.detectEfficiencyTraps(counts, 27, [{ discard: 27, ukeire: 10 }]);
+  check("孤立字牌切りが正解なら孤立字牌の罠が付く", traps, ["isolated-honor"]);
+}
+{
+  // 孤立した1p（端牌）と孤立した5s。東は3枚なので孤立字牌にはならない。
+  const counts = Engine.toCounts(parse("123m456m789m1p5s111z"));
+  const traps = Engine.detectEfficiencyTraps(counts, 9, [{ discard: 9, ukeire: 10 }]);
+  check("端牌切りが正解なら浮き牌の質の罠が付く", traps, ["float-quality"]);
+}
+{
+  // 対子は1pだけ。1p切りは受け入れが落ちるので、雀頭を崩す罠になる。
+  const counts = Engine.toCounts(parse("123m456m789m11p234s"));
+  const rows = [{ discard: 0, ukeire: 10 }, { discard: 9, ukeire: 6 }];
+  const traps = Engine.detectEfficiencyTraps(counts, 0, rows);
+  check("唯一の対子を崩すと損なら唯一の雀頭の罠が付く", traps, ["only-pair"]);
+}
+{
+  // 23mは1m/4m、56mは4m/7mを受け入れるため、4mが二度受けになる。
+  const counts = Engine.toCounts(parse("2356m123p123s1112z"));
+  const traps = Engine.detectEfficiencyTraps(counts, 28, [{ discard: 28, ukeire: 10 }]);
+  check("23mと56mを含む手は二度受けの罠が付く", traps, ["double-acceptance"]);
+}
+{
+  // 完成した順子は搭子として数えない。数えると普通の手が二度受け扱いになってしまう。
+  check(
+    "順子だけの手は二度受けにしない",
+    Engine.hasDoubleAcceptance(Engine.toCounts(parse("123m456m789m12p11z"))),
+    false
+  );
+}
+{
+  // 發と西がどちらも1枚だけの手。孤立字牌どうしに優劣は付けられないため、
+  // ほかの受け入れ比較に関係なく出題ガードで弾く。
+  const counts = Engine.toCounts(parse("5567m2234p5678s36z"));
+  const an = Engine.analyzeDiscards(counts, null);
+  check("孤立字牌が2種類あることを検出する", Engine.hasMultipleIsolatedHonors(counts), true);
+  check("孤立字牌2種類の手は出題ガードで弾く", Engine.efficiencyAnswerIsSound(counts, an.keep), false);
+}
 
 // --- 清一色の暗槓分析 ---
 {
@@ -234,9 +278,17 @@ check("完全イーシャンテン形", shantenOf("123m456m789m1245p"), 1);
 
 // --- 問題生成（形式チェックを複数回） ---
 check("牌効率問題の高難度出題率は50%", Engine.EFFICIENCY_HARD_RATE, 0.5);
+check("牌効率問題の罠型優先率は50%", Engine.EFFICIENCY_TRAP_RATE, 0.5);
 
-for (let i = 0; i < 20; i++) {
-  const difficulty = i % 2 === 0 ? "standard" : "hard";
+// improvementDetail が重く、実測済みの100問約113秒から200問では3分超になるため、
+// CIでの反復時間を抑えつつ両難度を十分にサンプリングできる各20問で確認する。
+const efficiencySamplesPerDifficulty = 20;
+const efficiencyDifficulties = ["standard", "hard"];
+const allowedTraps = new Set(["isolated-honor", "float-quality", "only-pair", "double-acceptance"]);
+let trappedProblems = 0;
+
+for (let i = 0; i < efficiencySamplesPerDifficulty * efficiencyDifficulties.length; i++) {
+  const difficulty = efficiencyDifficulties[Math.floor(i / efficiencySamplesPerDifficulty)];
   const p = Engine.generateEfficiencyProblem(difficulty);
   assert.ok(p, "牌効率問題が生成できる");
   assert.strictEqual(p.difficulty, difficulty, "指定した難易度で生成される");
@@ -246,8 +298,13 @@ for (let i = 0; i < 20; i++) {
   assert.strictEqual(p.fromShanten, 2, "ツモ前は2シャンテン");
   assert.strictEqual(p.toShanten, 1, "打牌後は1シャンテン");
   assert.strictEqual(Engine.shanten(Engine.toCounts(p.baseHand)), 2, "ツモ前13枚を再計算しても2シャンテン");
-  assert.ok(p.bestDiscards.length >= 1 && p.bestDiscards.length <= 2, "正解打牌は1〜2種");
+  assert.strictEqual(p.bestDiscards.length, 1, "正解打牌は必ず1種");
   assert.strictEqual(p.redFlags.length, 14, "赤5フラグは手牌と同じ14要素");
+  const isolatedHonorKinds = Engine.toCounts(p.hand).slice(27).filter((count) => count === 1).length;
+  assert.ok(isolatedHonorKinds < 2, "孤立字牌は2種類未満");
+  assert.ok(Array.isArray(p.traps), "罠型は配列で保持する");
+  assert.ok(p.traps.every((trap) => allowedTraps.has(trap)), "罠型は定義済みの4種類だけ");
+  if (p.traps.length > 0) trappedProblems++;
 
   const analysis = Engine.analyzeDiscards(Engine.toCounts(p.hand));
   assert.strictEqual(analysis.minShanten, 1, "このツモから1シャンテンに進める");
@@ -292,8 +349,14 @@ for (let i = 0; i < 20; i++) {
     assert.ok(gap >= 3, "通常難度は不正解との受け入れ枚数差が3枚以上");
   }
 }
+// 罠型が「まったく出題されない」状態の検出だけを目的とした下限。
+// 実測の罠付き率は約30%（40問での測定）だが、生成はランダムなので
+// 下限を実測値の近くに置くと偶然の失敗が出る（20%だと約6%の確率で落ちる）。
+// 罠型そのものの正しさは上の固定手牌テストで担保しているため、ここは10%に留める。
+const efficiencySampleTotal = efficiencySamplesPerDifficulty * efficiencyDifficulties.length;
+assert.ok(trappedProblems / efficiencySampleTotal >= 0.1, "罠型を含む問題が全体の10%以上");
 passed++;
-console.log("ok - 牌効率問題の生成（通常・高難度を各10回確認）");
+console.log("ok - 牌効率問題の生成（通常・高難度を各20回、単一正解・罠型を確認）");
 
 for (let i = 0; i < 20; i++) {
   const p = Engine.generateChinitsuProblem();

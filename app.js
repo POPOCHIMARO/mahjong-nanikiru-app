@@ -241,6 +241,23 @@
   }
 
   var MODE_LABELS = { eff: "牌効率", chin: "清一色", push: "押し引き" };
+  var EFFICIENCY_TRAP_MESSAGES = {
+    "isolated-honor": "孤立した字牌は受け入れが3枚しかありません。役牌期待で残すと手が狭くなります。",
+    "float-quality": "孤立牌は3〜7が最も広く受け入れます。端寄りの牌から整理します。",
+    "only-pair": "手牌で唯一の対子は雀頭候補です。崩すと面子構成の自由度が下がります。",
+    "double-acceptance": "2つの搭子が同じ牌を待っています（二度受け）。見た目のターツ数ほど受け入れは広くありません。",
+  };
+
+  // 牌効率問題に記録された罠型だけを、解説カードへ1型1行で表示する。
+  function efficiencyTrapHintsHTML(traps) {
+    if (mode !== "eff" || !traps || traps.length === 0) return "";
+    return traps.map(function (trap) {
+      var message = EFFICIENCY_TRAP_MESSAGES[trap];
+      return message
+        ? '<div class="text-sm text-sky-200 mb-2">ポイント: ' + message + "</div>"
+        : "";
+    }).join("");
+  }
 
   function updateScoreboard() {
     var s = stats[mode];
@@ -362,6 +379,7 @@
         '<div class="text-sm mb-3">正解は <span class="font-bold text-amber-300">' +
         p.bestActionsForUi.map(actionLabel).join(" または ") +
         "</span>。" + answerReason + "</div>" +
+        efficiencyTrapHintsHTML(p.traps) +
         '<div class="overflow-x-auto"><table class="w-full text-sm">' +
         '<thead><tr class="text-emerald-300/80 text-left border-b border-emerald-700">' +
         '<th class="py-1.5 pr-2">行動</th><th class="py-1.5 pr-2">受け入れ</th><th class="py-1.5 pr-2">受け入れ牌</th>' +

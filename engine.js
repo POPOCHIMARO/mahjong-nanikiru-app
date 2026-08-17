@@ -216,6 +216,120 @@
     return improvementDetail(counts13, currentUkeire).total;
   }
 
+  // 手牌に1枚だけある字牌が2種類以上あるかを調べる。
+  // 孤立字牌どうしは受け入れも変化も同じになりやすく、何を切っても等価なため出題しない。
+  function hasMultipleIsolatedHonors(counts) {
+    var kinds = 0;
+    for (var t = 27; t < 34; t++) {
+      if (counts[t] === 1) kinds++;
+    }
+    return kinds >= 2;
+  }
+
+  // 同じ牌、または同じ色の前後2つ以内の数牌が無ければ孤立牌とする。
+  // 字牌は順子を作れないので、手牌に1枚だけなら孤立牌になる。
+  function isIsolatedTile(counts, tile) {
+    if (counts[tile] !== 1) return false;
+    if (isHonor(tile)) return true;
+
+    var suitBase = Math.floor(tile / 9) * 9;
+    var suitEnd = suitBase + 8;
+    for (var other = Math.max(suitBase, tile - 2); other <= Math.min(suitEnd, tile + 2); other++) {
+      if (other !== tile && counts[other] > 0) return false;
+    }
+    return true;
+  }
+
+  // 搭子2枚を完成させる受け入れ牌を返す。
+  // 例: 23m は1m/4m、24m は3mを受け入れる。
+  function partialWaits(a, b) {
+    var waits = [];
+    var gap = b - a;
+    if (gap === 1) {
+      if (a % 9 > 0) waits.push(a - 1);
+      if (b % 9 < 8) waits.push(b + 1);
+    } else if (gap === 2) {
+      waits.push(a + 1);
+    }
+    return waits;
+  }
+
+  // 2つの搭子が同じ受け入れ牌を持つ「二度受け」があるかを調べる。
+  // 完成済みの順子（例: 123m）は搭子として数えない。数えてしまうと、
+  // 順子を含むだけのごく普通の手が二度受け扱いになってしまうため。
+  // 判定は「受け入れ牌がすでに手牌にあるなら、その2枚は順子の一部」とみなす。
+  // 例: 23m は 1m か 4m が手にあれば順子の一部。24m は 3m が手にあれば順子の一部。
+  function hasDoubleAcceptance(counts) {
+    var partials = [];
+    for (var suit = 0; suit < 3; suit++) {
+      var base = suit * 9;
+      for (var a = base; a < base + 9; a++) {
+        if (counts[a] === 0) continue;
+        for (var gap = 1; gap <= 2; gap++) {
+          var b = a + gap;
+          if (b < base + 9 && counts[b] > 0) {
+            var waits = partialWaits(a, b);
+            var alreadyComplete = waits.some(function (w) { return counts[w] > 0; });
+            if (alreadyComplete) continue; // 順子として埋まっている＝未完成の搭子ではない
+            partials.push({ tiles: [a, b], waits: waits });
+          }
+        }
+      }
+    }
+
+    for (var i = 0; i < partials.length; i++) {
+      for (var j = i + 1; j < partials.length; j++) {
+        var needed = {};
+        partials[i].tiles.concat(partials[j].tiles).forEach(function (t) {
+          needed[t] = (needed[t] || 0) + 1;
+        });
+        var canCoexist = Object.keys(needed).every(function (t) {
+          return counts[Number(t)] >= needed[t];
+        });
+        if (!canCoexist) continue;
+
+        var overlaps = partials[i].waits.some(function (wait) {
+          return partials[j].waits.indexOf(wait) >= 0;
+        });
+        if (overlaps) return true;
+      }
+    }
+    return false;
+  }
+
+  // 正解打牌と手牌全体から、学習者が見落としやすい形を罠型として記録する。
+  function detectEfficiencyTraps(counts14, bestDiscard, discardRows) {
+    var traps = [];
+    var hasIsolatedMiddle = false;
+    for (var t = 0; t < 27; t++) {
+      var n = numberOf(t);
+      if (n >= 3 && n <= 7 && isIsolatedTile(counts14, t)) {
+        hasIsolatedMiddle = true;
+        break;
+      }
+    }
+
+    if (hasIsolatedMiddle && isIsolatedTile(counts14, bestDiscard)) {
+      if (isHonor(bestDiscard)) {
+        traps.push("isolated-honor");
+      } else {
+        var bestNumber = numberOf(bestDiscard);
+        if (bestNumber <= 2 || bestNumber >= 8) traps.push("float-quality");
+      }
+    }
+
+    var pairTiles = [];
+    for (t = 0; t < 34; t++) if (counts14[t] === 2) pairTiles.push(t);
+    if (pairTiles.length === 1) {
+      var bestRow = discardRows.find(function (r) { return r.discard === bestDiscard; });
+      var pairRow = discardRows.find(function (r) { return r.discard === pairTiles[0]; });
+      if (bestRow && pairRow && pairRow.ukeire < bestRow.ukeire) traps.push("only-pair");
+    }
+
+    if (hasDoubleAcceptance(counts14)) traps.push("double-acceptance");
+    return traps;
+  }
+
   // 牌効率問題の出題可否チェック。
   // 受け入れ最大の打牌が、僅差（3枚以内）の対抗打牌に変化ポテンシャルで
   // 大きく劣る局面は「受け入れ枚数だけでは正解と言えない」ため出題しない。
@@ -223,6 +337,8 @@
   // 例: 2m4m5m6m7m 5p6p6p7p 1s2s3s 北白 から 6p切り(受10) vs 北切り(受9) は、
   //     北切りの変化が大きく上回るため出題対象から外れる。
   function efficiencyAnswerIsSound(counts14, keepRows) {
+    if (hasMultipleIsolatedHonors(counts14)) return false;
+
     var bestU = keepRows[0].ukeire;
 
     // 受け入れ同率の候補は変化最大のものが正解になるため、その変化を基準にする
@@ -452,22 +568,38 @@
   // 条件: ツモ前は2シャンテン、打牌後は1シャンテン。
   // 正解 = 1シャンテンに進む打牌のうち、テンパイへの受け入れ枚数が最大の打牌。
   // 最大受け入れが同率の場合は、変化（改良ツモ）の枚数が多い方だけを正解とする。
-  // 受け入れが同じなら変化の多い形の方が期待値で上回るため。変化まで同数なら複数正解。
+  // 受け入れが同じなら変化の多い形の方が期待値で上回るため。変化まで同数なら出題しない。
   // 通常問題（次点と3枚以上差）と高難度問題（次点と1〜2枚差）を半数ずつ出題する。
   // ---------------------------------------------------------------
   var EFFICIENCY_HARD_RATE = 0.5;
+  var EFFICIENCY_TRAP_RATE = 0.5;
+  var EFFICIENCY_TRAP_SEARCH_LIMIT = 120;
+  // 探索の絶対上限。条件を満たす手が見つからないまま無限に回り続けて
+  // 画面が固まることを防ぐための保険で、通常はここまで到達しない。
+  var EFFICIENCY_MAX_ATTEMPTS = 5000;
 
   function generateEfficiencyProblem(difficulty) {
     // テストでは難易度を固定できる。通常の画面からは未指定なので半数ずつ選ばれる。
     var targetDifficulty = difficulty === "hard" || difficulty === "standard"
       ? difficulty
       : (Math.random() < EFFICIENCY_HARD_RATE ? "hard" : "standard");
+    // 半数は罠型を狙い、残り半数は通常形を狙う。見つからない場合は最初の有効問題を返す。
+    var targetHasTrap = Math.random() < EFFICIENCY_TRAP_RATE;
+    var fallback = null;
+    var fallbackAttempt = -1;
 
-    for (var attempt = 0; attempt < 1200; attempt++) {
+    // 1200回を基本上限とするが、有効なフォールバックがまだ無い場合だけ探索を続ける。
+    // これにより、罠型の有無にかかわらず問題オブジェクトを必ず返す。
+    // ただし EFFICIENCY_MAX_ATTEMPTS で必ず打ち切る（無限ループにしない）。
+    for (var attempt = 0; attempt < EFFICIENCY_MAX_ATTEMPTS && (attempt < 1200 || !fallback); attempt++) {
+      // 有効問題を確保した後は追加探索を制限し、罠型が見つからない回でも待たせすぎない。
+      if (fallback && attempt - fallbackAttempt >= EFFICIENCY_TRAP_SEARCH_LIMIT) return fallback;
+
       var wall = newWall();
       var hand = buildStructuredHand(wall);
       if (hand.length !== 14) continue;
       var counts = toCounts(hand);
+      if (hasMultipleIsolatedHonors(counts)) continue;
       var an = analyzeDiscards(counts, null);
       if (an.minShanten !== 1) continue;
       if (an.keep.length < 2) continue; // 候補が1つだけでは問題にならない
@@ -509,8 +641,11 @@
         if (tieWinners.length < bests.length && targetDifficulty === "standard") continue;
         bests = tieWinners;
       }
+      // 変化まで同じ打牌が複数あれば、優劣を説明できないため出題しない。
+      if (bests.length !== 1) continue;
 
-      return {
+      var traps = detectEfficiencyTraps(counts, bests[0].discard, an.all);
+      var problem = {
         hand: split.hand,
         baseHand: split.baseHand,
         drawnTile: split.drawnTile,
@@ -521,10 +656,17 @@
         ukeireGap: ukeireGap,
         bestDiscards: bests.map(function (r) { return r.discard; }),
         analysis: an.keep,
+        traps: traps,
         redFlags: assignRedFives(split.hand),
       };
+      if ((traps.length > 0) === targetHasTrap) return problem;
+      if (!fallback) {
+        fallback = problem;
+        fallbackAttempt = attempt;
+      }
     }
-    return null; // 条件を満たす問題が見つからなかった場合は呼び出し側で再試行できる
+    // 狙った罠有無が見つからなくても、確保済みの有効問題を返して出題を止めない。
+    return fallback;
   }
 
   // ---------------------------------------------------------------
@@ -868,6 +1010,10 @@
     ukeire: ukeire,
     improvementPotential: improvementPotential,
     improvementDetail: improvementDetail,
+    hasMultipleIsolatedHonors: hasMultipleIsolatedHonors,
+    isIsolatedTile: isIsolatedTile,
+    hasDoubleAcceptance: hasDoubleAcceptance,
+    detectEfficiencyTraps: detectEfficiencyTraps,
     efficiencyAnswerIsSound: efficiencyAnswerIsSound,
     analyzeDiscards: analyzeDiscards,
     analyzeChinitsuActions: analyzeChinitsuActions,
@@ -876,6 +1022,7 @@
     evaluatePushFold: evaluatePushFold,
     generateEfficiencyProblem: generateEfficiencyProblem,
     EFFICIENCY_HARD_RATE: EFFICIENCY_HARD_RATE,
+    EFFICIENCY_TRAP_RATE: EFFICIENCY_TRAP_RATE,
     generateChinitsuProblem: generateChinitsuProblem,
     generatePushFoldProblem: generatePushFoldProblem,
     DANGER_RATES: DANGER_RATES,

@@ -48,6 +48,7 @@ function efficiencyProblem() {
     shanten: 1,
     bestDiscards: [7],
     analysis: [{ discard: 7, shanten: 1, ukeire: 4, tiles: [{ tile: 6, count: 4 }] }],
+    traps: [],
     redFlags: new Array(14).fill(false),
   };
 }
@@ -167,6 +168,7 @@ console.log("ok - 清一色UIで打牌と暗槓を区別し、同率なら両方
       { discard: 5, shanten: 1, ukeire: 5, tiles: [{ tile: 6, count: 4 }],
         variation: { total: 0, tiles: [] } },
     ],
+    traps: [],
     redFlags: new Array(14).fill(false),
   };
   const { app } = runAppWith(tieProblem, "tab-eff");
@@ -180,6 +182,34 @@ console.log("ok - 清一色UIで打牌と暗槓を区別し、同率なら両方
     app.innerHTML.includes("受け入れ枚数が同数の候補は、変化（好形へ伸びるツモ）の多い方が正解です。"),
     "タイブレークの理由を解説に表示する"
   );
+  assert.ok(!app.innerHTML.includes("ポイント:"), "罠型が空なら罠の指摘を表示しない");
 }
 
 console.log("ok - 牌効率UIで受け入れ同数は変化タイブレークの結果と理由を表示");
+
+{
+  // 牌効率モードの罠型は、問題に付いた型だけを解説カードへ表示する。
+  const trapProblem = efficiencyProblem();
+  trapProblem.traps = ["isolated-honor", "float-quality", "only-pair", "double-acceptance"];
+  const { app } = runAppWith(trapProblem, "tab-eff");
+  findActionButton(app, "discard", 7).click();
+
+  assert.ok(
+    app.innerHTML.includes("孤立した字牌は受け入れが3枚しかありません。役牌期待で残すと手が狭くなります。"),
+    "孤立字牌の指摘を表示する"
+  );
+  assert.ok(
+    app.innerHTML.includes("孤立牌は3〜7が最も広く受け入れます。端寄りの牌から整理します。"),
+    "浮き牌の質の指摘を表示する"
+  );
+  assert.ok(
+    app.innerHTML.includes("手牌で唯一の対子は雀頭候補です。崩すと面子構成の自由度が下がります。"),
+    "唯一の対子の指摘を表示する"
+  );
+  assert.ok(
+    app.innerHTML.includes("2つの搭子が同じ牌を待っています（二度受け）。見た目のターツ数ほど受け入れは広くありません。"),
+    "二度受けの指摘を表示する"
+  );
+}
+
+console.log("ok - 牌効率UIで問題に付いた罠型の指摘を表示");
