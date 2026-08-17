@@ -272,8 +272,14 @@ for (let i = 0; i < 20; i++) {
     true,
     "生成された問題は出題ガードを満たす"
   );
-  const expectedBest = p.analysis.filter((r) => r.ukeire === bestU).map((r) => r.discard).sort((a, b) => a - b);
-  assert.deepStrictEqual([...p.bestDiscards].sort((a, b) => a - b), expectedBest, "受け入れ最大打牌だけが正解");
+  // 受け入れ最大が同率のときは、変化の枚数が多い打牌だけが正解になる
+  const topRows = p.analysis.filter((r) => r.ukeire === bestU);
+  const maxPot = Math.max(...topRows.map((r) => r.variation.total));
+  const expectedBest = topRows.filter((r) => r.variation.total === maxPot).map((r) => r.discard).sort((a, b) => a - b);
+  assert.deepStrictEqual([...p.bestDiscards].sort((a, b) => a - b), expectedBest, "受け入れ最大かつ変化最大の打牌だけが正解");
+  if (difficulty === "standard") {
+    assert.strictEqual(topRows.length, p.bestDiscards.length, "通常難度では変化タイブレークで不正解になる同数候補を出さない");
+  }
   assert.ok(!p.bestDiscards.includes(p.drawnTile), "ツモ切りでは2シャンテンに戻るため正解にならない");
 
   const second = p.analysis.filter((r) => r.ukeire < bestU);

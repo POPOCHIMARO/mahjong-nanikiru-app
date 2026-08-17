@@ -225,7 +225,7 @@
   function efficiencyAnswerIsSound(counts14, keepRows) {
     var bestU = keepRows[0].ukeire;
 
-    // 同率正解（どれを選んでも正解扱い）の中で最大の変化ポテンシャルを基準にする
+    // 受け入れ同率の候補は変化最大のものが正解になるため、その変化を基準にする
     var bestPot = -1;
     for (var i = 0; i < keepRows.length; i++) {
       var row = keepRows[i];
@@ -238,7 +238,7 @@
 
     for (i = 0; i < keepRows.length; i++) {
       row = keepRows[i];
-      if (row.ukeire === bestU) continue;      // 同率はどちらも正解なので比較不要
+      if (row.ukeire === bestU) continue;      // 同率は変化のタイブレークで決着するため比較不要
       var gap = bestU - row.ukeire;
       if (gap > 3) break;                      // 大差の候補は受け入れ枚数で決着済み
       counts14[row.discard]--;
@@ -451,7 +451,8 @@
   // 牌効率モードの問題生成
   // 条件: ツモ前は2シャンテン、打牌後は1シャンテン。
   // 正解 = 1シャンテンに進む打牌のうち、テンパイへの受け入れ枚数が最大の打牌。
-  // 最大受け入れが同率の場合はすべて正解とする。
+  // 最大受け入れが同率の場合は、変化（改良ツモ）の枚数が多い方だけを正解とする。
+  // 受け入れが同じなら変化の多い形の方が期待値で上回るため。変化まで同数なら複数正解。
   // 通常問題（次点と3枚以上差）と高難度問題（次点と1〜2枚差）を半数ずつ出題する。
   // ---------------------------------------------------------------
   var EFFICIENCY_HARD_RATE = 0.5;
@@ -494,6 +495,20 @@
         r.variation = improvementDetail(counts, r.ukeire);
         counts[r.discard]++;
       });
+
+      // 受け入れ同数のタイブレーク: 変化の多い打牌だけを正解に残す。
+      // 解説表の先頭行が常に正解になるよう、並び順も変化を第2キーにして揃える。
+      an.keep.sort(function (a, b) {
+        return b.ukeire - a.ukeire || b.variation.total - a.variation.total;
+      });
+      if (bests.length > 1) {
+        var maxPot = -1;
+        bests.forEach(function (r) { if (r.variation.total > maxPot) maxPot = r.variation.total; });
+        var tieWinners = bests.filter(function (r) { return r.variation.total === maxPot; });
+        // 変化でしか差が付かない問題は受け入れ枚数差0の実質最難関なので、通常難度では出題しない
+        if (tieWinners.length < bests.length && targetDifficulty === "standard") continue;
+        bests = tieWinners;
+      }
 
       return {
         hand: split.hand,

@@ -65,7 +65,7 @@ function makeElement(id) {
   };
 }
 
-function runAppWith(problem) {
+function runAppWith(problem, tab = "tab-chin") {
   const elements = {};
   const app = makeElement("app");
   app.actionButtons = [];
@@ -99,14 +99,19 @@ function runAppWith(problem) {
     setItem(key, value) { storage[key] = value; },
   };
   const testEngine = Object.assign({}, Engine, {
-    generateEfficiencyProblem: efficiencyProblem,
+    generateEfficiencyProblem: tab === "tab-eff" ? () => problem : efficiencyProblem,
     generateChinitsuProblem: () => problem,
   });
   const window = { Engine: testEngine, location: { search: "" } };
   const source = fs.readFileSync(path.join(__dirname, "..", "app.js"), "utf8");
-  vm.runInNewContext(source, { window, document, localStorage, console });
+  // schedulePrefetch（解説表示後の先読み）が使うタイマーはテストでは発火させない
+  vm.runInNewContext(source, {
+    window, document, localStorage, console,
+    setTimeout: () => 0,
+    clearTimeout: () => {},
+  });
 
-  elements["tab-chin"].click();
+  elements[tab].click();
   return { app, storage };
 }
 
@@ -139,3 +144,42 @@ function findActionButton(app, type, tile) {
 }
 
 console.log("ok - 清一色UIで打牌と暗槓を区別し、同率なら両方正解");
+
+{
+  // 牌効率モード: 受け入れ同数（8m切り・1m切りとも8枚）だが変化で8m切りだけが正解のケース。
+  // 同数の候補を選んでも不正解になり、解説にタイブレークの理由が表示されることを確認する。
+  const hand = parseManzu("11223344556678");
+  const tieProblem = {
+    hand,
+    baseHand: hand.slice(0, 13),
+    drawnTile: hand[13],
+    fromShanten: 2,
+    toShanten: 1,
+    shanten: 1,
+    difficulty: "hard",
+    ukeireGap: 3,
+    bestDiscards: [7],
+    analysis: [
+      { discard: 7, shanten: 1, ukeire: 8, tiles: [{ tile: 6, count: 4 }, { tile: 8, count: 4 }],
+        variation: { total: 6, tiles: [{ tile: 0, count: 3 }, { tile: 1, count: 3 }] } },
+      { discard: 0, shanten: 1, ukeire: 8, tiles: [{ tile: 6, count: 4 }, { tile: 8, count: 4 }],
+        variation: { total: 2, tiles: [{ tile: 2, count: 2 }] } },
+      { discard: 5, shanten: 1, ukeire: 5, tiles: [{ tile: 6, count: 4 }],
+        variation: { total: 0, tiles: [] } },
+    ],
+    redFlags: new Array(14).fill(false),
+  };
+  const { app } = runAppWith(tieProblem, "tab-eff");
+  const tiedLoser = findActionButton(app, "discard", 0);
+  assert.ok(tiedLoser, "受け入れ同数の1m切りボタンが表示される");
+  tiedLoser.click();
+  assert.ok(app.innerHTML.includes("× 不正解"), "受け入れ同数でも変化が少ない打牌は不正解");
+  assert.ok(app.innerHTML.includes("8萬切り"), "変化最大の8m切りを正解と表示する");
+  assert.ok(!app.innerHTML.includes("8萬切り または"), "同数の候補を複数正解として表示しない");
+  assert.ok(
+    app.innerHTML.includes("受け入れ枚数が同数の候補は、変化（好形へ伸びるツモ）の多い方が正解です。"),
+    "タイブレークの理由を解説に表示する"
+  );
+}
+
+console.log("ok - 牌効率UIで受け入れ同数は変化タイブレークの結果と理由を表示");

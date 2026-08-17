@@ -346,6 +346,17 @@
       // 牌効率モードのみ、候補打牌ごとの「変化」（シャンテンは進まないが
       // 引いて最良の打牌をすると受け入れが伸びるツモ）の内訳を持つ
       var hasVariation = mode === "eff" && !!(p.analysis[0] && p.analysis[0].variation);
+      // 受け入れ同数の候補が変化のタイブレークで不正解になった問題では、その理由を添える
+      if (hasVariation) {
+        var bestUkeire = p.analysis[0].ukeire;
+        var tieBroken = p.analysis.some(function (r) {
+          var a = rowAction(r);
+          return r.ukeire === bestUkeire && !isBestAction(a.type, a.tile);
+        });
+        if (tieBroken) {
+          answerReason += "受け入れ枚数が同数の候補は、変化（好形へ伸びるツモ）の多い方が正解です。";
+        }
+      }
       var expl =
         resultBanner(ok) +
         '<div class="text-sm mb-3">正解は <span class="font-bold text-amber-300">' +
@@ -370,7 +381,7 @@
         '<div class="text-xs text-emerald-300/70 mt-3">※ ' + toLabel + "に進む" +
         (mode === "chin" ? "打牌・暗槓" : "打牌") + "の中で受け入れ枚数を比較しています。" +
         (mode === "chin" ? "暗槓は槓子を固定面子として別計算し、槓した4枚と萬子以外は受け入れに数えません。" : "") +
-        (hasVariation ? "「変化」は、テンパイには進まないが引くと最良の打牌で受け入れが2枚以上伸びるツモの残り枚数です。受け入れが僅差のときは変化の多い形を残すのが実戦的です。" : "") +
+        (hasVariation ? "「変化」は、テンパイには進まないが引くと最良の打牌で受け入れが2枚以上伸びるツモの残り枚数です。受け入れ枚数が同数のときは、変化の多い方を正解としています。" : "") +
         "</div>" +
         nextButtonHTML();
       html += card(expl);
