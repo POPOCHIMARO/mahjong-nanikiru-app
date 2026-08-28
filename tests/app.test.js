@@ -102,6 +102,7 @@ function runAppWith(problem, tab = "tab-chin") {
   const testEngine = Object.assign({}, Engine, {
     generateEfficiencyProblem: tab === "tab-eff" ? () => problem : efficiencyProblem,
     generateChinitsuProblem: () => problem,
+    generatePushFoldProblem: () => problem,
   });
   const window = { Engine: testEngine, location: { search: "" } };
   const source = fs.readFileSync(path.join(__dirname, "..", "app.js"), "utf8");
@@ -213,3 +214,38 @@ console.log("ok - 牌効率UIで受け入れ同数は変化タイブレークの
 }
 
 console.log("ok - 牌効率UIで問題に付いた罠型の指摘を表示");
+
+{
+  // 押し引きモードは、受け入れ最大ではなく候補別EV最大とシャンテン遷移を表示する。
+  const hand = parseManzu("11223344556678");
+  const redFlags = new Array(14).fill(false);
+  const pushProblem = {
+    hand,
+    baseHand: hand.slice(0, 13),
+    drawnTile: hand[13],
+    fromShanten: 1,
+    toShanten: 0,
+    pushShanten: 0,
+    turn: 8,
+    river: [{ tile: 7, riichi: true }],
+    selfIsDealer: false,
+    oppIsDealer: false,
+    doraIndicator: 0,
+    dora: 1,
+    doraCount: 2,
+    akaCount: 0,
+    redFlags,
+    ownValue: 6000,
+    pushTile: 0,
+    pushDiscardsRed: false,
+    pushUkeire: 8,
+    foldTile: 7,
+  };
+  const { app } = runAppWith(pushProblem, "tab-push");
+  assert.ok(app.innerHTML.includes("押しEV最大の一打"), "押し引きUIは候補別EV最大と表示する");
+  assert.ok(app.innerHTML.includes("ツモ前1シャンテン → テンパイ"), "ツモ前から打牌後へのシャンテン遷移を表示する");
+  assert.ok(app.innerHTML.includes("最善打牌後の打点期待"), "打牌後に残る打点期待であることを表示する");
+  assert.strictEqual((app.innerHTML.match(/tile-focus/g) || []).length, 1, "実際に切る物理牌1枚だけを枠表示する");
+}
+
+console.log("ok - 押し引きUIで候補別EV最大・シャンテン遷移・打牌後打点を表示");

@@ -216,13 +216,24 @@ check("完全イーシャンテン形", shantenOf("123m456m789m1245p"), 1);
   check("生牌の字牌", Engine.classifyDanger(33, river, visible), "honor_live"); // 中
 }
 {
+  // 中央牌は片側だけスジなら片スジ、両側が通って初めて中スジになる。
+  const river = new Array(34).fill(0);
+  const visible = new Array(34).fill(0);
+  river[0] = 1; // 1mが現物 → 4mの片側だけスジ
+  check("1mだけ切れている4mは片スジ", Engine.classifyDanger(3, river, visible), "suji_456");
+  river[6] = 1; // 7mも現物 → 4mの両側がスジ
+  check("1mと7mが切れている4mは中スジ", Engine.classifyDanger(3, river, visible), "double_suji_middle");
+}
+{
   // ワンチャンス: 8pが3枚見えていると9pの両面待ち(78p)が残り1組 → one_chance
   const river = new Array(34).fill(0);
   const visible = new Array(34).fill(0);
   visible[16] = 3; // 8p 3枚見え
-  check("8p3枚見えの9pはワンチャンス", Engine.classifyDanger(17, river, visible), "one_chance");
+  check("8p3枚見えの9pはワンチャンス", Engine.classifyDanger(17, river, visible), "one_chance_19");
   visible[16] = 4; // 8p 4枚見え
-  check("8p4枚見えの9pはノーチャンス", Engine.classifyDanger(17, river, visible), "no_chance");
+  check("8p4枚見えの9pはノーチャンス", Engine.classifyDanger(17, river, visible), "no_chance_19");
+  river[14] = 1; // 6p切れで9pはスジでも、4枚壁を優先する
+  check("壁とスジが重なる9pはノーチャンスを優先", Engine.classifyDanger(17, river, visible), "no_chance_19");
 }
 
 // --- 押し引きEVモデルの妥当性（傾向チェック） ---
@@ -237,6 +248,77 @@ check("完全イーシャンテン形", shantenOf("123m456m789m1245p"), 1);
   const safer = Engine.evaluatePushFold({ turn: 10, ukeire: 12, dangerRate: 2.0, ownValue: 5000, oppIsDealer: false });
   const risker = Engine.evaluatePushFold({ turn: 10, ukeire: 12, dangerRate: 5.7, ownValue: 5000, oppIsDealer: false });
   check("危険度が低いほど押しEVが高い", safer.evPush > risker.evPush, true);
+  const oneShanten = Engine.evaluatePushFold({ turn: 9, shanten: 1, ukeire: 12, dangerRate: 4.3, ownValue: 6000, oppIsDealer: false });
+  const tenpai = Engine.evaluatePushFold({ turn: 9, shanten: 0, ukeire: 12, dangerRate: 4.3, ownValue: 6000, oppIsDealer: false });
+  check("同条件ならテンパイ打牌は1シャンテン維持より和了率が高い", tenpai.pWin > oneShanten.pWin, true);
+  check("同条件ならテンパイ打牌は1シャンテン維持より押しEVが高い", tenpai.evPush > oneShanten.evPush, true);
+
+  const fastLowValue = Engine.evaluatePushFold({ turn: 8, shanten: 1, ukeire: 20, dangerRate: 4.3, ownValue: 4500, oppIsDealer: false });
+  const slowLowValue = Engine.evaluatePushFold({ turn: 8, shanten: 1, ukeire: 12, dangerRate: 4.3, ownValue: 4500, oppIsDealer: false });
+  const slowHighValue = Engine.evaluatePushFold({ turn: 8, shanten: 1, ukeire: 12, dangerRate: 4.3, ownValue: 7500, oppIsDealer: false });
+  check("同打点なら受け入れが広い候補のEVが高い", fastLowValue.evPush > slowLowValue.evPush, true);
+  check("打点差が十分なら受け入れ8枚差を逆転できる", slowHighValue.evPush > fastLowValue.evPush, true);
+}
+
+// --- 押し候補の全件EV比較（速度・打点・危険度・赤あり） ---
+function pushContext(hand, redFlags, dora = 0) {
+  const riverCounts = new Array(34).fill(0);
+  const outsideCounts = new Array(34).fill(0);
+  const counts = Engine.toCounts(hand);
+  const visibleCounts = counts.slice();
+  return {
+    hand, redFlags, dora, riverCounts, outsideCounts, visibleCounts,
+    turn: 8, oppIsDealer: false, selfIsDealer: false,
+  };
+}
+
+{
+  const base = parse("123m456m78p12s115z");
+  assert.strictEqual(Engine.shanten(Engine.toCounts(base)), 1, "固定手牌のツモ前は1シャンテン");
+
+  const staysOne = base.concat(parse("5p"));
+  const oneRows = Engine.analyzePushCandidates(pushContext(staysOne, new Array(14).fill(false)));
+  assert.ok(oneRows.length >= 2, "1→1の比較候補が複数ある");
+  assert.ok(oneRows.every((row) => row.shanten === 1), "1→1問題は全押し候補が1シャンテンを維持");
+
+  const reachesTenpai = base.concat(parse("3s"));
+  const tenpaiRows = Engine.analyzePushCandidates(pushContext(reachesTenpai, new Array(14).fill(false)));
+  assert.ok(tenpaiRows.some((row) => row.shanten === 0), "1→テンパイの候補がある");
+  assert.ok(tenpaiRows.every((row) => row.shanten === 0 || row.shanten === 1), "テンパイ可能でも1シャンテン維持候補を同時比較する");
+  for (const row of tenpaiRows) {
+    assert.strictEqual(
+      row.category,
+      Engine.classifyDanger(row.discard, new Array(34).fill(0), Engine.toCounts(reachesTenpai)),
+      "テンパイへ進む各打牌も、その牌固有の危険度を再計算する"
+    );
+  }
+}
+
+{
+  // 5pが手牌に1枚だけあり、それが赤5。5p切りは赤1枚を失い、白切りは赤を保持する。
+  const hand = parse("123m456m578p12s115z");
+  const redFlags = new Array(hand.length).fill(false);
+  redFlags[hand.indexOf(13)] = true; // 5p
+  const rows = Engine.analyzePushCandidates(pushContext(hand, redFlags, 0)); // ドラは1m
+  const discardRed = rows.find((row) => row.discard === 13);
+  const keepRed = rows.find((row) => row.discard === 31); // 白
+  assert.ok(discardRed && keepRed, "赤5を切る候補と残す候補を比較できる");
+  assert.strictEqual(discardRed.discardsRed, true, "唯一の赤5を切る候補として記録する");
+  assert.strictEqual(discardRed.akaCount, 0, "赤5切り後の赤枚数は0");
+  assert.strictEqual(keepRed.akaCount, 1, "他牌切りでは赤5を保持する");
+  assert.ok(keepRed.ownValue > discardRed.ownValue, "赤5を残す候補の打点期待が高い");
+}
+{
+  // 同種の通常5と赤5があれば、通常5を切って赤を残す。
+  const hand = parse("55m123p456p789s112z");
+  const redFlags = new Array(hand.length).fill(false);
+  redFlags[0] = true;
+  assert.strictEqual(Engine.redCountAfterDiscard(hand, redFlags, 4), 1, "5mが2枚なら通常5を切って赤5を保持する");
+
+  // 赤5自身が通常ドラでもある場合、通常ドラ1枚＋赤ドラ1枚として数える。
+  const afterCounts = Engine.toCounts(parse("5p123m456m789s11z"));
+  const value = Engine.estimateOwnValue(afterCounts, 13, 1, false);
+  assert.strictEqual(value.doraCount, 2, "赤5が通常ドラなら2翻分として数える");
 }
 
 // --- 赤5（アカドラ）の割り当て ---
@@ -261,17 +343,12 @@ check("完全イーシャンテン形", shantenOf("123m456m789m1245p"), 1);
   check("5系の牌が無ければ赤5は0枚", redAt.filter(Boolean).length, 0);
 }
 {
-  // 押し引き問題にも赤5情報が付与され、akaCountとredFlagsの整合性が取れている
-  let found = false;
-  for (let i = 0; i < 200 && !found; i++) {
-    const p = Engine.generatePushFoldProblem();
-    if (p.akaCount > 0) {
-      found = true;
-      const actual = p.redFlags.filter(Boolean).length;
-      check("押し引き問題のakaCountはredFlagsの実数と一致", actual, p.akaCount);
-    }
-  }
-  assert.ok(found, "200回中に赤5を含む問題が最低1回は出る（確率的におかしければ検出）");
+  // 生成問題の赤5情報は、赤が0枚の局面を含め常にフラグ実数と一致する。
+  // 赤ありの候補別打点は上の固定赤5テストで決定的に検証する。
+  const p = Engine.generatePushFoldProblem();
+  assert.ok(p, "赤5情報を持つ押し引き問題が生成できる");
+  const actual = p.redFlags.filter(Boolean).length;
+  check("押し引き問題のakaCountはredFlagsの実数と一致", actual, p.akaCount);
   passed++;
   console.log("ok - 押し引き問題への赤5反映");
 }
@@ -405,7 +482,11 @@ for (let i = 0; i < 20; i++) {
   const p = Engine.generatePushFoldProblem();
   assert.ok(p, "押し引き問題が生成できる");
   assert.strictEqual(p.hand.length, 14, "手牌は14枚");
-  assert.strictEqual(Engine.shanten(Engine.toCounts(p.hand)), 1, "全問イーシャンテン");
+  assert.strictEqual(p.baseHand.length, 13, "ツモ前の手牌は13枚");
+  assert.deepStrictEqual(p.hand, p.baseHand.concat([p.drawnTile]), "14枚目は実際のツモ牌");
+  assert.strictEqual(Engine.shanten(Engine.toCounts(p.baseHand)), 1, "全問ツモ前は1シャンテン");
+  assert.ok([0, 1].includes(p.toShanten), "打牌後はテンパイまたは1シャンテン");
+  assert.strictEqual(p.pushShanten, p.toShanten, "勝負牌の打牌後シャンテンを保持する");
   const riverCounts = Engine.toCounts(p.river.map((r) => r.tile));
   assert.strictEqual(riverCounts[p.pushTile], 0, "勝負牌は現物ではない");
   assert.ok(riverCounts[p.foldTile] > 0, "オリ牌は現物");
@@ -413,23 +494,46 @@ for (let i = 0; i < 20; i++) {
   assert.ok(["push", "fold"].includes(p.answer), "答えはpush/fold");
   assert.ok(Math.abs(p.ev.diff) >= 300, "EV差300点以上の局面のみ出題");
 
-  // 無理押しガード: イーシャンテンを保てる打牌の中に、ほぼ安全な牌
-  // （現物・字牌・筋など放銃率3%未満）が残っている牌姿は出題されない。
-  // 安全な逃げ道があるのに無スジを切らせる二択は実態に即さないため。
+  // 全押し候補を再計算し、問題の勝負牌が受け入れ枚数ではなくEV最大であることを確認する。
   const counts = Engine.toCounts(p.hand);
   const outside = riverCounts.slice();
   outside[p.doraIndicator]++;
   const visible = counts.map((c, t) => c + outside[t]);
   const an = Engine.analyzeDiscards(counts, outside);
-  const keepRates = an.keep.map(
-    (row) => Engine.DANGER_RATES[Engine.classifyDanger(row.discard, riverCounts, visible)].rate
-  );
-  assert.ok(keepRates.every((r) => r >= 3.0), "手を保つ打牌はすべて放銃率3%以上（安全な逃げ道なし）");
+  const candidates = Engine.analyzePushCandidates({
+    hand: p.hand,
+    redFlags: p.redFlags,
+    dora: p.dora,
+    riverCounts,
+    outsideCounts: outside,
+    visibleCounts: visible,
+    turn: p.turn,
+    oppIsDealer: p.oppIsDealer,
+    selfIsDealer: p.selfIsDealer,
+  });
+  assert.ok(candidates.length >= 2, "比較可能な押し候補が2種以上ある");
+  assert.ok(candidates.every((row) => row.shanten === 0 || row.shanten === 1), "2シャンテン候補は攻撃候補から除外する");
+  assert.strictEqual(p.pushTile, candidates[0].discard, "勝負牌は候補別押しEVが最大の打牌");
+  assert.strictEqual(p.ev.evPush, candidates[0].ev.evPush, "表示する押しEVは最大候補の再計算値と一致");
+  assert.strictEqual(p.pushUkeire, candidates[0].ukeire, "勝負牌固有の受け入れ枚数を保持する");
+  assert.strictEqual(p.pushDoraCount, candidates[0].doraCount, "打牌後に残る通常ドラ・赤ドラ枚数が一致");
+  assert.strictEqual(p.pushAkaCount, candidates[0].akaCount, "打牌後に残る赤5枚数が一致");
+  assert.strictEqual(p.dangerRate, candidates[0].dangerRate, "勝負牌固有の危険度が一致");
+  assert.strictEqual(p.category, candidates[0].category, "勝負牌固有の危険度分類が一致");
+  assert.strictEqual(p.candidateEvGap, candidates[0].ev.evPush - candidates[1].ev.evPush, "次点候補とのEV差が一致");
+  assert.ok(p.candidateEvGap >= 75, "押し候補の1位と2位はEV75点以上差");
   assert.ok(p.dangerRate >= 3.0, "勝負牌は危険押し相当（放銃率3%以上）");
-  assert.strictEqual(p.pushUkeire, an.keep[0].ukeire, "勝負牌は受け入れ最大");
-  assert.ok(p.safestKeepRate >= 3.0, "safestKeepRateもガード条件を満たす");
+  assert.ok(
+    an.all.some((row) => row.discard === p.pushTile && (row.shanten === 0 || row.shanten === 1)),
+    "勝負牌はテンパイまたは1シャンテンを保つ攻撃候補に含まれる"
+  );
+  assert.ok(p.ev.pWin + p.ev.pDeal <= 1, "和了・放銃の排他的確率は合計1以下");
+
+  if (p.toShanten === 0) {
+    assert.strictEqual(candidates[0].shanten, 0, "1→テンパイではテンパイ打牌の危険度とEVを使用する");
+  }
 }
 passed++;
-console.log("ok - 押し引き問題の生成（20回の形式＋無理押しガードチェック）");
+console.log("ok - 押し引き問題の生成（20回の形式＋全候補EV最大・赤あり・危険度再計算）");
 
 console.log(`\nすべて成功 (${passed} 件)`);

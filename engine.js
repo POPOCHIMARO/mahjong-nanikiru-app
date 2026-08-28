@@ -742,7 +742,13 @@
     suji_19: { label: "スジの1・9", rate: 2.2 },
     suji_28: { label: "スジの2・8", rate: 3.1 },
     suji_37: { label: "スジの3・7", rate: 3.8 },
+    suji_456: { label: "片スジの4・5・6", rate: 4.1 },
     double_suji_middle: { label: "中スジの4・5・6", rate: 2.0 },
+    one_chance_19: { label: "ワンチャンスの1・9", rate: 3.0 },
+    one_chance_28: { label: "ワンチャンスの2・8", rate: 3.0 },
+    no_chance_19: { label: "ノーチャンスの1・9", rate: 2.2 },
+    no_chance_28: { label: "ノーチャンスの2・8", rate: 2.2 },
+    // 旧APIとの互換用。新しい分類結果では19/28別のカテゴリを返す。
     one_chance: { label: "ワンチャンスの無スジ", rate: 3.0 },
     no_chance: { label: "ノーチャンスの無スジ", rate: 2.2 },
     non_suji_19: { label: "無スジの1・9", rate: 3.4 },
@@ -766,32 +772,27 @@
     var n = numberOf(tile);
     var suitBase = Math.floor(tile / 9) * 9;
 
+    // 壁（ワンチャンス/ノーチャンス）はVault解析と同じく外側1/2/8/9だけを判定し、
+    // スジより先に採用する。1/2は1つ内側、8/9も1つ内側の見え枚数を見る。
+    var wallNeighbor = -1;
+    if (n === 1 || n === 2) wallNeighbor = tile + 1;
+    if (n === 8 || n === 9) wallNeighbor = tile - 1;
+    if (wallNeighbor >= 0) {
+      var wallSeen = visibleCounts[wallNeighbor];
+      var wallBand = (n === 1 || n === 9) ? "19" : "28";
+      if (wallSeen >= 4) return "no_chance_" + wallBand;
+      if (wallSeen === 3) return "one_chance_" + wallBand;
+    }
+
     // スジ判定: 1-3はn+3、7-9はn-3が河にあればスジ。4-6は両側必要（中スジ）
     var sujiLow = n >= 4 ? riverCounts[suitBase + (n - 3) - 1] > 0 : true;
     var sujiHigh = n <= 6 ? riverCounts[suitBase + (n + 3) - 1] > 0 : true;
-    var isSuji = (n <= 3 && sujiHigh) || (n >= 7 && sujiLow) || (n >= 4 && n <= 6 && sujiLow && sujiHigh);
+    var isSuji = (n <= 3 && sujiHigh) || (n >= 7 && sujiLow) || (n >= 4 && n <= 6 && (sujiLow || sujiHigh));
     if (isSuji) {
-      if (n >= 4 && n <= 6) return "double_suji_middle";
+      if (n >= 4 && n <= 6) return sujiLow && sujiHigh ? "double_suji_middle" : "suji_456";
       if (n === 1 || n === 9) return "suji_19";
       if (n === 2 || n === 8) return "suji_28";
       return "suji_37";
-    }
-
-    // 壁（ワンチャンス/ノーチャンス）判定:
-    // この牌を両面で待つのに必要な隣接牌が4枚見え→ノーチャンス、3枚見え→ワンチャンス
-    var blocks = []; // この牌をロン牌にする両面ターツの構成牌ペア
-    if (n >= 3) blocks.push([suitBase + n - 3, suitBase + n - 2]); // (n-2,n-1)待ち
-    if (n <= 7) blocks.push([suitBase + n, suitBase + n + 1]);     // (n+1,n+2)待ち
-    if (blocks.length > 0) {
-      var worst = 0; // 各ブロックの「最も見えている構成牌」の最小値を評価
-      var minSeen = 4;
-      for (var i = 0; i < blocks.length; i++) {
-        var seenMax = Math.max(visibleCounts[blocks[i][0]], visibleCounts[blocks[i][1]]);
-        if (seenMax < minSeen) minSeen = seenMax;
-      }
-      worst = minSeen;
-      if (worst >= 4) return "no_chance";
-      if (worst === 3) return "one_chance";
     }
 
     if (n === 1 || n === 9) return "non_suji_19";
@@ -802,24 +803,46 @@
 
   // ---------------------------------------------------------------
   // 押し引きEVモデル（簡易・局収支ベースの概算）
-  // 「イーシャンテンから危険牌を押して和了に向かう」vs「現物を切ってベタオリ」
-  // の局収支期待値を比較する。定数は下記を根拠にした概算:
+  // 打牌候補ごとに速度・打点・危険度を計算し、候補同士とベタオリを比較する。
+  // 定数は統計値そのものではなく、下記の傾向を一つの尺度で比較するための近似:
   //  - 放銃率: DANGER_RATES（科学する麻雀系の統計値）
   //  - リーチ平均打点: 子5300 / 親7700
-  //  - vault研究ノート「Mリーグ対リーチ押し率」: テンパイ88% / 1シャンテン78%
+  //  - vault研究ノート「イーシャンテン危険牌押し条件」:
+  //    受け入れ・良形率・ドラ・親子・巡目を分けて評価する必要がある
   // ---------------------------------------------------------------
   function evaluatePushFold(p) {
-    // p: { turn, ukeire, dangerRate(%), ownValue, oppIsDealer }
-    var remain = 18 - p.turn; // 残りツモ回数の目安
+    // p: { turn, shanten(0|1), ukeire, dangerRate(%), ownValue, oppIsDealer }
+    var remain = Math.max(1, 18 - p.turn); // 自分に残るツモ回数の目安
+    var afterShanten = p.shanten === 0 ? 0 : 1; // 旧APIは1シャンテン扱い
 
-    // 押した場合の自分の和了率（イーシャンテン・巡目と受け入れで概算）
-    var pWin = 0.018 * remain * (0.5 + p.ukeire / 48);
-    pWin = Math.min(0.40, Math.max(0.03, pWin));
+    // 受け入れを約70枚の未知牌に対する抽選として扱う。
+    // テンパイは次の有効牌が和了牌、1シャンテンは有効牌を引いた後に
+    // もう一段階必要なので、同じ受け入れでも和了率を明確に分ける。
+    var effectiveRate = Math.min(0.35, Math.max(0, p.ukeire) / 70);
+    var pReachEffective = 1 - Math.pow(1 - effectiveRate, remain);
+    var pHandWin;
+    if (afterShanten === 0) {
+      pHandWin = pReachEffective * 0.62;
+      pHandWin = Math.min(0.58, Math.max(0.04, pHandWin));
+    } else {
+      // 対リーチの1シャンテンは、有効牌を引いてもそこから相手より先に
+      // 和了する必要がある。研究ノートの「無筋1シャンテンは平均マイナス」
+      // という傾向に合わせ、テンパイ後の先着率を保守的に置く。
+      var winAfterAdvance = Math.min(0.24, 0.08 + 0.010 * remain);
+      pHandWin = pReachEffective * winAfterAdvance;
+      pHandWin = Math.min(0.34, Math.max(0.02, pHandWin));
+    }
 
-    // この牌の放銃率 + 押し続けた場合の追加放銃リスク
+    // 現在の打牌で放銃すれば和了機会は消えるので、現在牌が通る確率を和了率に掛ける。
     var pNow = p.dangerRate / 100;
-    var pFuture = Math.min(0.18, 0.023 * remain);
-    var pDeal = pNow + (1 - pNow) * pFuture;
+    var pWin = (1 - pNow) * pHandWin;
+
+    // 現在牌が通り、かつ先に和了しなかった場合の追加放銃リスク。
+    // テンパイは手が完成しているため、1シャンテンより追加の押し回数を少なく見積もる。
+    var pFuture = afterShanten === 0
+      ? Math.min(0.14, 0.014 * remain)
+      : Math.min(0.20, 0.022 * remain);
+    var pDeal = pNow + (1 - pNow) * (1 - pHandWin) * pFuture;
 
     // リーチの和了率（巡目が深いほど残り抽選が減る）
     var pOppWin = Math.min(0.52, 0.045 * remain);
@@ -829,10 +852,11 @@
 
     // 押しEV = 和了収入 − 放銃失点 − (どちらも和了しない間の)ツモられ失点
     var winGain = p.ownValue + 1000; // 供託リーチ棒込み
+    var unresolved = Math.max(0, 1 - pWin - pDeal);
     var evPush =
       pWin * winGain -
       pDeal * dealLoss -
-      (1 - pWin - pDeal) * (pOppWin * 0.85) * 0.4 * tsumoPay;
+      unresolved * (pOppWin * 0.85) * 0.4 * tsumoPay;
 
     // オリEV = ツモられ失点のみ（放銃はほぼゼロ）+ テンパイ料などの機会損失
     var evFold = -(pOppWin * 0.4 * tsumoPay) - 300;
@@ -841,6 +865,7 @@
       pWin: pWin,
       pDeal: pDeal,
       pOppWin: pOppWin,
+      shanten: afterShanten,
       dealLoss: dealLoss,
       evPush: Math.round(evPush),
       evFold: Math.round(evFold),
@@ -849,25 +874,112 @@
     };
   }
 
+  // 指定の牌種を1枚切った後に残る赤5枚数を返す。
+  // 同じ5が複数あれば通常牌を切って赤5を残すのが常に有利なので、その選択を採用する。
+  function redCountAfterDiscard(hand, redFlags, discard) {
+    var redCount = redFlags.filter(function (r) { return r; }).length;
+    var copies = 0;
+    var hasRed = false;
+    for (var i = 0; i < hand.length; i++) {
+      if (hand[i] !== discard) continue;
+      copies++;
+      if (redFlags[i]) hasRed = true;
+    }
+    if (hasRed && copies === 1) redCount--;
+    return redCount;
+  }
+
+  function discardsRedFive(hand, redFlags, discard) {
+    var before = redFlags.filter(function (r) { return r; }).length;
+    return redCountAfterDiscard(hand, redFlags, discard) < before;
+  }
+
+  // 現在の簡易打点モデル。通常ドラと赤ドラはどちらも1枚分として加算し、
+  // 赤5が通常ドラでもある場合は2枚分になる。親は子の1.5倍で評価する。
+  function estimateOwnValue(countsAfterDiscard, dora, akaCount, selfIsDealer) {
+    var doraCount = countsAfterDiscard[dora] + akaCount;
+    var childValue = Math.min(12000, 4500 + 1500 * doraCount);
+    return {
+      doraCount: doraCount,
+      ownValue: Math.round(childValue * (selfIsDealer ? 1.5 : 1)),
+    };
+  }
+
+  // ツモ前1シャンテンの手から、ツモ後にテンパイまたは1シャンテンを保つ全打牌を
+  // 同じEVモデルで比較する。テンパイ可能でも、安全な1シャンテン維持が高EVに
+  // なる場合があるため、最小シャンテンの候補だけに先に絞らない。
+  function analyzePushCandidates(p) {
+    var counts = toCounts(p.hand);
+    var discardAnalysis = analyzeDiscards(counts, p.outsideCounts);
+    if (discardAnalysis.minShanten !== 0 && discardAnalysis.minShanten !== 1) return [];
+    var candidates = discardAnalysis.all.filter(function (row) {
+      return row.shanten === 0 || row.shanten === 1;
+    }).map(function (row) {
+      var category = classifyDanger(row.discard, p.riverCounts, p.visibleCounts);
+      var dangerRate = DANGER_RATES[category].rate;
+      var afterCounts = counts.slice();
+      afterCounts[row.discard]--;
+      var akaCount = redCountAfterDiscard(p.hand, p.redFlags, row.discard);
+      var value = estimateOwnValue(afterCounts, p.dora, akaCount, p.selfIsDealer);
+      var ev = evaluatePushFold({
+        turn: p.turn,
+        shanten: row.shanten,
+        ukeire: row.ukeire,
+        dangerRate: dangerRate,
+        ownValue: value.ownValue,
+        oppIsDealer: p.oppIsDealer,
+      });
+      return {
+        discard: row.discard,
+        shanten: row.shanten,
+        ukeire: row.ukeire,
+        tiles: row.tiles,
+        category: category,
+        categoryLabel: DANGER_RATES[category].label,
+        dangerRate: dangerRate,
+        discardsRed: discardsRedFive(p.hand, p.redFlags, row.discard),
+        akaCount: akaCount,
+        doraCount: value.doraCount,
+        ownValue: value.ownValue,
+        ev: ev,
+      };
+    });
+
+    candidates.sort(function (a, b) {
+      if (b.ev.evPush !== a.ev.evPush) return b.ev.evPush - a.ev.evPush;
+      if (a.dangerRate !== b.dangerRate) return a.dangerRate - b.dangerRate;
+      return a.discard - b.discard;
+    });
+    return candidates;
+  }
+
   // ---------------------------------------------------------------
   // 押し引きモードの問題生成
-  // 他家リーチに対し、イーシャンテンを維持する打牌（危険牌）を押すか、
+  // 他家リーチに対し、テンパイまたはイーシャンテンを保つ打牌（危険牌）を押すか、
   // 現物を切ってオリるかを問う。正解はEVの高い方。
   // ---------------------------------------------------------------
-  function generateRiver(wall, turn, ownCounts) {
+  function generateRiver(wall, turn, ownCounts, requiredGenbutsu, forbiddenGenbutsu) {
     // リーチ者の河を巡目分だけ作る。序盤は字牌・端牌寄り、リーチ後はランダム
     var len = turn;
     var riichiIndex = 3 + randInt(Math.max(1, Math.min(4, len - 4))); // 4〜7巡目あたりで宣言
     var river = [];
     for (var i = 0; i < len; i++) {
       var early = i < riichiIndex;
-      var t = drawWeighted(wall, function (x) {
-        if (isHonor(x)) return early ? 5 : 0.7;
-        var n = numberOf(x);
-        if (n === 1 || n === 9) return early ? 3 : 1;
-        if (n === 2 || n === 8) return early ? 1.2 : 1;
-        return early ? 0.5 : 1.3;
-      });
+      var t;
+      if (i === 0 && requiredGenbutsu >= 0) {
+        if (!drawTile(wall, requiredGenbutsu)) return null;
+        t = requiredGenbutsu;
+      } else {
+        t = drawWeighted(wall, function (x) {
+          // 攻撃候補そのものを現物にすると危険牌勝負にならない。
+          if (forbiddenGenbutsu && forbiddenGenbutsu[x]) return 0;
+          if (isHonor(x)) return early ? 5 : 0.7;
+          var n = numberOf(x);
+          if (n === 1 || n === 9) return early ? 3 : 1;
+          if (n === 2 || n === 8) return early ? 1.2 : 1;
+          return early ? 0.5 : 1.3;
+        });
+      }
       if (t < 0) return null;
       river.push({ tile: t, riichi: i === riichiIndex });
     }
@@ -877,18 +989,49 @@
   function generatePushFoldProblem() {
     // 押し/オリの正解が偏らないよう、先に目標の答えを決めて合致する局面を探す
     var target = Math.random() < 0.5 ? "push" : "fold";
+    var targetTransition = target === "push" && Math.random() < 0.5 ? 0 : null;
     var fallback = null;
+    var fallbackAttempt = -1;
+    var fallbackSearchLimit = 15;
 
     // 無理押しガードで候補がかなり絞られるため、試行上限は多めに取る
     for (var attempt = 0; attempt < 2000; attempt++) {
+      // 答え比率の調整だけで画面を長時間待たせない。正解条件を満たす問題を
+      // 1件確保した後は、反対側の答えを探す追加試行に上限を設ける。
+      if (fallback && attempt - fallbackAttempt >= fallbackSearchLimit) return fallback;
       var wall = newWall();
       var hand = buildStructuredHand(wall);
       if (hand.length !== 14) continue;
+      // 問題の起点はツモ前13枚の1シャンテン。最後の1枚を実際のツモ牌として並べ直す。
+      // ツモ後の最善打牌は1シャンテン維持でもテンパイでもよい。
+      var split = splitImprovingDraw(hand, 1);
+      if (!split) continue;
+      hand = split.hand;
       var counts = toCounts(hand);
-      if (shanten(counts) !== 1) continue; // 全問イーシャンテンで出題
+      var drawnStateShanten = shanten(counts);
+      // オリ問題は、テンパイ打牌が無い1→1の層から探す。河や全候補を作る前に
+      // 安価なシャンテン判定で絞り、テンパイ局面を後段で大量に捨てない。
+      if (target === "fold" && drawnStateShanten !== 1) continue;
+      if (targetTransition === 0 && drawnStateShanten !== 0) continue;
 
-      var turn = 6 + randInt(7); // 6〜12巡目
-      var riverData = generateRiver(wall, turn, counts);
+      // 牌姿だけで、攻撃候補（0/1シャンテン）と最善進行から後退するオリ候補を分ける。
+      // 河にはオリ候補を現物として1枚含め、それ以外の攻撃候補は現物にしない。
+      var shapeAnalysis = analyzeDiscards(counts, null);
+      if (shapeAnalysis.minShanten !== 0 && shapeAnalysis.minShanten !== 1) continue;
+      var foldShapes = shapeAnalysis.all.filter(function (row) {
+        return row.shanten > shapeAnalysis.minShanten && wall[row.discard] > 0;
+      });
+      if (foldShapes.length === 0) continue;
+      var requiredFoldTile = pick(foldShapes).discard;
+      var forbiddenGenbutsu = new Array(34).fill(false);
+      shapeAnalysis.all.forEach(function (row) {
+        if (row.shanten === 0 || row.shanten === 1) forbiddenGenbutsu[row.discard] = true;
+      });
+
+      // オリ有利は親リーチ・中終盤・1シャンテン維持に集中するため、
+      // 目標回答ごとに該当層を多めに引く。正解そのものは後段の同じEV式で決める。
+      var turn = target === "fold" ? 10 + randInt(3) : 6 + randInt(6); // fold: 10〜12 / push: 6〜11巡目
+      var riverData = generateRiver(wall, turn, counts, requiredFoldTile, forbiddenGenbutsu);
       if (!riverData) continue;
       var riverCounts = toCounts(riverData.tiles.map(function (r) { return r.tile; }));
 
@@ -907,81 +1050,88 @@
       var visible = new Array(34).fill(0);
       for (t = 0; t < 34; t++) visible[t] = counts[t] + outside[t];
 
-      // イーシャンテン維持打牌の候補全部に危険度を付ける
+      // 打牌後の形と、オリに使える現物を先に確認する。
       var an = analyzeDiscards(counts, outside);
-      if (an.minShanten !== 1 || an.keep.length === 0) continue;
-      var keepRates = an.keep.map(function (row) {
-        return DANGER_RATES[classifyDanger(row.discard, riverCounts, visible)].rate;
-      });
+      if (an.minShanten !== 0 && an.minShanten !== 1) continue;
 
-      // 無理押しガード:
-      // 手牌に「イーシャンテンを保ったまま切れるほぼ安全な牌」（現物・字牌・
-      // 筋・ワンチャンスなど、Mリーグ危険度分類のsafe/guarded相当）が1枚でも
-      // あるなら、それを切ればよいだけで危険牌との押し引き局面にならない。
-      // 実際のMリーグの危険押し（moderate/high risk押し）に合わせ、
-      // 手を保つ打牌がすべて放銃率3%以上の危険牌である牌姿だけを出題する。
-      var PUSH_MIN_RATE = 3.0;
-      var hasSafeEscape = keepRates.some(function (r) { return r < PUSH_MIN_RATE; });
-      if (hasSafeEscape) continue;
-
-      // 勝負牌 = 受け入れ最大の打牌。同数タイなら最も安全な牌を選ぶ
-      // （同じ受け入れでより危険な牌を切らせるのは無理押しになるため）
-      var pushIdx = 0;
-      for (var k = 1; k < an.keep.length; k++) {
-        if (an.keep[k].ukeire !== an.keep[0].ukeire) break;
-        if (keepRates[k] < keepRates[pushIdx]) pushIdx = k;
-      }
-      var pushRow = an.keep[pushIdx];
-      var pushTile = pushRow.discard;
-      if (riverCounts[pushTile] > 0) continue; // 勝負牌が現物なら問題にならない
-
-      // オリ候補 = 手牌の中の現物。無ければ出題しない
+      // オリ候補 = 現物を切ると最善の進行よりシャンテン数が後退する牌。
+      // 1→テンパイ問題では1シャンテン戻し、1→1問題では2シャンテン戻しになる。
       var foldTile = -1;
-      for (t = 0; t < 34; t++) {
-        if (counts[t] > 0 && riverCounts[t] > 0) { foldTile = t; break; }
+      for (var a = 0; a < an.all.length; a++) {
+        var foldRow = an.all[a];
+        if (riverCounts[foldRow.discard] > 0 && foldRow.shanten > an.minShanten) {
+          foldTile = foldRow.discard;
+          break;
+        }
       }
       if (foldTile < 0) continue;
 
-      var category = classifyDanger(pushTile, riverCounts, visible);
-      var rate = DANGER_RATES[category].rate;
-
-      // 自分の打点期待: リーチ前提の概算（子4500+ドラ1500 / 親は1.5倍）
-      // 赤5（アカドラ）も通常のドラと同枚数扱いで加算する
+      // 赤あり（各色1枚）の手牌を確定してから、全押し候補を候補固有の
+      // 速度・打点・危険度で評価する。
       var redFlags = assignRedFives(hand);
-      var akaCount = redFlags.filter(function (r) { return r; }).length;
-      var doraCount = counts[dora] + akaCount;
-      var oppIsDealer = Math.random() < 0.3;
+      var oppIsDealer = target === "fold" ? true : Math.random() < 0.25;
       var selfIsDealer = !oppIsDealer && Math.random() < 0.3;
-      var ownValue = Math.min(12000, 4500 + 1500 * doraCount) * (selfIsDealer ? 1.5 : 1);
-
-      var ev = evaluatePushFold({
+      var candidates = analyzePushCandidates({
+        hand: hand,
+        redFlags: redFlags,
+        riverCounts: riverCounts,
+        visibleCounts: visible,
+        outsideCounts: outside,
         turn: turn,
-        ukeire: pushRow.ukeire,
-        dangerRate: rate,
-        ownValue: ownValue,
         oppIsDealer: oppIsDealer,
+        selfIsDealer: selfIsDealer,
+        dora: dora,
       });
+      if (candidates.length < 2) continue;
+
+      var pushRow = candidates[0];
+      var pushTile = pushRow.discard;
+      var PUSH_MIN_RATE = 3.0;
+      if (pushRow.dangerRate < PUSH_MIN_RATE) continue; // 安全牌が最善なら危険牌勝負問題ではない
+      if (riverCounts[pushTile] > 0) continue;
+
+      // 候補同士が僅差なら「本当にこの牌が最大」と言い切れないため出題しない。
+      var candidateEvGap = pushRow.ev.evPush - candidates[1].ev.evPush;
+      if (candidateEvGap < 75) continue;
+
+      var handAkaCount = redFlags.filter(function (r) { return r; }).length;
+      var handDoraCount = counts[dora] + handAkaCount;
+      var ev = pushRow.ev;
 
       var problem = {
         hand: hand,
+        baseHand: split.baseHand,
+        drawnTile: split.drawnTile,
+        fromShanten: 1,
+        toShanten: pushRow.shanten,
+        handShanten: 1,
         turn: turn,
         river: riverData.tiles,
         doraIndicator: doraIndicator,
         dora: dora,
-        doraCount: doraCount,
-        akaCount: akaCount,
+        handDoraCount: handDoraCount,
+        handAkaCount: handAkaCount,
+        // 旧表示との互換用。手牌にある枚数を指す。
+        doraCount: handDoraCount,
+        akaCount: handAkaCount,
         redFlags: redFlags,
         oppIsDealer: oppIsDealer,
         selfIsDealer: selfIsDealer,
         pushTile: pushTile,
+        pushShanten: pushRow.shanten,
         pushUkeire: pushRow.ukeire,
         pushUkeireTiles: pushRow.tiles,
+        pushDiscardsRed: pushRow.discardsRed,
+        pushDoraCount: pushRow.doraCount,
+        pushAkaCount: pushRow.akaCount,
         foldTile: foldTile,
-        category: category,
-        categoryLabel: DANGER_RATES[category].label,
-        dangerRate: rate,
-        safestKeepRate: Math.min.apply(null, keepRates),
-        ownValue: Math.round(ownValue),
+        category: pushRow.category,
+        categoryLabel: pushRow.categoryLabel,
+        dangerRate: pushRow.dangerRate,
+        safestKeepRate: Math.min.apply(null, candidates.map(function (row) { return row.dangerRate; })),
+        ownValue: pushRow.ownValue,
+        candidateEvGap: candidateEvGap,
+        candidateAnalysis: candidates,
         ev: ev,
         answer: ev.answer,
       };
@@ -989,7 +1139,10 @@
       // EV差が小さい微妙な局面は出題しない（正解が議論にならないように）
       if (Math.abs(ev.diff) < 300) continue;
       if (ev.answer === target) return problem;
-      if (!fallback) fallback = problem; // 目標の答えが見つからない場合の保険
+      if (!fallback) {
+        fallback = problem; // 目標の答えが見つからない場合の保険
+        fallbackAttempt = attempt;
+      }
     }
     return fallback;
   }
@@ -1020,6 +1173,9 @@
     assignRedFives: assignRedFives,
     classifyDanger: classifyDanger,
     evaluatePushFold: evaluatePushFold,
+    redCountAfterDiscard: redCountAfterDiscard,
+    estimateOwnValue: estimateOwnValue,
+    analyzePushCandidates: analyzePushCandidates,
     generateEfficiencyProblem: generateEfficiencyProblem,
     EFFICIENCY_HARD_RATE: EFFICIENCY_HARD_RATE,
     EFFICIENCY_TRAP_RATE: EFFICIENCY_TRAP_RATE,

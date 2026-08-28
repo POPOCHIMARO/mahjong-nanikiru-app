@@ -479,7 +479,7 @@
       infoItem("巡目", p.turn + "巡目") +
       infoItem("自分", p.selfIsDealer ? "親" : "子") +
       infoItem("リーチ者", p.oppIsDealer ? "親" : "子") +
-      infoItem("自分の手", "イーシャンテン") +
+      infoItem("自分の手", "ツモ前1シャンテン → " + shantenLabel(p.pushShanten)) +
       '<span class="inline-flex items-center gap-1">' +
       '<span class="text-emerald-300/80">ドラ表示牌</span>' + tileHTML(p.doraIndicator, { mini: true }) +
       '<span class="text-emerald-300/80 ml-1">→ ドラ</span>' + tileHTML(p.dora, { mini: true }) +
@@ -497,19 +497,28 @@
       "</div>";
 
     // 自分の手牌と設問
+    var focusIndex = -1;
+    for (var f = 0; f < p.hand.length; f++) {
+      if (p.hand[f] !== p.pushTile) continue;
+      if (Boolean(p.redFlags[f]) === Boolean(p.pushDiscardsRed)) { focusIndex = f; break; }
+    }
+    if (focusIndex < 0) focusIndex = p.hand.indexOf(p.pushTile);
+
+    var transitionLabel = p.pushShanten === 0 ? "テンパイ" : "1シャンテン維持";
     var handHtml =
-      '<div class="text-xs text-emerald-300/80 mb-2">自分の手牌（打点期待: 約' + p.ownValue.toLocaleString() + "点）</div>" +
+      '<div class="text-xs text-emerald-300/80 mb-2">自分の手牌（右端はツモ牌／最善打牌後の打点期待: 約' + p.ownValue.toLocaleString() + "点）</div>" +
       '<div class="flex flex-wrap gap-1 mb-4">' +
       p.hand.map(function (t, i) {
         var extra = "";
-        if (t === p.pushTile) extra = "tile-focus";
+        if (i === p.hand.length - 1) extra += " ml-3";
+        if (i === focusIndex) extra += " tile-focus";
         return tileHTML(t, { extraClass: extra, red: p.redFlags[i] });
       }).join("") +
       "</div>" +
-      '<div class="text-sm mb-3">受け入れ最大の一打は <span class="text-amber-300 font-bold">' +
-      E.tileName(p.pushTile) + "</span>（枠付きの牌・受け入れ" + p.pushUkeire + "枚）。ただしリーチに通っていません。どうする？</div>" +
+      '<div class="text-sm mb-3">速度・打点・危険度を比較した押しEV最大の一打は <span class="text-amber-300 font-bold">' +
+      E.tileName(p.pushTile) + "</span>（枠付きの牌・" + transitionLabel + "・受け入れ" + p.pushUkeire + "枚）。ただしリーチに通っていません。どうする？</div>" +
       '<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">' +
-      choiceBtn("push", "押す", E.tileName(p.pushTile) + " を切って手を進める", chosen) +
+      choiceBtn("push", "押す", E.tileName(p.pushTile) + " を切って" + transitionLabel + "", chosen) +
       choiceBtn("fold", "オリる", "現物の " + E.tileName(p.foldTile) + " を切って撤退する", chosen) +
       "</div>";
 
@@ -527,14 +536,15 @@
         evBox("オリた場合のEV", ev.evFold, p.answer === "fold") +
         "</div>" +
         '<ul class="text-sm space-y-1.5 text-emerald-100/90">' +
+        li("テンパイ／1シャンテン維持の全" + p.candidateAnalysis.length + "候補を比較し、次点より押しEVが約" + p.candidateEvGap.toLocaleString() + "点高い打牌") +
         li("勝負牌 " + E.tileName(p.pushTile) + " は「" + p.categoryLabel + "」— 放銃率 約" + p.dangerRate + "%") +
-        li("イーシャンテンを保てる打牌は他も含めてすべて放銃率" + p.safestKeepRate + "%以上 — 安全に手を進める逃げ道はない局面") +
+        li("打牌後は" + transitionLabel + "、受け入れ" + p.pushUkeire + "枚、通常ドラ＋赤ドラ" + p.pushDoraCount + "枚、打点期待 約" + p.ownValue.toLocaleString() + "点") +
         li("押し切った場合の総放銃リスク: 約" + Math.round(ev.pDeal * 100) + "%（放銃時 平均 −" + ev.dealLoss.toLocaleString() + "点）") +
         li("押した場合の自分の和了率: 約" + Math.round(ev.pWin * 100) + "%（打点期待 約" + p.ownValue.toLocaleString() + "点 + 供託）") +
         li("リーチ者の和了率: 約" + Math.round(ev.pOppWin * 100) + "%") +
         "</ul>" +
         '<div class="text-xs text-emerald-300/70 mt-3 leading-relaxed">' +
-        "※ 局収支ベースの概算モデルです。放銃率は統計にもとづく近似値、リーチ平均打点は子5,300点／親7,700点で計算。<br>" +
+        "※ 局収支ベースの概算モデル内での最大値です。放銃率は統計にもとづく近似値、リーチ平均打点は子5,300点／親7,700点で計算。<br>" +
         "参考: Mリーグの牌譜集計では、他家リーチに対しイーシャンテンの選手が手を維持して押す割合は約78%（vault研究ノート「Mリーグ対リーチ押し率」より）。ただし安全牌での維持も含む数値です。" +
         "</div>" +
         nextButtonHTML();
