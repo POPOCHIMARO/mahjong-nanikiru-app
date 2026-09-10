@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "ev-immediate-ron-calibration-fit-summary/v1",
+  "phase": "C1-all-observed-actions-immediate-ron",
+  "quality": "pass",
+  "modelPath": "model.json",
+  "modelSha256": "243c549406a573b26a01c0d862ffa112e9ea93482c6350772589d7587ae21860",
+  "datasetAggregateSha256": "29c5d88c6ec287dec006f967611203c6c4d1049561760e947a99efa749d38eec",
+  "splitLedger": {
+    "train": [
+      "2018-19",
+      "2019-20",
+      "2020-21",
+      "2021-22",
+      "2022-23"
+    ],
+    "selection": [
+      "2023-24"
+    ],
+    "calibration": [
+      "2024-25"
+    ],
+    "confirmation": [
+      "2025-26"
+    ],
+    "confirmationUsedDuringFit": false,
+    "counts": {
+      "train": 17479,
+      "selection": 4098,
+      "calibration": 3675
+    },
+    "confirmationCountFromExtractionSummaryOnly": 4794
+  },
+  "selectedLambda": 0.01,
+  "selectionMetrics": {
+    "lambda": 0.01,
+    "brier": 0.025179184488641152,
+    "logLoss": 0.10106115115596988,
+    "meanPredicted": 0.02623514051116304,
+    "observedRate": 0.027086383601756955,
+    "auc": 0.8426665943595966
+  },
+  "confirmationMetrics": null
+}

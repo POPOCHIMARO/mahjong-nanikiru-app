@@ -16,17 +16,42 @@
   var current = null;   // 表示中の問題
   var answered = false; // 回答済みかどうか
   var pendingNext = null; // 先読みしておいた次の問題 { mode, problem }
+  var prefetchTimer = null;
+
+  function generateProblem(forMode) {
+    return forMode === "push" ? E.generatePushFoldProblem()
+      : forMode === "chin" ? E.generateChinitsuProblem()
+      : E.generateEfficiencyProblem();
+  }
+
+  function cancelPrefetch() {
+    if (prefetchTimer !== null) clearTimeout(prefetchTimer);
+    prefetchTimer = null;
+  }
+
+  // 探索上限に達した場合も画面を操作できるようにする。
+  function beginProblem() {
+    cancelPrefetch();
+    current = takePrefetched(mode) || generateProblem(mode);
+    answered = false;
+    if (current) return true;
+    app.innerHTML = card('<p>条件に合う問題が見つかりませんでした。もう一度お試しください。</p>' + nextButtonHTML());
+    document.getElementById("btn-next").addEventListener("click", function () {
+      if (mode === "push") newPushProblem(); else newEffProblem();
+    });
+    return false;
+  }
 
   // 解説を表示している間に、裏で次の問題を生成しておく（体感待ちを減らす）。
   // 問題生成は同期処理で数百msかかることがあるため、setTimeoutで
   // 描画（解説の表示）を先に終わらせてから生成する。
   function schedulePrefetch() {
+    cancelPrefetch();
     var modeAtSchedule = mode;
-    setTimeout(function () {
+    prefetchTimer = setTimeout(function () {
+      prefetchTimer = null;
       if (mode !== modeAtSchedule) return; // 生成が終わる前にタブが切り替わっていたら破棄
-      var problem = modeAtSchedule === "push" ? E.generatePushFoldProblem()
-        : modeAtSchedule === "chin" ? E.generateChinitsuProblem()
-        : E.generateEfficiencyProblem();
+      var problem = generateProblem(modeAtSchedule);
       if (problem) pendingNext = { mode: modeAtSchedule, problem: problem };
     }, 0);
   }
@@ -42,15 +67,19 @@
   }
 
   function loadStats() {
+    var result = { eff: { ok: 0, total: 0 }, push: { ok: 0, total: 0 }, chin: { ok: 0, total: 0 } };
     try {
       var s = JSON.parse(localStorage.getItem("nanikiru-stats"));
-      if (s && s.eff && s.push) {
-        // 清一色モード追加前の保存データには chin が無いので補う
-        if (!s.chin) s.chin = { ok: 0, total: 0 };
-        return s;
-      }
+      // 壊れたモードだけを初期化し、正常な成績は引き継ぐ。
+      Object.keys(result).forEach(function (key) {
+        var row = s && s[key];
+        if (row && Number.isSafeInteger(row.ok) && Number.isSafeInteger(row.total) &&
+            row.ok >= 0 && row.total >= row.ok) {
+          result[key] = { ok: row.ok, total: row.total };
+        }
+      });
     } catch (e) { /* 壊れていたら初期化 */ }
-    return { eff: { ok: 0, total: 0 }, push: { ok: 0, total: 0 }, chin: { ok: 0, total: 0 } };
+    return result;
   }
   function saveStats() {
     try { localStorage.setItem("nanikiru-stats", JSON.stringify(stats)); } catch (e) { /* 保存不可でも動作は続ける */ }
@@ -313,9 +342,7 @@
   // 清一色だけは暗槓も選べるが、問題カードと解説表の骨格は同じなので描画を共用する。
   // ---------------------------------------------------------------
   function newEffProblem() {
-    current = takePrefetched(mode) ||
-      (mode === "chin" ? E.generateChinitsuProblem() : E.generateEfficiencyProblem());
-    answered = false;
+    if (!beginProblem()) return;
     current.bestActionsForUi = current.bestActions || current.bestDiscards.map(function (t) {
       return { type: "discard", tile: t };
     });
@@ -465,8 +492,7 @@
   // 押し引きモード
   // ---------------------------------------------------------------
   function newPushProblem() {
-    current = takePrefetched("push") || E.generatePushFoldProblem();
-    answered = false;
+    if (!beginProblem()) return;
     renderPush(null);
   }
 
@@ -541,8 +567,9 @@
         li("打牌後は" + transitionLabel + "、受け入れ" + p.pushUkeire + "枚、通常ドラ＋赤ドラ" + p.pushDoraCount + "枚、打点期待 約" + p.ownValue.toLocaleString() + "点") +
         li("押し切った場合の総放銃リスク: 約" + Math.round(ev.pDeal * 100) + "%（放銃時 平均 −" + ev.dealLoss.toLocaleString() + "点）") +
         li("押した場合の自分の和了率: 約" + Math.round(ev.pWin * 100) + "%（打点期待 約" + p.ownValue.toLocaleString() + "点 + 供託）") +
-        li("リーチ者の和了率: 約" + Math.round(ev.pOppWin * 100) + "%") +
+        li("被ツモ率: 押す場合 約" + Math.round(ev.pTsumoPush * 100) + "%／オリる場合 約" + Math.round(ev.pTsumoFold * 100) + "%（支払い平均 " + ev.tsumoPay.toLocaleString() + "点）") +
         "</ul>" +
+        evBreakdownHTML(ev) +
         '<div class="text-xs text-emerald-300/70 mt-3 leading-relaxed">' +
         "※ 局収支ベースの概算モデル内での最大値です。放銃率は統計にもとづく近似値、リーチ平均打点は子5,300点／親7,700点で計算。<br>" +
         "参考: Mリーグの牌譜集計では、他家リーチに対しイーシャンテンの選手が手を維持して押す割合は約78%（vault研究ノート「Mリーグ対リーチ押し率」より）。ただし安全牌での維持も含む数値です。" +
@@ -571,6 +598,16 @@
 
   function infoItem(label, value) {
     return '<span><span class="text-emerald-300/80">' + label + "</span> <span class='font-bold'>" + value + "</span></span>";
+  }
+
+  function evBreakdownHTML(ev) {
+    var b = ev.breakdown;
+    function points(n) { return Math.round(n).toLocaleString(); }
+    return '<div class="text-xs text-emerald-200/90 mt-3 leading-relaxed">' +
+      '押しの内訳: 和了収入 ' + points(b.winIncome) + ' − 放銃失点 ' + points(b.dealExpense) +
+      ' − 被ツモ失点 ' + points(b.tsumoExpensePush) + ' 点<br>' +
+      'オリの内訳: − 被ツモ失点 ' + points(b.tsumoExpenseFold) + ' − 撤退コスト ' + points(b.foldCost) + ' 点<br>' +
+      '内訳は各項を四捨五入して表示するため、合計とEVに1点程度の差が出る場合があります。</div>';
   }
 
   function li(text) {
@@ -609,6 +646,8 @@
   // 起動・タブ切り替え
   // ---------------------------------------------------------------
   function switchMode(m) {
+    cancelPrefetch();
+    if (mode !== m) pendingNext = null;
     mode = m;
     updateTabs();
     updateScoreboard();

@@ -1,0 +1,173 @@
+{
+  "schemaVersion": "ev-scoring-dependency-probe/v1",
+  "status": "pass",
+  "scope": "dependency_selection_only_not_D2_completion",
+  "package": "mahjong",
+  "version": "2.0.0",
+  "wheelSha256": "52f63a8dfda5a9e81542642ed315f0e1e8626c0d324c8d8eabb3418ae7d43870",
+  "python": "3.12.14",
+  "runtimeDependencies": [],
+  "license": "MIT",
+  "sourceSha256": {
+    "mahjong/hand_calculating/hand.py": "af30510b54d13276b186c48e6dfcef0d1f4cb6adf15b621f4ef69cc8b3c63a02",
+    "mahjong/hand_calculating/fu.py": "9177d26f5195eee16bfc89c1fe45dee8bf42061fec05248cee5b3cef01807fcd",
+    "mahjong/hand_calculating/hand_config.py": "f212a3eab3d97e3bf60301c281ccafdbf6a20793f81a3524a50d13c397eead77",
+    "mahjong/hand_calculating/scores.py": "d7d2b56a8e1897f0da5628cb53bb9005b509b4116ba9faa27be31faf762cc80c"
+  },
+  "checks": [
+    {
+      "id": "normal_fives_not_red",
+      "actual": 0,
+      "expected": 0,
+      "pass": true
+    },
+    {
+      "id": "red_fives_preserved",
+      "actual": 3,
+      "expected": 3,
+      "pass": true
+    },
+    {
+      "id": "score_4han_30fu_child_ron",
+      "actual": 8000,
+      "expected": 8000,
+      "pass": true
+    },
+    {
+      "id": "score_3han_60fu_child_ron",
+      "actual": 8000,
+      "expected": 8000,
+      "pass": true
+    },
+    {
+      "id": "score_13han_30fu_child_ron",
+      "actual": 24000,
+      "expected": 24000,
+      "pass": true
+    },
+    {
+      "id": "two_yakuman_score_multiplier",
+      "actual": 64000,
+      "expected": 64000,
+      "pass": true
+    },
+    {
+      "id": "double_wind_27_raw",
+      "actual": [
+        1,
+        50
+      ],
+      "expected": [
+        1,
+        50
+      ],
+      "pass": true
+    },
+    {
+      "id": "double_wind_27_normalized",
+      "actual": [
+        1,
+        40,
+        2000
+      ],
+      "expected": [
+        1,
+        40,
+        2000
+      ],
+      "pass": true
+    },
+    {
+      "id": "double_wind_28_raw",
+      "actual": [
+        1,
+        50
+      ],
+      "expected": [
+        1,
+        50
+      ],
+      "pass": true
+    },
+    {
+      "id": "double_wind_28_normalized",
+      "actual": [
+        1,
+        40,
+        1300
+      ],
+      "expected": [
+        1,
+        40,
+        1300
+      ],
+      "pass": true
+    },
+    {
+      "id": "double_wind_triplet_preserved",
+      "actual": [
+        3,
+        40,
+        7700
+      ],
+      "expected": [
+        3,
+        40,
+        7700
+      ],
+      "pass": true
+    },
+    {
+      "id": "seven_pairs",
+      "actual": [
+        2,
+        25,
+        1600
+      ],
+      "expected": [
+        2,
+        25,
+        1600
+      ],
+      "pass": true
+    },
+    {
+      "id": "no_yaku",
+      "actual": "no_yaku",
+      "expected": "no_yaku",
+      "pass": true
+    },
+    {
+      "id": "kokushi_13_wait_single_yakuman",
+      "actual": [
+        13,
+        32000
+      ],
+      "expected": [
+        13,
+        32000
+      ],
+      "pass": true
+    },
+    {
+      "id": "ippatsu_chankan",
+      "actual": 3,
+      "expected": 3,
+      "pass": true
+    },
+    {
+      "id": "loaded_from_verified_wheel",
+      "actual": true,
+      "expected": true,
+      "pass": true
+    }
+  ],
+  "unverified": [
+    "complete_scoring_conformance",
+    "transitions",
+    "pao",
+    "historical_rules",
+    "replay",
+    "throughput"
+  ]
+}

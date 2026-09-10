@@ -1,0 +1,115 @@
+{
+  "schemaVersion": "ev-policy-runtime-audit/v1",
+  "phase": "D.3.0",
+  "status": "pass_with_runtime_holds",
+  "eligibleForLearning": false,
+  "entryGate": {
+    "status": "pass",
+    "reservationManifestMatchesD1": true,
+    "datasetVerificationStatus": "pass",
+    "declaredDecisions": 35218,
+    "auditedDecisions": 35218,
+    "results": {
+      "pass": 35218
+    },
+    "reasons": {},
+    "missingSources": []
+  },
+  "scope": {
+    "allD1Decisions": 35218,
+    "beforeSouth4": 32019,
+    "south4OrLater": 3199,
+    "south4OrLaterPrimary": 1278,
+    "sourceRoundLogs": 7849,
+    "seasons": {
+      "2018-19": 2990,
+      "2019-20": 4416,
+      "2020-21": 4263,
+      "2021-22": 4045,
+      "2022-23": 4933,
+      "2023-24": 4731,
+      "2024-25": 4217,
+      "2025-26": 5623
+    }
+  },
+  "modelEntryScope": {
+    "status": "held_until_D3_1",
+    "eligibleBeforeSouth4": 32019,
+    "heldSouth4OrLater": 3199,
+    "reasons": {
+      "south4_or_later_outside_initial_policy_scope": 3199
+    }
+  },
+  "scoreDeltaConformance": {
+    "results": {
+      "pass": 7849
+    },
+    "reasons": {}
+  },
+  "roundRuntimeConformance": {
+    "checkedRoundLogs": 256,
+    "runtimeLimit": 256,
+    "selectionMethod": "sha256_order_without_replacement",
+    "sampleSeasons": {
+      "2018-19": 34,
+      "2019-20": 32,
+      "2020-21": 33,
+      "2021-22": 29,
+      "2022-23": 37,
+      "2023-24": 35,
+      "2024-25": 26,
+      "2025-26": 30
+    },
+    "sampleSouth4OrLater": 15,
+    "results": {
+      "hold": 2,
+      "pass": 254
+    },
+    "reasons": {
+      "RuntimeReplayError:牌が4枚を超える: tile34=10, red=False": 1,
+      "RuntimeReplayError:牌が4枚を超える: tile34=4, red=False": 1
+    },
+    "examples": [
+      {
+        "source": [
+          "data/mleague/paifu/2018-19.jsonl",
+          58,
+          0
+        ],
+        "status": "hold",
+        "reason": "RuntimeReplayError:牌が4枚を超える: tile34=4, red=False"
+      },
+      {
+        "source": [
+          "data/mleague/paifu/2025-26.jsonl",
+          3655,
+          0
+        ],
+        "status": "hold",
+        "reason": "RuntimeReplayError:牌が4枚を超える: tile34=10, red=False"
+      }
+    ],
+    "unknownCompletionMismatches": 0,
+    "unobservedResponseHistory": "held_separately_from_recorded_public_result"
+  },
+  "acceptanceEvidence": {
+    "D30-01": [
+      "tests/test_ev_policy_replay.py::RecordedEventAdapterTest",
+      "tests/test_ev_policy_replay.py::RoundRuntimeFixtureTest",
+      "tests/test_ev_policy_round.py::PolicyRoundTest"
+    ],
+    "D30-02": "tests/test_ev_policy_round.py::ScoringErrorBoundaryTest",
+    "D30-03": "entryGate and scope in this report"
+  },
+  "runtimeEnvironment": {
+    "pythonVersion": "3.12.14",
+    "scoringPackage": "mahjong",
+    "scoringPackageVersion": "2.0.0"
+  },
+  "codeSha256": {
+    "ev_policy_replay.py": "d9facb3f27af6216c1cc0a284b1febb11876838dd3bae96b514370f0b333d67a",
+    "ev_policy_round.py": "1be070f0c28372622553bee1e26ec1f0d9bb3fd7c83eef55cd3c46f84c18a605",
+    "ev_policy_scoring.py": "bb794b2fc84125774a4bd46a9a15d041250b19a6e939cf9bceb8eef4e0d12472"
+  },
+  "runtimeSeconds": 119.29861150006764
+}

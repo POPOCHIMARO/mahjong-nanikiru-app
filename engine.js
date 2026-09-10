@@ -134,10 +134,17 @@
 
   // 3種の最小シャンテンを返す。
   // 固定面子がある手では七対子・国士にはならないため、一般手だけを計算する。
+  // 変化の探索では同じ手を何度も評価する。上限付きキャッシュで再計算を省く。
+  var shantenCache = new Map();
   function shanten(counts, fixedMelds) {
     fixedMelds = fixedMelds || 0;
-    if (fixedMelds > 0) return shantenRegular(counts, fixedMelds);
-    return Math.min(shantenRegular(counts), shantenChiitoi(counts), shantenKokushi(counts));
+    var key = fixedMelds + ":" + counts.join("");
+    if (shantenCache.has(key)) return shantenCache.get(key);
+    var result = fixedMelds > 0 ? shantenRegular(counts, fixedMelds)
+      : Math.min(shantenRegular(counts), shantenChiitoi(counts), shantenKokushi(counts));
+    if (shantenCache.size >= 20000) shantenCache.clear();
+    shantenCache.set(key, result);
+    return result;
   }
 
   // ---------------------------------------------------------------
@@ -178,29 +185,36 @@
   // ---------------------------------------------------------------
   // 内訳（どの牌のツモで・何枚残っているか）まで返す版。
   // 解説表示（どの牌を引けば伸びるかを見せる）と出題ガードの両方から使う。
-  function improvementDetail(counts13, currentUkeire) {
+  function improvementDetail(counts13, currentUkeire, visibleOutside) {
     var base = shanten(counts13);
+    var outside = visibleOutside ? visibleOutside.slice() : new Array(34).fill(0);
     var total = 0;
     var tiles = [];
+    var unseen = 136 - counts13.reduce(function (sum, count) { return sum + count; }, 0)
+      - outside.reduce(function (sum, count) { return sum + count; }, 0);
+    var continuation = 0;
     for (var t = 0; t < 34; t++) {
-      if (counts13[t] >= 4) continue;
+      var left = 4 - counts13[t] - outside[t];
+      if (left <= 0) continue;
       counts13[t]++;
       if (shanten(counts13) >= base) {
         // シャンテンが進まないツモ。最良の応手で受け入れが2枚以上増えるか調べる
-        var improved = false;
-        for (var d = 0; d < 34 && !improved; d++) {
+        var bestNextUkeire = currentUkeire; // ツモ切りでも元の受け入れは維持できる。
+        for (var d = 0; d < 34; d++) {
           if (counts13[d] === 0) continue;
           if (d === t) continue; // ツモ切りは元の形に戻るだけなので見ない
           counts13[d]--;
+          outside[d]++; // 改良ツモ後に切る牌も山へは戻らない。
           // シャンテンが落ちる打牌は受け入れを数えるまでもなく対象外（高速化）
           if (shanten(counts13) === base) {
-            var u = ukeire(counts13, null);
-            if (u.total >= currentUkeire + 2) improved = true;
+            var u = ukeire(counts13, outside);
+            bestNextUkeire = Math.max(bestNextUkeire, u.total);
           }
           counts13[d]++;
+          outside[d]--;
         }
-        if (improved) {
-          var left = 4 - (counts13[t] - 1);
+        continuation += left * bestNextUkeire;
+        if (bestNextUkeire >= currentUkeire + 2) {
           if (left > 0) {
             tiles.push({ tile: t, count: left });
             total += left;
@@ -209,11 +223,14 @@
       }
       counts13[t]--;
     }
-    return { total: total, tiles: tiles };
+    // 次のツモで進む分 + 進まなかったツモごとに最善打牌した後の受け入れ。
+    // 全候補で分母 unseen*(unseen-1) が共通なので、比較には分子だけを使う。
+    return { total: total, tiles: tiles,
+      twoDrawNumerator: currentUkeire * (unseen - 1) + continuation };
   }
 
-  function improvementPotential(counts13, currentUkeire) {
-    return improvementDetail(counts13, currentUkeire).total;
+  function improvementPotential(counts13, currentUkeire, visibleOutside) {
+    return improvementDetail(counts13, currentUkeire, visibleOutside).total;
   }
 
   // 手牌に1枚だけある字牌が2種類以上あるかを調べる。
@@ -330,50 +347,50 @@
     return traps;
   }
 
-  // 牌効率問題の出題可否チェック。
-  // 受け入れ最大の打牌が、僅差（3枚以内）の対抗打牌に変化ポテンシャルで
-  // 大きく劣る局面は「受け入れ枚数だけでは正解と言えない」ため出題しない。
-  // 換算レートは 受け入れ1枚 ≒ 変化4枚 とする。
-  // 例: 2m4m5m6m7m 5p6p6p7p 1s2s3s 北白 から 6p切り(受10) vs 北切り(受9) は、
-  //     北切りの変化が大きく上回るため出題対象から外れる。
+  // 判定と解説で同じ変化を使う。各候補の計算は一度だけ行う。
+  function efficiencyRowsWithVariation(counts14, keepRows) {
+    return keepRows.map(function (row) {
+      var after = counts14.slice();
+      var outside = new Array(34).fill(0);
+      after[row.discard]--;
+      outside[row.discard]++;
+      return Object.assign({}, row, { variation: improvementDetail(after, row.ukeire, outside) });
+    }).sort(function (a, b) {
+      return b.ukeire - a.ukeire || b.variation.total - a.variation.total;
+    });
+  }
+
+  function efficiencyRowsAreSound(counts14, rows) {
+    if (!rows.length || hasMultipleIsolatedHonors(counts14)) return false;
+    var best = rows[0];
+    // 字牌を残して数牌を切る判断が紛らわしい手は、保守的に丸ごと出題しない。
+    for (var h = 27; h < 34; h++) {
+      if (counts14[h] === 1 && best.discard !== h) return false;
+    }
+    // 変化の多さだけでは、元の受け入れが狭い手を過大評価してしまう。
+    // 全ツモとその後の最善打牌を調べ、2ツモ以内に進む確率で逆転する手を除く。
+    // 正解は受け入れ最大、同数時は変化最大のままで、逆転時は出題しない。
+    return rows.every(function (row) {
+      return row.variation.twoDrawNumerator <= best.variation.twoDrawNumerator;
+    });
+  }
+
   function efficiencyAnswerIsSound(counts14, keepRows) {
-    if (hasMultipleIsolatedHonors(counts14)) return false;
-
-    var bestU = keepRows[0].ukeire;
-
-    // 受け入れ同率の候補は変化最大のものが正解になるため、その変化を基準にする
-    var bestPot = -1;
-    for (var i = 0; i < keepRows.length; i++) {
-      var row = keepRows[i];
-      if (row.ukeire !== bestU) break; // keepRows は受け入れ降順
-      counts14[row.discard]--;
-      var pot = improvementPotential(counts14, row.ukeire);
-      counts14[row.discard]++;
-      if (pot > bestPot) bestPot = pot;
-    }
-
-    for (i = 0; i < keepRows.length; i++) {
-      row = keepRows[i];
-      if (row.ukeire === bestU) continue;      // 同率は変化のタイブレークで決着するため比較不要
-      var gap = bestU - row.ukeire;
-      if (gap > 3) break;                      // 大差の候補は受け入れ枚数で決着済み
-      counts14[row.discard]--;
-      var rivalPot = improvementPotential(counts14, row.ukeire);
-      counts14[row.discard]++;
-      if (rivalPot - bestPot > 4 * gap) return false;
-    }
-    return true;
+    return efficiencyRowsAreSound(counts14, efficiencyRowsWithVariation(counts14, keepRows));
   }
 
   // 14枚の手牌について、打牌候補ごとの（シャンテン, 受け入れ）を一覧にする
   function analyzeDiscards(counts14, visibleOutside) {
     var rows = [];
+    var outside = visibleOutside ? visibleOutside.slice() : new Array(34).fill(0);
     var minShanten = 99;
     for (var d = 0; d < 34; d++) {
       if (counts14[d] === 0) continue;
       counts14[d]--;
-      var u = ukeire(counts14, visibleOutside);
+      outside[d]++;
+      var u = ukeire(counts14, outside);
       counts14[d]++;
+      outside[d]--;
       rows.push({ discard: d, shanten: u.shanten, ukeire: u.total, tiles: u.tiles });
       if (u.shanten < minShanten) minShanten = u.shanten;
     }
@@ -589,8 +606,7 @@
     var fallbackAttempt = -1;
 
     // 1200回を基本上限とするが、有効なフォールバックがまだ無い場合だけ探索を続ける。
-    // これにより、罠型の有無にかかわらず問題オブジェクトを必ず返す。
-    // ただし EFFICIENCY_MAX_ATTEMPTS で必ず打ち切る（無限ループにしない）。
+    // 条件を満たさないまま上限に達した場合はnullを返し、画面で再試行を案内する。
     for (var attempt = 0; attempt < EFFICIENCY_MAX_ATTEMPTS && (attempt < 1200 || !fallback); attempt++) {
       // 有効問題を確保した後は追加探索を制限し、罠型が見つからない回でも待たせすぎない。
       if (fallback && attempt - fallbackAttempt >= EFFICIENCY_TRAP_SEARCH_LIMIT) return fallback;
@@ -606,33 +622,24 @@
       var bestU = an.keep[0].ukeire;
       if (bestU <= 0) continue;
       var bests = an.keep.filter(function (r) { return r.ukeire === bestU; });
+      // 高価な変化計算の前に、孤立字牌が受け入れ最大にならない手を除く。
+      if (counts.some(function (count, tile) {
+        return tile >= 27 && count === 1 && !bests.some(function (row) { return row.discard === tile; });
+      })) continue;
       var second = an.keep.filter(function (r) { return r.ukeire < bestU; });
       if (bests.length > 2) continue;                       // 正解が多すぎる手は避ける
       if (second.length === 0) continue;                    // 全部同点なら出題しない
       var ukeireGap = bestU - second[0].ukeire;
-      if (targetDifficulty === "hard" && ukeireGap > 2) continue;
-      if (targetDifficulty === "standard" && ukeireGap < 3) continue;
+      if (targetDifficulty === "hard" && bests.length === 1 && ukeireGap > 2) continue;
+      if (targetDifficulty === "standard" && (bests.length > 1 || ukeireGap < 3)) continue;
 
       // この14枚を作った実際のツモが、2シャンテンの13枚からの進展牌か確認する
       var split = splitImprovingDraw(hand, 2);
       if (!split) continue;
 
-      // 受け入れ枚数の僅差だけでは決まらない局面（変化で逆転する形）は出題しない
-      if (!efficiencyAnswerIsSound(counts, an.keep)) continue;
-
-      // 解説表示用に、候補ごとの変化（好形へ伸びるツモ）の内訳を付与する。
-      // 出題が確定した後の1回だけの計算なので、候補数（通常2〜3件）分のコストで済む。
-      an.keep.forEach(function (r) {
-        counts[r.discard]--;
-        r.variation = improvementDetail(counts, r.ukeire);
-        counts[r.discard]++;
-      });
-
-      // 受け入れ同数のタイブレーク: 変化の多い打牌だけを正解に残す。
-      // 解説表の先頭行が常に正解になるよう、並び順も変化を第2キーにして揃える。
-      an.keep.sort(function (a, b) {
-        return b.ukeire - a.ukeire || b.variation.total - a.variation.total;
-      });
+      an.keep = efficiencyRowsWithVariation(counts, an.keep);
+      if (!efficiencyRowsAreSound(counts, an.keep)) continue;
+      bests = an.keep.filter(function (r) { return r.ukeire === bestU; });
       if (bests.length > 1) {
         var maxPot = -1;
         bests.forEach(function (r) { if (r.variation.total > maxPot) maxPot = r.variation.total; });
@@ -643,6 +650,8 @@
       }
       // 変化まで同じ打牌が複数あれば、優劣を説明できないため出題しない。
       if (bests.length !== 1) continue;
+      // 変化で不正解になる同数候補も「次点」に含める。
+      ukeireGap = bestU - an.keep[1].ukeire;
 
       var traps = detectEfficiencyTraps(counts, bests[0].discard, an.all);
       var problem = {
@@ -725,7 +734,7 @@
         redFlags: assignRedFives(split.hand),
       };
     }
-    return null; // 1000回試して見つからないことは実質ない
+    return null; // 条件を緩めず、画面で再試行を案内する。
   }
 
   // ---------------------------------------------------------------
@@ -811,7 +820,7 @@
   //    受け入れ・良形率・ドラ・親子・巡目を分けて評価する必要がある
   // ---------------------------------------------------------------
   function evaluatePushFold(p) {
-    // p: { turn, shanten(0|1), ukeire, dangerRate(%), ownValue, oppIsDealer }
+    // p: { turn, shanten(0|1), ukeire, dangerRate(%), ownValue, oppIsDealer, selfIsDealer }
     var remain = Math.max(1, 18 - p.turn); // 自分に残るツモ回数の目安
     var afterShanten = p.shanten === 0 ? 0 : 1; // 旧APIは1シャンテン扱い
 
@@ -832,6 +841,8 @@
       pHandWin = pReachEffective * winAfterAdvance;
       pHandWin = Math.min(0.34, Math.max(0.02, pHandWin));
     }
+    // このモデルは手変わりを追わない。残り受け入れ0枚に和了率の下限を与えない。
+    if (p.ukeire <= 0) pHandWin = 0;
 
     // 現在の打牌で放銃すれば和了機会は消えるので、現在牌が通る確率を和了率に掛ける。
     var pNow = p.dangerRate / 100;
@@ -848,18 +859,24 @@
     var pOppWin = Math.min(0.52, 0.045 * remain);
 
     var dealLoss = p.oppIsDealer ? 7700 : 5300; // 放銃時の平均失点
-    var tsumoPay = p.oppIsDealer ? 2300 : 1400; // 相手ツモ時の平均支払い
+    // 子のツモに対する親の支払いは、他の子の2倍とする。
+    var tsumoPay = p.oppIsDealer ? 2300 : (p.selfIsDealer ? 2800 : 1400);
 
     // 押しEV = 和了収入 − 放銃失点 − (どちらも和了しない間の)ツモられ失点
     var winGain = p.ownValue + 1000; // 供託リーチ棒込み
     var unresolved = Math.max(0, 1 - pWin - pDeal);
-    var evPush =
-      pWin * winGain -
-      pDeal * dealLoss -
-      unresolved * (pOppWin * 0.85) * 0.4 * tsumoPay;
+    var pTsumoPush = unresolved * (pOppWin * 0.85) * 0.4;
+    var pTsumoFold = pOppWin * 0.4;
+    var winIncome = pWin * winGain;
+    var dealExpense = pDeal * dealLoss;
+    var tsumoExpensePush = pTsumoPush * tsumoPay;
+    var tsumoExpenseFold = pTsumoFold * tsumoPay;
+    var evPush = winIncome - dealExpense - tsumoExpensePush;
 
     // オリEV = ツモられ失点のみ（放銃はほぼゼロ）+ テンパイ料などの機会損失
-    var evFold = -(pOppWin * 0.4 * tsumoPay) - 300;
+    var evFold = -tsumoExpenseFold - 300;
+    var roundedPush = Math.round(evPush);
+    var roundedFold = Math.round(evFold);
 
     return {
       pWin: pWin,
@@ -867,10 +884,15 @@
       pOppWin: pOppWin,
       shanten: afterShanten,
       dealLoss: dealLoss,
-      evPush: Math.round(evPush),
-      evFold: Math.round(evFold),
-      answer: evPush > evFold ? "push" : "fold",
-      diff: Math.round(evPush - evFold),
+      tsumoPay: tsumoPay,
+      pTsumoPush: pTsumoPush,
+      pTsumoFold: pTsumoFold,
+      breakdown: { winIncome: winIncome, dealExpense: dealExpense,
+        tsumoExpensePush: tsumoExpensePush, tsumoExpenseFold: tsumoExpenseFold, foldCost: 300 },
+      evPush: roundedPush,
+      evFold: roundedFold,
+      answer: roundedPush > roundedFold ? "push" : "fold",
+      diff: roundedPush - roundedFold,
     };
   }
 
@@ -928,6 +950,7 @@
         dangerRate: dangerRate,
         ownValue: value.ownValue,
         oppIsDealer: p.oppIsDealer,
+        selfIsDealer: p.selfIsDealer,
       });
       return {
         discard: row.discard,
@@ -1087,7 +1110,12 @@
       var pushRow = candidates[0];
       var pushTile = pushRow.discard;
       var PUSH_MIN_RATE = 3.0;
-      if (pushRow.dangerRate < PUSH_MIN_RATE) continue; // 安全牌が最善なら危険牌勝負問題ではない
+      // 勝負牌と同じシャンテン数（またはそれ以上の進行）を安全に保てるなら二択にしない。
+      // テンパイを崩す現物は撤退の選択肢なので、この検査からは除く。
+      if (candidates.some(function (row) {
+        return row.shanten <= pushRow.shanten && row.dangerRate < PUSH_MIN_RATE;
+      })) continue;
+      if (pushRow.ukeire <= 0) continue;
       if (riverCounts[pushTile] > 0) continue;
 
       // 候補同士が僅差なら「本当にこの牌が最大」と言い切れないため出題しない。
@@ -1128,7 +1156,9 @@
         category: pushRow.category,
         categoryLabel: pushRow.categoryLabel,
         dangerRate: pushRow.dangerRate,
-        safestKeepRate: Math.min.apply(null, candidates.map(function (row) { return row.dangerRate; })),
+        safestKeepRate: Math.min.apply(null, candidates.filter(function (row) {
+          return row.shanten <= pushRow.shanten;
+        }).map(function (row) { return row.dangerRate; })),
         ownValue: pushRow.ownValue,
         candidateEvGap: candidateEvGap,
         candidateAnalysis: candidates,

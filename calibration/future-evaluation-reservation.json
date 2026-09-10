@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "ev-policy-future-evaluation-reservation/v1",
+  "reservationId": "phase-d-mleague-2026-27-v1",
+  "createdDate": "2026-09-06",
+  "status": "reserved",
+  "preregistrationStatus": "reservation_only",
+  "enforcementStatus": "development_input_guard_implemented",
+  "eligibleForAdoption": false,
+  "dataAvailability": "not_acquired",
+  "designPath": "PHASE_D_DESIGN.md",
+  "purpose": "prospective_observation_prediction_and_policy_model_validation",
+  "cannotDirectlyValidate": ["unobserved_action_reward", "true_causal_policy_value"],
+  "cohort": {
+    "competition": "M.LEAGUE",
+    "seasons": ["2026-27"],
+    "stages": ["regular", "semifinal", "final"],
+    "unit": "whole_match",
+    "excludeOtherCompetitions": true,
+    "completionTrigger": "official_season_complete_and_manifest_reconciled",
+    "calendarDateAloneDoesNotTriggerEvaluation": true,
+    "performanceBasedExclusionsAllowed": false,
+    "futureEventsCannotDefineInitialEligibility": true,
+    "selectionBeforeObservedAction": true,
+    "technicalExclusionRule": "frozen_parser_and_quality_rules_with_reason_ids",
+    "minimumCoverage": null,
+    "minimumMatches": null,
+    "minimumImmediateRonEvents": null
+  },
+  "development": {
+    "allowedSeasons": ["2018-19", "2019-20", "2020-21", "2021-22", "2022-23", "2023-24", "2024-25", "2025-26"],
+    "allPeriodsPreviouslyAvailable": true,
+    "forbiddenSeasons": ["2026-27"],
+    "defaultForUnlistedSeason": "reject",
+    "inputGuard": {
+      "status": "implemented",
+      "command": "python tools/calibrate_ev.py validate-policy-input",
+      "latestValidationPath": "policy-input-validation.json",
+      "datasetCommand": "python tools/calibrate_ev.py extract-policy"
+    }
+  },
+  "freeze": {
+    "status": "pending",
+    "deadlineRule": "before_first_target_match",
+    "candidateReleaseId": null,
+    "modelAndCodeManifestSha256": null,
+    "ruleProfileSha256": null,
+    "baselineManifestSha256": null,
+    "analysisPlanSha256": null,
+    "sampleSizePlanSha256": null,
+    "frozenAt": null,
+    "ifDeadlineMissed": "keep_hold_and_version_new_prospective_cohort_before_its_matches",
+    "ifTargetDataUsedForDevelopment": "invalidate_independence_for_that_release"
+  },
+  "collection": {
+    "manifest": [],
+    "acquiredMatches": 0,
+    "integrityChecksAllowed": ["file_hash", "duplicate_id", "missing_file", "schema_check"],
+    "interimPerformanceFeedbackToDevelopmentAllowed": false,
+    "accessLogPath": null,
+    "automaticDownloadConfigured": false
+  },
+  "evaluation": {
+    "lookPolicy": "single_analysis_after_complete_season",
+    "executionStatus": "not_run",
+    "candidateReleaseCount": 1,
+    "primaryUnits": {
+      "immediateRon": "all_eligible_observed_actions",
+      "roundReward": "first_eligible_decision_per_seat_round"
+    },
+    "clusterKey": ["season", "gameId"],
+    "metricFamilies": ["immediate_ron_prediction", "observational_round_reward_prediction", "policy_model_sensitivity"],
+    "thresholdsStatus": "inherited_design_plus_pending_d4_freeze",
+    "requireAllNullFreezeAndCohortFieldsResolvedBeforeSealing": true,
+    "outcomeWhenRequirementsUnmet": "hold",
+    "doNotAutomaticallyExpandAfterLookingAtResults": true,
+    "applicationAdoptionRequiresSeparateScopeAndSimulationGates": true
+  },
+  "revisionPolicy": "append_versioned_reason_and_preserve_previous_reservation",
+  "notes": [
+    "This file reserves a future evaluation cohort; it does not certify collected data or a frozen model.",
+    "The D.1 development input guard is implemented; no automatic downloader or evaluation scheduler is installed.",
+    "Future observed outcomes cannot supply ground truth for actions that were not taken."
+  ]
+}

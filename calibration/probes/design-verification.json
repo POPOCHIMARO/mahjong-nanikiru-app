@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "checkedDocuments": 6,
+  "localLinks": 19,
+  "selectionChecks": 16,
+  "plannedAcceptanceCases": 31,
+  "wheelAndSourceHashes": "match",
+  "scope": "design_and_dependency_probe_only"
+}

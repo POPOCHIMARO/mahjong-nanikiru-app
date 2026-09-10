@@ -1,0 +1,30 @@
+{
+  "batchSize": 256,
+  "calibrationSplit": "calibration",
+  "confirmationSplit": "developmentConfirmation",
+  "datasetManifestHash": "30544f6129f406563e54023a34a80d8ef7428893e5f789a48ee6661f9a7ce8d1",
+  "epochs": 2,
+  "labelDefinitionVersion": "joint-public-resolution-v1",
+  "learningRate": 0.03,
+  "maximumWindows": null,
+  "optimizer": "deterministic_minibatch_sgd",
+  "regularizationGrid": [
+    0.01,
+    0.1,
+    1.0,
+    10.0,
+    100.0
+  ],
+  "schemaVersion": "ev-policy-opponent-fit-manifest/v1",
+  "seed": 20260909,
+  "selectionSplit": "selection",
+  "temperatureGrid": [
+    0.5,
+    0.75,
+    1.0,
+    1.25,
+    1.5,
+    2.0
+  ],
+  "trainSplit": "train"
+}

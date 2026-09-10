@@ -1,0 +1,456 @@
+{
+  "schemaVersion": "ev-immediate-ron-calibration-model/v1",
+  "phase": "C1-all-observed-actions-immediate-ron",
+  "target": "immediateRonByActiveRiichi",
+  "dataset": {
+    "sourcePhase": "C1-all-observed-actions",
+    "extractionAggregateSha256": "29c5d88c6ec287dec006f967611203c6c4d1049561760e947a99efa749d38eec",
+    "records": {
+      "decisions": 30046,
+      "observedActions": 30046,
+      "primaryDecisions": 12241,
+      "adoptedIndependentRounds": 7491,
+      "adoptedMatches": 1884,
+      "immediateRonEvents": 779,
+      "rejectedDecisionRows": 215696,
+      "knownExcludedRounds": 25,
+      "chronologyExcludedRounds": 7,
+      "excludedRoundRows": 32
+    }
+  },
+  "splitLedger": {
+    "train": [
+      "2018-19",
+      "2019-20",
+      "2020-21",
+      "2021-22",
+      "2022-23"
+    ],
+    "selection": [
+      "2023-24"
+    ],
+    "calibration": [
+      "2024-25"
+    ],
+    "confirmation": [
+      "2025-26"
+    ],
+    "confirmationUsedDuringFit": false,
+    "counts": {
+      "train": 17479,
+      "selection": 4098,
+      "calibration": 3675
+    },
+    "confirmationCountFromExtractionSummaryOnly": 4794
+  },
+  "featureSpec": {
+    "means": {
+      "turn": 10.110074947079353,
+      "remaining_wall": 27.110361004634132,
+      "shanten_after": 0.8663539104067739,
+      "ukeire_count": 11.60020596143944,
+      "ukeire_kinds": 4.276903713027061,
+      "visible_discard_count": 2.5705703987642314,
+      "danger_level": 4.007895188511928,
+      "old_danger_probability": 0.016182647748727044,
+      "self_dealer": 0.2683791978946164,
+      "opponent_dealer": 0.3436123348017621,
+      "score": 2.465793237599405,
+      "score_lead": -0.0064153174285333,
+      "honba": 0.7071914869271697,
+      "riichi_sticks": 1.1758109731678013,
+      "discards_red": 0.007494707935236569,
+      "declares_riichi": 0.07740717432347388,
+      "dora_count_after": 1.091080725441959,
+      "aka_count_after": 0.5161622518450713,
+      "tsumogiri": 0.4714228502774758
+    },
+    "scales": {
+      "turn": 2.935683895404738,
+      "remaining_wall": 11.697006534815273,
+      "shanten_after": 0.34027167429814886,
+      "ukeire_count": 6.802621461475608,
+      "ukeire_kinds": 2.5205124044510114,
+      "visible_discard_count": 0.9467999168585318,
+      "danger_level": 4.539185570641024,
+      "old_danger_probability": 0.01944446153364307,
+      "self_dealer": 0.44311601644722654,
+      "opponent_dealer": 0.4749135691616358,
+      "score": 1.2184856040482246,
+      "score_lead": 1.6245860901426818,
+      "honba": 1.1011388564961864,
+      "riichi_sticks": 0.48045100097461607,
+      "discards_red": 0.08624695524018267,
+      "declares_riichi": 0.26723641908753604,
+      "dora_count_after": 0.9820460328960922,
+      "aka_count_after": 0.6410622586686232,
+      "tsumogiri": 0.499182678499301
+    },
+    "levels": {
+      "danger_class": [
+        "double_suji_middle",
+        "genbutsu",
+        "honor_2_visible",
+        "honor_3_visible",
+        "honor_live",
+        "no_chance_19",
+        "no_chance_28",
+        "non_suji_28",
+        "non_suji_37",
+        "non_suji_456",
+        "one_chance_19",
+        "one_chance_28",
+        "suji_19",
+        "suji_28",
+        "suji_37",
+        "suji_456",
+        "terminal_non_suji"
+      ],
+      "safety_group": [
+        "guarded",
+        "high_risk",
+        "moderate_risk",
+        "safe",
+        "semi_safe"
+      ],
+      "turn_bucket": [
+        "early",
+        "late",
+        "middle"
+      ],
+      "tile_band": [
+        "honor",
+        "middle",
+        "outer",
+        "terminal"
+      ],
+      "seat_wind": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ]
+    },
+    "names": [
+      "intercept",
+      "turn",
+      "remaining_wall",
+      "shanten_after",
+      "ukeire_count",
+      "ukeire_kinds",
+      "visible_discard_count",
+      "danger_level",
+      "old_danger_probability",
+      "self_dealer",
+      "opponent_dealer",
+      "score",
+      "score_lead",
+      "honba",
+      "riichi_sticks",
+      "discards_red",
+      "declares_riichi",
+      "dora_count_after",
+      "aka_count_after",
+      "tsumogiri",
+      "danger_class=genbutsu",
+      "danger_class=honor_2_visible",
+      "danger_class=honor_3_visible",
+      "danger_class=honor_live",
+      "danger_class=no_chance_19",
+      "danger_class=no_chance_28",
+      "danger_class=non_suji_28",
+      "danger_class=non_suji_37",
+      "danger_class=non_suji_456",
+      "danger_class=one_chance_19",
+      "danger_class=one_chance_28",
+      "danger_class=suji_19",
+      "danger_class=suji_28",
+      "danger_class=suji_37",
+      "danger_class=suji_456",
+      "danger_class=terminal_non_suji",
+      "safety_group=high_risk",
+      "safety_group=moderate_risk",
+      "safety_group=safe",
+      "safety_group=semi_safe",
+      "turn_bucket=late",
+      "turn_bucket=middle",
+      "tile_band=middle",
+      "tile_band=outer",
+      "tile_band=terminal",
+      "seat_wind=1",
+      "seat_wind=2",
+      "seat_wind=3"
+    ]
+  },
+  "selectedLambda": 0.01,
+  "selectionTrials": [
+    {
+      "lambda": 0.01,
+      "brier": 0.025179184488641152,
+      "logLoss": 0.10106115115596988,
+      "meanPredicted": 0.02623514051116304,
+      "observedRate": 0.027086383601756955,
+      "auc": 0.8426665943595966
+    },
+    {
+      "lambda": 0.1,
+      "brier": 0.025179431813469905,
+      "logLoss": 0.10106986203392124,
+      "meanPredicted": 0.026234964888266144,
+      "observedRate": 0.027086383601756955,
+      "auc": 0.8426575559758404
+    },
+    {
+      "lambda": 1.0,
+      "brier": 0.025179811227384104,
+      "logLoss": 0.10107108829798608,
+      "meanPredicted": 0.026236217527963696,
+      "observedRate": 0.027086383601756955,
+      "auc": 0.8430439468814187
+    },
+    {
+      "lambda": 10.0,
+      "brier": 0.025185035497226182,
+      "logLoss": 0.10109240954360572,
+      "meanPredicted": 0.02624434580602904,
+      "observedRate": 0.027086383601756955,
+      "auc": 0.8442889842438375
+    },
+    {
+      "lambda": 100.0,
+      "brier": 0.02521508518755123,
+      "logLoss": 0.10207063876158348,
+      "meanPredicted": 0.026249731368804347,
+      "observedRate": 0.027086383601756955,
+      "auc": 0.8456695973625996
+    }
+  ],
+  "baseTrainingSplits": [
+    "train",
+    "selection"
+  ],
+  "baseCoefficients": [
+    {
+      "feature": "intercept",
+      "coefficient": -4.9755573070607975
+    },
+    {
+      "feature": "turn",
+      "coefficient": 0.0875272949170195
+    },
+    {
+      "feature": "remaining_wall",
+      "coefficient": -0.10307139681447425
+    },
+    {
+      "feature": "shanten_after",
+      "coefficient": -0.19254159185452205
+    },
+    {
+      "feature": "ukeire_count",
+      "coefficient": 0.09641537436854031
+    },
+    {
+      "feature": "ukeire_kinds",
+      "coefficient": -0.07359262826449665
+    },
+    {
+      "feature": "visible_discard_count",
+      "coefficient": -0.24177464117190603
+    },
+    {
+      "feature": "danger_level",
+      "coefficient": 1.6022742617700643
+    },
+    {
+      "feature": "old_danger_probability",
+      "coefficient": 0.43532805059876317
+    },
+    {
+      "feature": "self_dealer",
+      "coefficient": 0.01630913504216393
+    },
+    {
+      "feature": "opponent_dealer",
+      "coefficient": -0.057135095445333794
+    },
+    {
+      "feature": "score",
+      "coefficient": 0.002733229561443519
+    },
+    {
+      "feature": "score_lead",
+      "coefficient": 0.0027310849169237487
+    },
+    {
+      "feature": "honba",
+      "coefficient": 0.052605565443762506
+    },
+    {
+      "feature": "riichi_sticks",
+      "coefficient": -0.00022803162677527763
+    },
+    {
+      "feature": "discards_red",
+      "coefficient": -0.005664196993409698
+    },
+    {
+      "feature": "declares_riichi",
+      "coefficient": 0.011795085808176986
+    },
+    {
+      "feature": "dora_count_after",
+      "coefficient": 0.08656443039230086
+    },
+    {
+      "feature": "aka_count_after",
+      "coefficient": -0.036393281475171575
+    },
+    {
+      "feature": "tsumogiri",
+      "coefficient": 0.057052085806335334
+    },
+    {
+      "feature": "danger_class=genbutsu",
+      "coefficient": -2.810221177416245
+    },
+    {
+      "feature": "danger_class=honor_2_visible",
+      "coefficient": 1.0306302184579739
+    },
+    {
+      "feature": "danger_class=honor_3_visible",
+      "coefficient": 0.4740589781798132
+    },
+    {
+      "feature": "danger_class=honor_live",
+      "coefficient": -0.39468134972185054
+    },
+    {
+      "feature": "danger_class=no_chance_19",
+      "coefficient": 0.3119175563420125
+    },
+    {
+      "feature": "danger_class=no_chance_28",
+      "coefficient": -3.0294142842017235
+    },
+    {
+      "feature": "danger_class=non_suji_28",
+      "coefficient": 0.8232873493705327
+    },
+    {
+      "feature": "danger_class=non_suji_37",
+      "coefficient": -0.5666326985149909
+    },
+    {
+      "feature": "danger_class=non_suji_456",
+      "coefficient": -0.9750178722490345
+    },
+    {
+      "feature": "danger_class=one_chance_19",
+      "coefficient": 0.576683627127114
+    },
+    {
+      "feature": "danger_class=one_chance_28",
+      "coefficient": 1.1674187181242854
+    },
+    {
+      "feature": "danger_class=suji_19",
+      "coefficient": -0.31041995196442584
+    },
+    {
+      "feature": "danger_class=suji_28",
+      "coefficient": 0.6742254481759123
+    },
+    {
+      "feature": "danger_class=suji_37",
+      "coefficient": -0.30546816939663596
+    },
+    {
+      "feature": "danger_class=suji_456",
+      "coefficient": -0.07217696712107848
+    },
+    {
+      "feature": "danger_class=terminal_non_suji",
+      "coefficient": 0.17530851043537746
+    },
+    {
+      "feature": "safety_group=high_risk",
+      "coefficient": -0.7183632213928597
+    },
+    {
+      "feature": "safety_group=moderate_risk",
+      "coefficient": -0.21937283928645085
+    },
+    {
+      "feature": "safety_group=safe",
+      "coefficient": -2.810221177416245
+    },
+    {
+      "feature": "safety_group=semi_safe",
+      "coefficient": 0.6766443627299747
+    },
+    {
+      "feature": "turn_bucket=late",
+      "coefficient": -0.299994902502978
+    },
+    {
+      "feature": "turn_bucket=middle",
+      "coefficient": -0.19714933435000362
+    },
+    {
+      "feature": "tile_band=middle",
+      "coefficient": 0.20912133880510508
+    },
+    {
+      "feature": "tile_band=outer",
+      "coefficient": -0.632992098982661
+    },
+    {
+      "feature": "tile_band=terminal",
+      "coefficient": 0.08641809244733414
+    },
+    {
+      "feature": "seat_wind=1",
+      "coefficient": -0.10709501125781662
+    },
+    {
+      "feature": "seat_wind=2",
+      "coefficient": 0.014692583967068696
+    },
+    {
+      "feature": "seat_wind=3",
+      "coefficient": 0.08517558834069086
+    }
+  ],
+  "plattCalibrationSplit": "calibration",
+  "platt": {
+    "intercept": 0.18019793756551347,
+    "slope": 1.0449580314122933
+  },
+  "currentEngineReference": {
+    "dangerRatesPercent": {
+      "genbutsu": 0.0,
+      "honor_3_visible": 0.05,
+      "honor_2_visible": 0.6,
+      "honor_1_visible": 1.6,
+      "honor_live": 3.2,
+      "suji_19": 2.2,
+      "suji_28": 3.1,
+      "suji_37": 3.8,
+      "suji_456": 4.1,
+      "double_suji_middle": 2.0,
+      "one_chance_19": 3.0,
+      "one_chance_28": 3.0,
+      "no_chance_19": 2.2,
+      "no_chance_28": 2.2,
+      "one_chance": 3.0,
+      "no_chance": 2.2,
+      "non_suji_19": 3.4,
+      "terminal_non_suji": 3.4,
+      "non_suji_28": 4.3,
+      "non_suji_37": 4.9,
+      "non_suji_456": 5.7
+    }
+  }
+}

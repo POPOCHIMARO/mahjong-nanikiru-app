@@ -1,2 +1,20 @@
 # 参考資料（GitHub管理対象外）
 麻雀強者の考え方/
+
+# 実牌譜から再生成できる較正用レコード（集計JSONと説明書は管理対象）
+calibration/dataset/*.jsonl
+calibration/dataset/.*.tmp
+calibration/dataset-observed/*.jsonl
+calibration/dataset-observed/.*.tmp
+calibration/dataset-policy/*.jsonl
+calibration/dataset-policy/.*.tmp
+calibration/dataset-opponent/*.jsonl.gz
+calibration/dataset-opponent/.*.tmp
+calibration/features-opponent-v2/*.jsonl.gz
+calibration/features-opponent-v2/*.tmp
+calibration/probes/opponent-features-v2/debug-features.jsonl.gz
+calibration/.dependency-cache/
+
+# Pythonの実行時キャッシュ
+__pycache__/
+*.pyc

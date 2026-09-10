@@ -1,0 +1,633 @@
+{
+  "schemaVersion": "ev-policy-synthetic-debug/v1",
+  "scopeStatus": "synthetic_debug",
+  "holdReasons": [
+    "unknown_tiles_are_uniform_not_history_conditioned",
+    "riichi_hidden_hands_are_not_conditioned_to_tenpai",
+    "opponents_never_call_or_kan",
+    "not_eligible_for_app_scoring"
+  ],
+  "ruleVersion": "mleague-round-v2",
+  "policyVersions": [
+    "closed_push_v1",
+    "closed_fold_v1"
+  ],
+  "beliefVersion": "uniform_visible_tiles_v1",
+  "opponentVersion": "closed_push_v1",
+  "decisionId": "mleague:2018-19:L001_S001_0001_01A:5:0:e69:s2",
+  "codeSha256": "6688586177ca508efd5f19b813e7eac03929e876b8667eb2c32f51a3831cc83d",
+  "inputDecisionSha256": "93a3158ea49f6675b60c31d80cf4af89891295353699b7269007ce05a6abbce7",
+  "inputActionsSha256": "835a56cc098d902ee3a9c407c72e966f3c3ad9da1b7720f0ff89e2955755e4ba",
+  "publicStateId": "15d33577f9c63db1a98cd3e0f147525dc73bfb3f28b1765b79e76eb0dfa18a74",
+  "worldSeeds": [
+    20260907,
+    20260908,
+    20260909,
+    20260910
+  ],
+  "candidates": [
+    {
+      "policyVersion": "closed_push_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 1,
+        "is_red": false,
+        "shanten_after_discard": 1,
+        "ukeire_count": 7,
+        "remaining_dora": 0,
+        "danger_levels": [
+          6
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": 200.0,
+      "outcomeCounts": {
+        "exhaustive_draw": 2,
+        "ron": 1,
+        "tsumo": 1
+      }
+    },
+    {
+      "policyVersion": "closed_push_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 2,
+        "is_red": false,
+        "shanten_after_discard": 1,
+        "ukeire_count": 5,
+        "remaining_dora": 0,
+        "danger_levels": [
+          7
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": -275.0,
+      "outcomeCounts": {
+        "exhaustive_draw": 3,
+        "tsumo": 1
+      }
+    },
+    {
+      "policyVersion": "closed_push_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 3,
+        "is_red": false,
+        "shanten_after_discard": 1,
+        "ukeire_count": 5,
+        "remaining_dora": 0,
+        "danger_levels": [
+          13
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": -275.0,
+      "outcomeCounts": {
+        "exhaustive_draw": 3,
+        "tsumo": 1
+      }
+    },
+    {
+      "policyVersion": "closed_push_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 7,
+        "is_red": false,
+        "shanten_after_discard": 1,
+        "ukeire_count": 14,
+        "remaining_dora": 0,
+        "danger_levels": [
+          0
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": 2250.0,
+      "outcomeCounts": {
+        "ron": 2,
+        "tsumo": 2
+      }
+    },
+    {
+      "policyVersion": "closed_push_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 8,
+        "is_red": false,
+        "shanten_after_discard": 1,
+        "ukeire_count": 16,
+        "remaining_dora": 0,
+        "danger_levels": [
+          0
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": 2250.0,
+      "outcomeCounts": {
+        "ron": 2,
+        "tsumo": 2
+      }
+    },
+    {
+      "policyVersion": "closed_push_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 9,
+        "is_red": false,
+        "shanten_after_discard": 1,
+        "ukeire_count": 8,
+        "remaining_dora": 0,
+        "danger_levels": [
+          9
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": -250.0,
+      "outcomeCounts": {
+        "exhaustive_draw": 2,
+        "ron": 1,
+        "tsumo": 1
+      }
+    },
+    {
+      "policyVersion": "closed_push_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 10,
+        "is_red": false,
+        "shanten_after_discard": 1,
+        "ukeire_count": 5,
+        "remaining_dora": 0,
+        "danger_levels": [
+          11
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": -400.0,
+      "outcomeCounts": {
+        "exhaustive_draw": 3,
+        "tsumo": 1
+      }
+    },
+    {
+      "policyVersion": "closed_push_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 11,
+        "is_red": false,
+        "shanten_after_discard": 1,
+        "ukeire_count": 4,
+        "remaining_dora": 0,
+        "danger_levels": [
+          12
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": 100.0,
+      "outcomeCounts": {
+        "exhaustive_draw": 3,
+        "tsumo": 1
+      }
+    },
+    {
+      "policyVersion": "closed_push_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 16,
+        "is_red": false,
+        "shanten_after_discard": 0,
+        "ukeire_count": 2,
+        "remaining_dora": 0,
+        "danger_levels": [
+          0
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": 1175.0,
+      "outcomeCounts": {
+        "ron": 3,
+        "tsumo": 1
+      }
+    },
+    {
+      "policyVersion": "closed_push_v1",
+      "initialAction": {
+        "kind": "riichi_discard",
+        "tile34": 16,
+        "is_red": false,
+        "shanten_after_discard": 0,
+        "ukeire_count": 2,
+        "remaining_dora": 0,
+        "danger_levels": [
+          0
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": 1175.0,
+      "outcomeCounts": {
+        "ron": 3,
+        "tsumo": 1
+      }
+    },
+    {
+      "policyVersion": "closed_push_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 18,
+        "is_red": false,
+        "shanten_after_discard": 1,
+        "ukeire_count": 9,
+        "remaining_dora": 0,
+        "danger_levels": [
+          9
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": 850.0,
+      "outcomeCounts": {
+        "exhaustive_draw": 1,
+        "ron": 2,
+        "tsumo": 1
+      }
+    },
+    {
+      "policyVersion": "closed_push_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 19,
+        "is_red": false,
+        "shanten_after_discard": 1,
+        "ukeire_count": 5,
+        "remaining_dora": 0,
+        "danger_levels": [
+          11
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": 475.0,
+      "outcomeCounts": {
+        "exhaustive_draw": 3,
+        "tsumo": 1
+      }
+    },
+    {
+      "policyVersion": "closed_push_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 20,
+        "is_red": false,
+        "shanten_after_discard": 1,
+        "ukeire_count": 5,
+        "remaining_dora": 0,
+        "danger_levels": [
+          12
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": 475.0,
+      "outcomeCounts": {
+        "exhaustive_draw": 3,
+        "tsumo": 1
+      }
+    },
+    {
+      "policyVersion": "closed_push_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 28,
+        "is_red": false,
+        "shanten_after_discard": 1,
+        "ukeire_count": 6,
+        "remaining_dora": 0,
+        "danger_levels": [
+          5
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": 775.0,
+      "outcomeCounts": {
+        "exhaustive_draw": 1,
+        "ron": 2,
+        "tsumo": 1
+      }
+    },
+    {
+      "policyVersion": "closed_fold_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 1,
+        "is_red": false,
+        "shanten_after_discard": 1,
+        "ukeire_count": 7,
+        "remaining_dora": 0,
+        "danger_levels": [
+          6
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": -900.0,
+      "outcomeCounts": {
+        "exhaustive_draw": 3,
+        "tsumo": 1
+      }
+    },
+    {
+      "policyVersion": "closed_fold_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 2,
+        "is_red": false,
+        "shanten_after_discard": 1,
+        "ukeire_count": 5,
+        "remaining_dora": 0,
+        "danger_levels": [
+          7
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": -900.0,
+      "outcomeCounts": {
+        "exhaustive_draw": 3,
+        "tsumo": 1
+      }
+    },
+    {
+      "policyVersion": "closed_fold_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 3,
+        "is_red": false,
+        "shanten_after_discard": 1,
+        "ukeire_count": 5,
+        "remaining_dora": 0,
+        "danger_levels": [
+          13
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": 325.0,
+      "outcomeCounts": {
+        "exhaustive_draw": 2,
+        "tsumo": 2
+      }
+    },
+    {
+      "policyVersion": "closed_fold_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 7,
+        "is_red": false,
+        "shanten_after_discard": 1,
+        "ukeire_count": 14,
+        "remaining_dora": 0,
+        "danger_levels": [
+          0
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": -900.0,
+      "outcomeCounts": {
+        "exhaustive_draw": 3,
+        "tsumo": 1
+      }
+    },
+    {
+      "policyVersion": "closed_fold_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 8,
+        "is_red": false,
+        "shanten_after_discard": 1,
+        "ukeire_count": 16,
+        "remaining_dora": 0,
+        "danger_levels": [
+          0
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": -900.0,
+      "outcomeCounts": {
+        "exhaustive_draw": 3,
+        "tsumo": 1
+      }
+    },
+    {
+      "policyVersion": "closed_fold_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 9,
+        "is_red": false,
+        "shanten_after_discard": 1,
+        "ukeire_count": 8,
+        "remaining_dora": 0,
+        "danger_levels": [
+          9
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": -900.0,
+      "outcomeCounts": {
+        "exhaustive_draw": 3,
+        "tsumo": 1
+      }
+    },
+    {
+      "policyVersion": "closed_fold_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 10,
+        "is_red": false,
+        "shanten_after_discard": 1,
+        "ukeire_count": 5,
+        "remaining_dora": 0,
+        "danger_levels": [
+          11
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": -900.0,
+      "outcomeCounts": {
+        "exhaustive_draw": 3,
+        "tsumo": 1
+      }
+    },
+    {
+      "policyVersion": "closed_fold_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 11,
+        "is_red": false,
+        "shanten_after_discard": 1,
+        "ukeire_count": 4,
+        "remaining_dora": 0,
+        "danger_levels": [
+          12
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": -900.0,
+      "outcomeCounts": {
+        "exhaustive_draw": 3,
+        "tsumo": 1
+      }
+    },
+    {
+      "policyVersion": "closed_fold_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 16,
+        "is_red": false,
+        "shanten_after_discard": 0,
+        "ukeire_count": 2,
+        "remaining_dora": 0,
+        "danger_levels": [
+          0
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": -900.0,
+      "outcomeCounts": {
+        "exhaustive_draw": 3,
+        "tsumo": 1
+      }
+    },
+    {
+      "policyVersion": "closed_fold_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 18,
+        "is_red": false,
+        "shanten_after_discard": 1,
+        "ukeire_count": 9,
+        "remaining_dora": 0,
+        "danger_levels": [
+          9
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": -900.0,
+      "outcomeCounts": {
+        "exhaustive_draw": 3,
+        "tsumo": 1
+      }
+    },
+    {
+      "policyVersion": "closed_fold_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 19,
+        "is_red": false,
+        "shanten_after_discard": 1,
+        "ukeire_count": 5,
+        "remaining_dora": 0,
+        "danger_levels": [
+          11
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": -900.0,
+      "outcomeCounts": {
+        "exhaustive_draw": 3,
+        "tsumo": 1
+      }
+    },
+    {
+      "policyVersion": "closed_fold_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 20,
+        "is_red": false,
+        "shanten_after_discard": 1,
+        "ukeire_count": 5,
+        "remaining_dora": 0,
+        "danger_levels": [
+          12
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": -900.0,
+      "outcomeCounts": {
+        "exhaustive_draw": 3,
+        "tsumo": 1
+      }
+    },
+    {
+      "policyVersion": "closed_fold_v1",
+      "initialAction": {
+        "kind": "discard",
+        "tile34": 28,
+        "is_red": false,
+        "shanten_after_discard": 1,
+        "ukeire_count": 6,
+        "remaining_dora": 0,
+        "danger_levels": [
+          5
+        ]
+      },
+      "completedTrials": 4,
+      "unscorableTrials": 0,
+      "unscorableReasons": {},
+      "meanTargetPoints": -900.0,
+      "outcomeCounts": {
+        "exhaustive_draw": 3,
+        "tsumo": 1
+      }
+    }
+  ],
+  "runtime": {
+    "seconds": 22.109963199938647,
+    "attemptedTrials": 108,
+    "trialsPerSecond": 4.884675701328154
+  }
+}

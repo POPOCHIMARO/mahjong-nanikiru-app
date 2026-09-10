@@ -1,0 +1,233 @@
+{
+  "schemaVersion": "ev-policy-observation-dataset/v1",
+  "phase": "D.3.1",
+  "status": "verified",
+  "eligibleForModelFit": true,
+  "labelDefinition": {
+    "version": "joint-public-resolution-v1",
+    "changedFromDesign": false,
+    "exactNoClaimMeansAllPass": true,
+    "priorityHiddenChoicesAreCensored": true,
+    "individualPassImputedForCensoredChoice": false,
+    "observationMass": 1.0
+  },
+  "input": {
+    "schemaVersion": "ev-policy-input-validation/v1",
+    "status": "pass",
+    "reservationId": "phase-d-mleague-2026-27-v1",
+    "reservationStatus": "reserved",
+    "selectedSeasons": [
+      "2018-19",
+      "2019-20",
+      "2020-21",
+      "2021-22",
+      "2022-23",
+      "2023-24",
+      "2024-25",
+      "2025-26"
+    ],
+    "allowedSeasons": [
+      "2018-19",
+      "2019-20",
+      "2020-21",
+      "2021-22",
+      "2022-23",
+      "2023-24",
+      "2024-25",
+      "2025-26"
+    ],
+    "forbiddenSeasons": [
+      "2026-27"
+    ],
+    "availableUnlistedSeasons": [],
+    "availableForbiddenSeasons": [],
+    "defaultForUnlistedSeason": "reject",
+    "files": [
+      {
+        "season": "2018-19",
+        "path": "data/mleague/paifu/2018-19.jsonl",
+        "bytes": 5698399,
+        "sha256": "bf54d09c07860529086027f94c92532ba95768fcd6451c39d5a1885a8cf41f32"
+      },
+      {
+        "season": "2019-20",
+        "path": "data/mleague/paifu/2019-20.jsonl",
+        "bytes": 7595216,
+        "sha256": "19e0dee18ce20aa84c67e07e5a5b86bf2fbff48d45dfaac57821cbc20096600d"
+      },
+      {
+        "season": "2020-21",
+        "path": "data/mleague/paifu/2020-21.jsonl",
+        "bytes": 7384925,
+        "sha256": "4cf1ee7ecdc7092bf683cc0a3f5f0fc1dc31c6765ae7bd503b11caea0e5dc365"
+      },
+      {
+        "season": "2021-22",
+        "path": "data/mleague/paifu/2021-22.jsonl",
+        "bytes": 7562891,
+        "sha256": "7ce113263d53baa366aba950694a14ae759eab572da88f9c340d3f3281bcbd94"
+      },
+      {
+        "season": "2022-23",
+        "path": "data/mleague/paifu/2022-23.jsonl",
+        "bytes": 8342958,
+        "sha256": "d0f68a06a190c18be6d7c5a3aac8fc2256d09057a58a7bf2527a1e812c9d0625"
+      },
+      {
+        "season": "2023-24",
+        "path": "data/mleague/paifu/2023-24.jsonl",
+        "bytes": 9019378,
+        "sha256": "353acf25e5f2a51d630cbc3fe56a586fe11b0145630225ba14c70a70ba2f5941"
+      },
+      {
+        "season": "2024-25",
+        "path": "data/mleague/paifu/2024-25.jsonl",
+        "bytes": 9066012,
+        "sha256": "5ecf9ac525443d6ba64a4804614661c47447cc693bf9fcf74743f4f95f10dccf"
+      },
+      {
+        "season": "2025-26",
+        "path": "data/mleague/paifu/2025-26.jsonl",
+        "bytes": 11941406,
+        "sha256": "15fa214ddc03d8a3be84a22179982f3df128f7bf5e2a28d547a123b594ffa943"
+      }
+    ]
+  },
+  "d1AggregateSha256": "07a447c550c6de4e105d746e453f539ee6199a1f78396a3190bcf9476456737a",
+  "maximumRounds": null,
+  "totals": {
+    "heldSouth4OrLaterD1": 3199,
+    "heldSouth4OrLaterRounds": 2891,
+    "inferencePrefixes": 32019,
+    "outcomes": 20447,
+    "privateRoundSeats": 93352,
+    "publicRounds": 23338,
+    "roundsSeen": 23358,
+    "teacherWindows": 2085155
+  },
+  "phases": {
+    "chankan_response": 364,
+    "discard_response": 1037978,
+    "self_action_after_call": 25137,
+    "self_action_after_live": 1020265,
+    "self_action_after_rinshan": 1411
+  },
+  "labelStatuses": {
+    "censored": 67992,
+    "exact": 4093504,
+    "hold": 343
+  },
+  "rejectionReasons": {
+    "IllegalAction:この打牌ではリーチできない": 3,
+    "IllegalAction:リーチ後はツモ切りだけ可能": 1,
+    "RecordedChronologyError:discard_count_mismatch": 6,
+    "RecordedChronologyError:initial_dora_missing": 6,
+    "RecordedChronologyError:initial_hand_invalid:2": 1,
+    "RecordedChronologyError:unparseable_draw": 1,
+    "RecordedChronologyError:手牌にない牌token: 13": 1,
+    "RecordedChronologyError:手牌にない牌token: 15": 1,
+    "RecordedChronologyError:手牌にない牌token: 36": 1,
+    "RecordedChronologyError:手牌にない牌token: 43": 1,
+    "RecordedChronologyError:手牌にない牌token: 46": 1,
+    "RecordedChronologyError:手牌にない牌token: 53": 1,
+    "additional_dora_missing": 6,
+    "initial_inventory_invalid": 1,
+    "observed_inventory_invalid": 13,
+    "south4_or_later_outside_initial_policy_scope": 2891
+  },
+  "seasons": {
+    "2018-19": 1993,
+    "2019-20": 2660,
+    "2020-21": 2580,
+    "2021-22": 2633,
+    "2022-23": 2913,
+    "2023-24": 3173,
+    "2024-25": 3190,
+    "2025-26": 4216
+  },
+  "generatedFiles": {
+    "files": [
+      {
+        "path": "inference-prefixes.jsonl.gz",
+        "bytes": 4385166,
+        "sha256": "df1bfbc8fa4865772c99c1cd2c18c9a322cb67bb16837d8241c960aee6a18040"
+      },
+      {
+        "path": "observed-outcomes.jsonl.gz",
+        "bytes": 281122,
+        "sha256": "fc17fcb369b13af8771d23ba82c3a64248345b13155eac1570c7e43432fb53b0"
+      },
+      {
+        "path": "private-events.jsonl.gz",
+        "bytes": 20941572,
+        "sha256": "c1239a6e4684950ebb8d25e7cd0583d493516150fcf378906b711b87bed39ea0"
+      },
+      {
+        "path": "public-events.jsonl.gz",
+        "bytes": 11471772,
+        "sha256": "9ef1d4f47a8e639f9668b23da30e8dae3e45fe10be6e538c2e8e6f24ec05cf29"
+      },
+      {
+        "path": "rejections.jsonl.gz",
+        "bytes": 11014,
+        "sha256": "541559efa2361892a4400ded6c2a1222610d420f8cd803474c82aa0d63d46c28"
+      },
+      {
+        "path": "teacher-windows.jsonl.gz",
+        "bytes": 62870185,
+        "sha256": "5bd36467a2cd8c0b96bc132f3d5213006b028c1bb52f2abd4fc353b644225253"
+      }
+    ],
+    "aggregateSha256": "e313caa3fe978719d714c53dcebd906d1305620fe181afff258b25e91e0f780f"
+  },
+  "runtimeEnvironment": {
+    "pythonVersion": "3.12.14",
+    "scoringPackageVersion": "2.0.0"
+  },
+  "codeManifest": {
+    "files": [
+      {
+        "path": "calibration/PHASE_D3_DESIGN.md",
+        "bytes": 39905,
+        "sha256": "8cb5b9c707fb73397f94ef4ac8a6df8bf4106df18015f6b57bbe030484975c43"
+      },
+      {
+        "path": "tools/calibrate_ev.py",
+        "bytes": 119402,
+        "sha256": "66e20b52792a6d1b27d24f7e48a04284e2fad4e90cd8d84250300f75b8cd8254"
+      },
+      {
+        "path": "tools/ev_calibration_state.py",
+        "bytes": 11267,
+        "sha256": "8fae8bd8cd3a708677ed3570bfb8bca5b58d7eafa8402b7aeb3ee3b2df48a307"
+      },
+      {
+        "path": "tools/ev_policy_observation.py",
+        "bytes": 46877,
+        "sha256": "a98a8847d306a4577e06ffeee6efd84931ac8a14451eabc4f499643a5e542eac"
+      },
+      {
+        "path": "tools/ev_policy_replay.py",
+        "bytes": 40674,
+        "sha256": "4a482184a5b1e098cb03be6c5a08cad020d530a957ab3f16d0086a3568b4f8f3"
+      },
+      {
+        "path": "tools/ev_policy_round.py",
+        "bytes": 41711,
+        "sha256": "7ebc6ad3118c01287240e259fab3b77aedff1c6e2e98390b3d77a4e3c4dc857c"
+      },
+      {
+        "path": "tools/ev_policy_scoring.py",
+        "bytes": 24623,
+        "sha256": "bb794b2fc84125774a4bd46a9a15d041250b19a6e939cf9bceb8eef4e0d12472"
+      },
+      {
+        "path": "tools/ev_policy_state.py",
+        "bytes": 16901,
+        "sha256": "f30ee14c2d0e4ddba4208c0e6f7456301b33526294999a3bf7fe39f935e7232b"
+      }
+    ],
+    "aggregateSha256": "7a9df119295e1f009d0cca78f29b981e5ec168bc2fa2c420f48f342c80c49a5e"
+  },
+  "runtimeSeconds": 1386.6361235000659
+}

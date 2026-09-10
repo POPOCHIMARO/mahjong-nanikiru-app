@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "ev-observation-calibration-fit-summary/v1",
+  "phase": "C-observed-outcome-calibration",
+  "quality": "pass",
+  "modelPath": "model.json",
+  "modelSha256": "b085c35976d7b2503dcbbb9d803a08d5176171df78a002c49b0f521892729c30",
+  "datasetAggregateSha256": "0df18566afb99ff225aaf2b20a026abdf714c89e29c7b92cbbd2f47f97894f5d",
+  "splitLedger": {
+    "train": [
+      "2018-19",
+      "2019-20",
+      "2020-21",
+      "2021-22",
+      "2022-23"
+    ],
+    "selection": [
+      "2023-24"
+    ],
+    "calibration": [
+      "2024-25"
+    ],
+    "finalTest": [
+      "2025-26"
+    ],
+    "finalTestUsedDuringFit": false,
+    "counts": {
+      "train": 7124,
+      "selection": 1613,
+      "calibration": 1489
+    },
+    "finalTestCountFromExtractionSummaryOnly": 2015
+  },
+  "selected": {
+    "immediateRonLambda": 100.0,
+    "rewardLambda": 100.0,
+    "outcomeTemperature": 0.95
+  },
+  "selectionMetrics": {
+    "immediateRon": {
+      "lambda": 100.0,
+      "brier": 0.02484387669795078,
+      "logLoss": 0.10119305621414874,
+      "meanPredicted": 0.02453229543407161,
+      "observedRate": 0.026658400495970243,
+      "auc": 0.8525848022515183
+    },
+    "reward": {
+      "lambda": 100.0,
+      "outcomeLogLoss": 1.5417413581779855,
+      "rmse": 4923.739078841446,
+      "mae": 3182.885515639682,
+      "meanError": 179.6515809442368
+    }
+  },
+  "finalTestMetrics": null
+}

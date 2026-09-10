@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "ev-policy-dataset-verification/v1",
+  "status": "pass",
+  "aggregateSha256": "07a447c550c6de4e105d746e453f539ee6199a1f78396a3190bcf9476456737a",
+  "decisions": 35218,
+  "actions": 395179,
+  "riichiActionsWithOneToThreeLiveWallTiles": 118,
+  "forbiddenKeys": 0,
+  "duplicateDecisionIds": 0,
+  "duplicateActionIds": 0,
+  "orphanActions": 0,
+  "decisionsWithoutInScopeAction": 0
+}

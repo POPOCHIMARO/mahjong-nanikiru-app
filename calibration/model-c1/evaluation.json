@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "ev-immediate-ron-calibration-evaluation/v1",
+  "phase": "C1-all-observed-actions-immediate-ron",
+  "status": "hold",
+  "testIndependence": {
+    "role": "reused-confirmatory",
+    "eligibleForNewAdoptionDecision": false,
+    "reason": "2025-26は過去のフェーズC評価で開封済み。確認用であり新しい封印テストではない"
+  },
+  "interpretation": "全適格実打牌の直後放銃だけを評価。局収支と未選択行動のEVは対象外",
+  "modelSha256": "243c549406a573b26a01c0d862ffa112e9ea93482c6350772589d7587ae21860",
+  "datasetAggregateSha256": "29c5d88c6ec287dec006f967611203c6c4d1049561760e947a99efa749d38eec",
+  "confirmation": {
+    "season": "2025-26",
+    "decisions": 4794,
+    "rounds": 1246,
+    "matches": 337,
+    "immediateRonEvents": 128,
+    "shantenAfterDistribution": {
+      "0": 688,
+      "1": 4106
+    }
+  },
+  "immediateRon": {
+    "calibrated": {
+      "brier": 0.024885537755944688,
+      "logLoss": 0.0995770674866489,
+      "meanPredicted": 0.02795108259627001,
+      "observedRate": 0.026700041718815185,
+      "auc": 0.844531919738534
+    },
+    "currentDangerTable": {
+      "brier": 0.025219762724238627,
+      "logLoss": 0.10385244447967745,
+      "meanPredicted": 0.017153733833959114,
+      "observedRate": 0.026700041718815185,
+      "auc": 0.8274000080368624
+    },
+    "comparison": {
+      "metric": "brier",
+      "differenceNewMinusBaseline": -0.0003342249682939391,
+      "cluster": "gameId",
+      "matches": 337,
+      "replicates": 2000,
+      "seed": 20260906,
+      "ci95": [
+        -0.0008079614268504895,
+        0.00011539736460773831
+      ],
+      "criterion": "95%上限が0未満",
+      "status": "inconclusive"
+    },
+    "smallGroupRule": "独立表示には200判断かつ20イベント以上が必要。満たさない群は全体モデルへ縮約"
+  },
+  "excludedTargets": {
+    "rewardPoints": "全打牌では同じ局収支を重複計上するためC.1の学習・評価対象外",
+    "unselectedActions": "観測結果がないため対象外"
+  },
+  "artifacts": {
+    "reliabilityCsv": "reliability.csv",
+    "reliabilitySvg": "reliability.svg"
+  }
+}

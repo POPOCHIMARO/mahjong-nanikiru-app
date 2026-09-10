@@ -5,6 +5,10 @@
 const assert = require("assert");
 const Engine = require("../engine.js");
 
+// 失敗した問題を同じ乱数列で再現できるようにする（別seedでも監査可能）。
+let randomState = Number(process.env.TEST_SEED || 20260905) >>> 0;
+Math.random = () => ((randomState = (Math.imul(randomState, 1664525) + 1013904223) >>> 0) / 4294967296);
+
 // 短い記法から牌配列を作るヘルパー。例: parse("123m456p11z")
 // m=萬子, p=筒子, s=索子, z=字牌(1東 2南 3西 4北 5白 6發 7中)
 function parse(str) {
@@ -77,6 +81,94 @@ check("完全イーシャンテン形", shantenOf("123m456m789m1245p"), 1);
 
 // --- 打牌分析 ---
 {
+  const counts = Engine.toCounts(parse("24567m15667p1239s"));
+  check("孤立字牌がなくても2ツモの進展率が逆転する手は除外",
+    Engine.efficiencyAnswerIsSound(counts, Engine.analyzeDiscards(counts).keep), false);
+}
+{
+  const counts = Engine.toCounts(parse("123m456p789s11122z"));
+  const outside = new Array(34).fill(0);
+  const before = counts.slice();
+  const row = Engine.analyzeDiscards(counts, outside).all.find(r => r.discard === 28);
+  check("南を1枚切ると南単騎の残りは2枚", row.tiles, [{ tile: 28, count: 2 }]);
+  check("打牌分析で入力手牌を変更しない", counts, before);
+  check("打牌分析で入力外見牌を変更しない", outside, new Array(34).fill(0));
+}
+
+// 2ツモの進展率を、ukeire/improvementDetailを使わず牌の組合せから数える。
+function referenceTwoDraw(counts14, discard) {
+  const counts = counts14.slice();
+  counts[discard]--;
+  const available = counts14.map(n => 4 - n);
+  const base = Engine.shanten(counts);
+  let ways = 0;
+  for (let first = 0; first < 34; first++) {
+    const firstCopies = available[first];
+    if (!firstCopies) continue;
+    counts[first]++;
+    available[first]--;
+    if (Engine.shanten(counts) < base) ways += firstCopies * 121;
+    else {
+      let best = 0;
+      for (let cut = 0; cut < 34; cut++) {
+        if (!counts[cut]) continue;
+        counts[cut]--;
+        if (Engine.shanten(counts) === base) {
+          let accepted = 0;
+          for (let second = 0; second < 34; second++) {
+            if (!available[second]) continue;
+            counts[second]++;
+            if (Engine.shanten(counts) < base) accepted += available[second];
+            counts[second]--;
+          }
+          best = Math.max(best, accepted);
+        }
+        counts[cut]++;
+      }
+      ways += firstCopies * best;
+    }
+    counts[first]--;
+    available[first]++;
+  }
+  return ways;
+}
+
+{
+  const counts = Engine.toCounts(parse("24567m15667p123s4z"));
+  const rows = Engine.analyzeDiscards(counts).keep;
+  check("孤立字牌を残す反例を出題しない", Engine.efficiencyAnswerIsSound(counts, rows), false);
+  const details = rows.map(row => {
+    const after = counts.slice(), outside = new Array(34).fill(0);
+    after[row.discard]--; outside[row.discard]++;
+    const saved = after.slice();
+    const detail = Engine.improvementDetail(after, row.ukeire, outside);
+    assert.strictEqual(detail.twoDrawNumerator, referenceTwoDraw(counts, row.discard), "2ツモ確率を独立列挙と照合");
+    assert.deepStrictEqual(after, saved, "変化計算で入力手牌を変更しない");
+    for (const tile of detail.tiles) assert.strictEqual(tile.count, 4 - counts[tile.tile], "変化も打牌を山へ戻さない");
+    return detail;
+  });
+  check("受け入れ最大の6pより北切りの2ツモ進展率が高い", details[2].twoDrawNumerator > details[0].twoDrawNumerator, true);
+}
+
+{
+  const p = { turn: 12, shanten: 0, ukeire: 8, dangerRate: 5.7, ownValue: 4500, oppIsDealer: false };
+  check("純カラのテンパイを和了率の下限で過大評価しない", Engine.evaluatePushFold({ ...p, ukeire: 0 }).pWin, 0);
+  const child = Engine.evaluatePushFold(p);
+  const dealer = Engine.evaluatePushFold({ ...p, selfIsDealer: true });
+  check("子ツモに対する親の支払いは子の2倍", dealer.tsumoPay, child.tsumoPay * 2);
+  check("同じ打点でも自分が親なら被ツモ損失が増す", dealer.evFold < child.evFold, true);
+  for (const ev of [child, dealer]) {
+    const b = ev.breakdown;
+    assert.strictEqual(ev.evPush, Math.round(b.winIncome - b.dealExpense - b.tsumoExpensePush));
+    assert.strictEqual(ev.evFold, Math.round(-b.tsumoExpenseFold - b.foldCost));
+    assert.strictEqual(ev.diff, ev.evPush - ev.evFold);
+    assert.ok(ev.pWin + ev.pDeal + ev.pTsumoPush <= 1);
+  }
+  passed++;
+  console.log("ok - EVの内訳再構成と排他的確率");
+}
+
+{
   // 14枚: 123m456m789m1245p 11z? → 123m456m789m 1245p 1z のような手で確認
   const counts = Engine.toCounts(parse("123m456m789m12457p"));
   const an = Engine.analyzeDiscards(counts, null);
@@ -102,7 +194,9 @@ check("完全イーシャンテン形", shantenOf("123m456m789m1245p"), 1);
 
   const potOf = (tile) => {
     counts[tile]--;
-    const pot = Engine.improvementPotential(counts, byTile[Engine.tileShort(tile)].ukeire);
+    const outside = new Array(34).fill(0);
+    outside[tile]++;
+    const pot = Engine.improvementPotential(counts, byTile[Engine.tileShort(tile)].ukeire, outside);
     counts[tile]++;
     return pot;
   };
@@ -117,7 +211,7 @@ check("完全イーシャンテン形", shantenOf("123m456m789m1245p"), 1);
   const counts = Engine.toCounts(parse("12344m46788p567s4z"));
   const an = Engine.analyzeDiscards(counts, null);
   check("健全な僅差問題の受け入れ最大は北切り", Engine.tileShort(an.keep[0].discard), "北");
-  check("健全な僅差問題は出題ガードを通る", Engine.efficiencyAnswerIsSound(counts, an.keep), true);
+  check("受け入れと2ツモの進展率で優位な問題は通る", Engine.efficiencyAnswerIsSound(counts, an.keep), true);
 }
 // --- 罠型の判定（固定の手牌で4種を1つずつ確認する） ---
 // 問題生成はランダムなので、罠型の正しさは生成結果の割合ではなく
@@ -390,6 +484,9 @@ for (let i = 0; i < efficiencySamplesPerDifficulty * efficiencyDifficulties.leng
   for (const row of p.analysis) {
     assert.strictEqual(row.shanten, 1, "候補打牌はすべて1シャンテンに進む");
     assert.ok(row.ukeire <= bestU, "受け入れ降順");
+    for (const x of row.tiles) {
+      assert.strictEqual(x.count, 4 - Engine.toCounts(p.hand)[x.tile], "今切る牌も見え枚数に含める");
+    }
     // 解説の「変化」列用に、候補ごとの変化内訳が付与されている
     assert.ok(row.variation, "各候補行に変化の内訳が付与される");
     assert.ok(row.variation.total >= 0, "変化の合計枚数は0以上");
@@ -409,6 +506,10 @@ for (let i = 0; i < efficiencySamplesPerDifficulty * efficiencyDifficulties.leng
   // 受け入れ最大が同率のときは、変化の枚数が多い打牌だけが正解になる
   const topRows = p.analysis.filter((r) => r.ukeire === bestU);
   const maxPot = Math.max(...topRows.map((r) => r.variation.total));
+  assert.ok(p.analysis.every(r => r.variation.twoDrawNumerator <= p.analysis[0].variation.twoDrawNumerator),
+    "下位候補も含め2ツモ以内の進展率で逆転しない");
+  const honor = Engine.toCounts(p.hand).findIndex((count, t) => t >= 27 && count === 1);
+  if (honor >= 0) assert.deepStrictEqual(p.bestDiscards, [honor], "孤立字牌を残す正解を出さない");
   const expectedBest = topRows.filter((r) => r.variation.total === maxPot).map((r) => r.discard).sort((a, b) => a - b);
   assert.deepStrictEqual([...p.bestDiscards].sort((a, b) => a - b), expectedBest, "受け入れ最大かつ変化最大の打牌だけが正解");
   if (difficulty === "standard") {
@@ -416,12 +517,12 @@ for (let i = 0; i < efficiencySamplesPerDifficulty * efficiencyDifficulties.leng
   }
   assert.ok(!p.bestDiscards.includes(p.drawnTile), "ツモ切りでは2シャンテンに戻るため正解にならない");
 
-  const second = p.analysis.filter((r) => r.ukeire < bestU);
+  const second = p.analysis.filter((r) => !p.bestDiscards.includes(r.discard));
   assert.ok(second.length > 0, "不正解の打牌候補がある");
   const gap = bestU - second[0].ukeire;
   assert.strictEqual(p.ukeireGap, gap, "正解と最大の不正解の受け入れ枚数差を保持する");
   if (difficulty === "hard") {
-    assert.ok(gap >= 1 && gap <= 2, "高難度は不正解との受け入れ枚数差が1〜2枚");
+    assert.ok(gap >= 0 && gap <= 2, "高難度は不正解との受け入れ枚数差が0〜2枚");
   } else {
     assert.ok(gap >= 3, "通常難度は不正解との受け入れ枚数差が3枚以上");
   }
@@ -523,6 +624,9 @@ for (let i = 0; i < 20; i++) {
   assert.strictEqual(p.candidateEvGap, candidates[0].ev.evPush - candidates[1].ev.evPush, "次点候補とのEV差が一致");
   assert.ok(p.candidateEvGap >= 75, "押し候補の1位と2位はEV75点以上差");
   assert.ok(p.dangerRate >= 3.0, "勝負牌は危険押し相当（放銃率3%以上）");
+  assert.ok(candidates.filter(row => row.shanten <= p.pushShanten).every(row => row.dangerRate >= 3),
+    "勝負牌と同じかよりよいシャンテンを安全に維持する選択肢がない");
+  assert.strictEqual(p.ev.diff, p.ev.evPush - p.ev.evFold, "表示EVと差が一致する");
   assert.ok(
     an.all.some((row) => row.discard === p.pushTile && (row.shanten === 0 || row.shanten === 1)),
     "勝負牌はテンパイまたは1シャンテンを保つ攻撃候補に含まれる"

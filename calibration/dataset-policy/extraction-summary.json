@@ -1,0 +1,285 @@
+{
+  "schemaVersion": "ev-policy-extraction-summary/v1",
+  "phase": "D1-policy-input",
+  "quality": {
+    "status": "pass_with_exclusions",
+    "errors": []
+  },
+  "ruleProfileId": "mleague-phase-d-v1",
+  "selectionContract": {
+    "eligibility": "ツモ前13枚が1シャンテンで、選択前の14枚に打牌後0/1シャンテンとなる候補がある",
+    "actualActionMayLeaveScope": true,
+    "futureChronologyFailureKeepsValidPrefix": true,
+    "actualActionAndOutcomeExcludedFromPolicyPayload": true
+  },
+  "input": {
+    "schemaVersion": "ev-policy-input-validation/v1",
+    "status": "pass",
+    "reservationId": "phase-d-mleague-2026-27-v1",
+    "reservationStatus": "reserved",
+    "selectedSeasons": [
+      "2018-19",
+      "2019-20",
+      "2020-21",
+      "2021-22",
+      "2022-23",
+      "2023-24",
+      "2024-25",
+      "2025-26"
+    ],
+    "allowedSeasons": [
+      "2018-19",
+      "2019-20",
+      "2020-21",
+      "2021-22",
+      "2022-23",
+      "2023-24",
+      "2024-25",
+      "2025-26"
+    ],
+    "forbiddenSeasons": [
+      "2026-27"
+    ],
+    "availableUnlistedSeasons": [],
+    "availableForbiddenSeasons": [],
+    "defaultForUnlistedSeason": "reject",
+    "files": [
+      {
+        "season": "2018-19",
+        "path": "data/mleague/paifu/2018-19.jsonl",
+        "bytes": 5698399,
+        "sha256": "bf54d09c07860529086027f94c92532ba95768fcd6451c39d5a1885a8cf41f32"
+      },
+      {
+        "season": "2019-20",
+        "path": "data/mleague/paifu/2019-20.jsonl",
+        "bytes": 7595216,
+        "sha256": "19e0dee18ce20aa84c67e07e5a5b86bf2fbff48d45dfaac57821cbc20096600d"
+      },
+      {
+        "season": "2020-21",
+        "path": "data/mleague/paifu/2020-21.jsonl",
+        "bytes": 7384925,
+        "sha256": "4cf1ee7ecdc7092bf683cc0a3f5f0fc1dc31c6765ae7bd503b11caea0e5dc365"
+      },
+      {
+        "season": "2021-22",
+        "path": "data/mleague/paifu/2021-22.jsonl",
+        "bytes": 7562891,
+        "sha256": "7ce113263d53baa366aba950694a14ae759eab572da88f9c340d3f3281bcbd94"
+      },
+      {
+        "season": "2022-23",
+        "path": "data/mleague/paifu/2022-23.jsonl",
+        "bytes": 8342958,
+        "sha256": "d0f68a06a190c18be6d7c5a3aac8fc2256d09057a58a7bf2527a1e812c9d0625"
+      },
+      {
+        "season": "2023-24",
+        "path": "data/mleague/paifu/2023-24.jsonl",
+        "bytes": 9019378,
+        "sha256": "353acf25e5f2a51d630cbc3fe56a586fe11b0145630225ba14c70a70ba2f5941"
+      },
+      {
+        "season": "2024-25",
+        "path": "data/mleague/paifu/2024-25.jsonl",
+        "bytes": 9066012,
+        "sha256": "5ecf9ac525443d6ba64a4804614661c47447cc693bf9fcf74743f4f95f10dccf"
+      },
+      {
+        "season": "2025-26",
+        "path": "data/mleague/paifu/2025-26.jsonl",
+        "bytes": 11941406,
+        "sha256": "15fa214ddc03d8a3be84a22179982f3df128f7bf5e2a28d547a123b594ffa943"
+      }
+    ]
+  },
+  "records": {
+    "decisions": 35218,
+    "actions": 395179,
+    "primaryDecisions": 13895,
+    "primaryIndependentRounds": 7849,
+    "matches": 1896,
+    "rejections": 210830
+  },
+  "rejectionReasons": {
+    "chronology_discard_count_mismatch": 6,
+    "chronology_discard_tile_missing": 6,
+    "chronology_unparseable_draw": 1,
+    "decision_not_after_normal_draw": 43230,
+    "initial_hand_invalid": 1,
+    "multiple_opponent_riichi": 24292,
+    "own_riichi_already_active": 21406,
+    "prior_call_or_kan": 110654,
+    "round_metadata_incomplete": 14,
+    "score_conservation_violation": 14,
+    "shanten_before_draw_not_one": 186492,
+    "visible_tile_count_over_four": 1
+  },
+  "seasons": {
+    "2018-19": {
+      "accepted_decisions": 2990,
+      "actions": 33494,
+      "candidate_rows": 33494,
+      "chronology_discard_count_mismatch": 2,
+      "chronology_discard_tile_missing": 1,
+      "chronology_unparseable_draw": 1,
+      "decisions": 2990,
+      "discarded_accepted_decisions_due_to_round_chronology": 0,
+      "expected_discards": 102141,
+      "primary_decisions": 1158,
+      "processed_discards": 102086,
+      "rejected_decision_not_after_normal_draw": 3402,
+      "rejected_multiple_opponent_riichi": 1921,
+      "rejected_own_riichi_already_active": 1672,
+      "rejected_prior_call_or_kan": 8994,
+      "rejected_round_metadata_incomplete": 1,
+      "rejected_shanten_before_draw_not_one": 14914,
+      "roundsSeen": 1993
+    },
+    "2019-20": {
+      "accepted_decisions": 4416,
+      "actions": 49286,
+      "candidate_rows": 49286,
+      "chronology_discard_count_mismatch": 1,
+      "chronology_discard_tile_missing": 4,
+      "decisions": 4416,
+      "discarded_accepted_decisions_due_to_round_chronology": 0,
+      "expected_discards": 135889,
+      "initial_hand_invalid": 1,
+      "primary_decisions": 1734,
+      "processed_discards": 135748,
+      "rejected_decision_not_after_normal_draw": 3917,
+      "rejected_multiple_opponent_riichi": 2489,
+      "rejected_own_riichi_already_active": 2167,
+      "rejected_prior_call_or_kan": 10321,
+      "rejected_shanten_before_draw_not_one": 19798,
+      "roundsSeen": 2660
+    },
+    "2020-21": {
+      "accepted_decisions": 4263,
+      "actions": 47686,
+      "candidate_rows": 47686,
+      "decisions": 4263,
+      "expected_discards": 132794,
+      "primary_decisions": 1617,
+      "processed_discards": 132794,
+      "rejected_decision_not_after_normal_draw": 4552,
+      "rejected_multiple_opponent_riichi": 2352,
+      "rejected_own_riichi_already_active": 2103,
+      "rejected_prior_call_or_kan": 11808,
+      "rejected_shanten_before_draw_not_one": 20881,
+      "roundsSeen": 2580
+    },
+    "2021-22": {
+      "accepted_decisions": 4045,
+      "actions": 45390,
+      "candidate_rows": 45390,
+      "chronology_discard_count_mismatch": 2,
+      "decisions": 4045,
+      "discarded_accepted_decisions_due_to_round_chronology": 0,
+      "expected_discards": 135987,
+      "primary_decisions": 1648,
+      "processed_discards": 135981,
+      "rejected_decision_not_after_normal_draw": 4399,
+      "rejected_multiple_opponent_riichi": 2578,
+      "rejected_own_riichi_already_active": 2277,
+      "rejected_prior_call_or_kan": 11365,
+      "rejected_round_metadata_incomplete": 13,
+      "rejected_shanten_before_draw_not_one": 21158,
+      "roundsSeen": 2633
+    },
+    "2022-23": {
+      "accepted_decisions": 4933,
+      "actions": 55144,
+      "candidate_rows": 55144,
+      "decisions": 4933,
+      "expected_discards": 149253,
+      "primary_decisions": 1941,
+      "processed_discards": 149253,
+      "rejected_decision_not_after_normal_draw": 5089,
+      "rejected_multiple_opponent_riichi": 3071,
+      "rejected_own_riichi_already_active": 2673,
+      "rejected_prior_call_or_kan": 13305,
+      "rejected_shanten_before_draw_not_one": 24195,
+      "roundsSeen": 2913
+    },
+    "2023-24": {
+      "accepted_decisions": 4731,
+      "actions": 53145,
+      "candidate_rows": 53145,
+      "chronology_discard_tile_missing": 1,
+      "decisions": 4731,
+      "discarded_accepted_decisions_due_to_round_chronology": 0,
+      "expected_discards": 159048,
+      "primary_decisions": 1839,
+      "processed_discards": 159028,
+      "rejected_decision_not_after_normal_draw": 6435,
+      "rejected_multiple_opponent_riichi": 3534,
+      "rejected_own_riichi_already_active": 3146,
+      "rejected_prior_call_or_kan": 15942,
+      "rejected_shanten_before_draw_not_one": 25538,
+      "roundsSeen": 3173
+    },
+    "2024-25": {
+      "accepted_decisions": 4217,
+      "actions": 47636,
+      "candidate_rows": 47636,
+      "chronology_discard_count_mismatch": 1,
+      "decisions": 4217,
+      "discarded_accepted_decisions_due_to_round_chronology": 0,
+      "expected_discards": 159071,
+      "primary_decisions": 1664,
+      "processed_discards": 159068,
+      "rejected_decision_not_after_normal_draw": 6697,
+      "rejected_multiple_opponent_riichi": 3627,
+      "rejected_own_riichi_already_active": 3221,
+      "rejected_prior_call_or_kan": 17135,
+      "rejected_shanten_before_draw_not_one": 25686,
+      "roundsSeen": 3190
+    },
+    "2025-26": {
+      "accepted_decisions": 5623,
+      "actions": 63398,
+      "candidate_rows": 63398,
+      "decisions": 5623,
+      "expected_discards": 209249,
+      "primary_decisions": 2294,
+      "processed_discards": 209249,
+      "rejected_decision_not_after_normal_draw": 8739,
+      "rejected_multiple_opponent_riichi": 4720,
+      "rejected_own_riichi_already_active": 4147,
+      "rejected_prior_call_or_kan": 21784,
+      "rejected_score_conservation_violation": 14,
+      "rejected_shanten_before_draw_not_one": 34322,
+      "rejected_visible_tile_count_over_four": 1,
+      "roundsSeen": 4216
+    }
+  },
+  "generatedFiles": {
+    "fileCount": 3,
+    "bytes": 445456524,
+    "lines": 641227,
+    "aggregateSha256": "07a447c550c6de4e105d746e453f539ee6199a1f78396a3190bcf9476456737a",
+    "files": [
+      {
+        "path": "policy-actions.jsonl",
+        "bytes": 307487758,
+        "lines": 395179,
+        "sha256": "759c8d9b50ebdfa9ecfd6665511912bf871aad555616a4241c884ac90d1a7822"
+      },
+      {
+        "path": "policy-decisions.jsonl",
+        "bytes": 79580826,
+        "lines": 35218,
+        "sha256": "4e9278cf0df7c552316f9fe21994db948a9bb908af68e87befed65a2cca01357"
+      },
+      {
+        "path": "rejections.jsonl",
+        "bytes": 58387940,
+        "lines": 210830,
+        "sha256": "3f05aec48dec6b2bdc1532fdf22916d8ac00a1c8131677fd3a6667f9fc41b034"
+      }
+    ]
+  }
+}

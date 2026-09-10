@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "ev-rules-source-review/v1",
+  "reviewDate": "2026-09-07",
+  "officialRules": {
+    "url": "https://m-league.jp/about/",
+    "htmlSha256": "9c916a9f56bfd05118438d1bb453dd30cf5c2b4299e47072e83bc026f9aa1af8",
+    "lastModified": null,
+    "historicalEditionVerified": false,
+    "localCache": "calibration/.dependency-cache/mleague-about.html"
+  },
+  "candidates": [
+    {
+      "package": "mahjong",
+      "sourceUrl": "https://pypi.org/pypi/mahjong/2.0.0/json",
+      "version": "2.0.0",
+      "license": "MIT",
+      "requiresPython": ">=3.10",
+      "runtimeDependencies": [],
+      "wheelSha256": "52f63a8dfda5a9e81542642ed315f0e1e8626c0d324c8d8eabb3418ae7d43870"
+    },
+    {
+      "package": "@kobalab/majiang-core",
+      "sourceUrl": "https://registry.npmjs.org/@kobalab/majiang-core/latest",
+      "version": "1.4.1",
+      "license": "MIT",
+      "runtimeDependencies": {},
+      "gitHead": "7e964296dd8eb5ff5a32f8182acdc6a0c2a81cbb"
+    },
+    {
+      "package": "pymahjong",
+      "sourceUrl": "https://pypi.org/pypi/pymahjong/json",
+      "version": "1.1.2",
+      "license": "Apache-2.0",
+      "requiresPython": ">=3.10",
+      "runtimeDependencies": [
+        "numpy",
+        "gymnasium",
+        "sphinx>=7.0.0; extra == \"docs\"",
+        "furo>=2024.0.0; extra == \"docs\"",
+        "sphinx-autodoc-typehints>=2.0.0; extra == \"docs\"",
+        "myst-parser>=2.0.0; extra == \"docs\"",
+        "sphinx-copybutton>=0.5.0; extra == \"docs\"",
+        "pytest>=7.0.0; extra == \"dev\"",
+        "ruff>=0.1.0; extra == \"dev\""
+      ]
+    }
+  ]
+}

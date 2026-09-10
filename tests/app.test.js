@@ -66,21 +66,22 @@ function makeElement(id) {
   };
 }
 
-function runAppWith(problem, tab = "tab-chin") {
+function runAppWith(problem, tab = "tab-chin", options = {}) {
   const elements = {};
   const app = makeElement("app");
   app.actionButtons = [];
   app.querySelectorAll = function (selector) {
-    if (selector !== "button[data-action]") return [];
     const buttons = [];
     const buttonPattern = /<button\b([^>]*)>/g;
     let match;
     while ((match = buttonPattern.exec(this.innerHTML)) !== null) {
       const action = match[1].match(/data-action="([^"]+)"/);
       const tile = match[1].match(/data-tile="([^"]+)"/);
-      if (!action || !tile) continue;
+      const choice = match[1].match(/data-choice="([^"]+)"/);
+      if (selector === "button[data-action]" ? (!action || !tile) : !choice) continue;
       const button = makeElement("action-button");
-      button.attributes = { "data-action": action[1], "data-tile": tile[1] };
+      button.attributes = choice ? { "data-choice": choice[1] }
+        : { "data-action": action[1], "data-tile": tile[1] };
       buttons.push(button);
     }
     this.actionButtons = buttons;
@@ -94,7 +95,7 @@ function runAppWith(problem, tab = "tab-chin") {
       return elements[id];
     },
   };
-  const storage = {};
+  const storage = Object.assign({}, options.storage);
   const localStorage = {
     getItem(key) { return storage[key] || null; },
     setItem(key, value) { storage[key] = value; },
@@ -103,18 +104,20 @@ function runAppWith(problem, tab = "tab-chin") {
     generateEfficiencyProblem: tab === "tab-eff" ? () => problem : efficiencyProblem,
     generateChinitsuProblem: () => problem,
     generatePushFoldProblem: () => problem,
-  });
+  }, options.generators);
   const window = { Engine: testEngine, location: { search: "" } };
   const source = fs.readFileSync(path.join(__dirname, "..", "app.js"), "utf8");
-  // schedulePrefetch（解説表示後の先読み）が使うタイマーはテストでは発火させない
+  const timers = new Map();
+  let timerId = 0;
   vm.runInNewContext(source, {
     window, document, localStorage, console,
-    setTimeout: () => 0,
-    clearTimeout: () => {},
+    setTimeout: fn => { timers.set(++timerId, fn); return timerId; },
+    clearTimeout: id => timers.delete(id),
   });
 
   elements[tab].click();
-  return { app, storage };
+  return { app, storage, elements, timers,
+    runTimers() { const pending = Array.from(timers.values()); timers.clear(); pending.forEach(fn => fn()); } };
 }
 
 function findActionButton(app, type, tile) {
@@ -249,3 +252,70 @@ console.log("ok - 牌効率UIで問題に付いた罠型の指摘を表示");
 }
 
 console.log("ok - 押し引きUIで候補別EV最大・シャンテン遷移・打牌後打点を表示");
+
+{
+  const hand = parseManzu("11223344556678");
+  const ev = Engine.evaluatePushFold({ turn: 8, shanten: 0, ukeire: 8,
+    dangerRate: 4.3, ownValue: 6000, oppIsDealer: false, selfIsDealer: true });
+  const p = { hand, baseHand: hand.slice(0, 13), drawnTile: hand[13], redFlags: Array(14).fill(false),
+    pushShanten: 0, turn: 8, river: [{ tile: 7, riichi: true }], selfIsDealer: true, oppIsDealer: false,
+    doraIndicator: 0, dora: 1, doraCount: 2, akaCount: 0, ownValue: 6000, pushTile: 0,
+    pushUkeire: 8, foldTile: 7, ev, answer: ev.answer, candidateAnalysis: [{}, {}],
+    candidateEvGap: 100, categoryLabel: "無スジ", dangerRate: 4.3, pushDoraCount: 2 };
+  const { app } = runAppWith(p, "tab-push");
+  app.actionButtons.find(b => b.getAttribute("data-choice") === "push").click();
+  for (const label of ["押した場合のEV", "オリた場合のEV", "和了収入", "放銃失点", "被ツモ失点", "撤退コスト"]) {
+    assert.ok(app.innerHTML.includes(label), label + "を表示する");
+  }
+  assert.ok(app.innerHTML.includes(ev.evPush.toLocaleString() + "点"));
+  assert.ok(app.innerHTML.includes(ev.evFold.toLocaleString() + "点"));
+  assert.ok(app.innerHTML.includes("支払い平均 2,800点"));
+  assert.ok(!app.innerHTML.includes("リーチ者の和了率:"), "条件付きの内部係数を実際の和了率として表示しない");
+
+  // 各モードで生成失敗を表示し、同じモードの生成器で再試行する。
+  for (const [tab, method, valid] of [
+    ["tab-eff", "generateEfficiencyProblem", efficiencyProblem()],
+    ["tab-chin", "generateChinitsuProblem", chinitsuProblem("11223345689999")],
+    ["tab-push", "generatePushFoldProblem", p],
+  ]) {
+    let ready = false;
+    const ui = runAppWith(valid, tab, { generators: { [method]: () => ready ? valid : null } });
+    assert.ok(ui.app.innerHTML.includes("見つかりませんでした"));
+    ready = true;
+    ui.elements["btn-next"].click();
+    assert.ok(!ui.app.innerHTML.includes("見つかりませんでした"));
+    assert.ok(ui.app.actionButtons.length > 0);
+  }
+}
+
+{
+  let calls = 0;
+  const ui = runAppWith(efficiencyProblem(), "tab-eff", { generators: {
+    generateEfficiencyProblem: () => { calls++; return efficiencyProblem(); },
+    generateChinitsuProblem: () => chinitsuProblem("11223345689999"),
+  } });
+  findActionButton(ui.app, "discard", 7).click();
+  const before = calls;
+  ui.runTimers();
+  assert.strictEqual(calls, before + 1);
+  ui.elements["btn-next"].click();
+  assert.strictEqual(calls, before + 1, "次の問題は先読みを消費する");
+  findActionButton(ui.app, "discard", 7).click();
+  ui.elements["tab-chin"].click();
+  ui.runTimers();
+  assert.strictEqual(calls, before + 1, "モード変更で古い先読みを取り消す");
+}
+
+{
+  const ui = runAppWith(efficiencyProblem(), "tab-eff", { storage: {
+    "nanikiru-stats": JSON.stringify({ eff: { ok: "9", total: 2 }, push: { ok: 2, total: 3 } }),
+  } });
+  assert.ok(ui.elements.scoreboard.textContent.includes("0 / 0"), "不正な数値を初期化する");
+  findActionButton(ui.app, "discard", 7).click();
+  const saved = JSON.parse(ui.storage["nanikiru-stats"]);
+  assert.deepStrictEqual(saved.eff, { ok: 1, total: 1 });
+  assert.deepStrictEqual(saved.push, { ok: 2, total: 3 }, "正常な他モードの成績は保持する");
+  assert.deepStrictEqual(saved.chin, { ok: 0, total: 0 }, "旧保存形式に清一色を補う");
+}
+
+console.log("ok - 押し引き回答とEV内訳、全モード再試行、先読み取消、成績復元");

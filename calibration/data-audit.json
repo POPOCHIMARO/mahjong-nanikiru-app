@@ -1,0 +1,1476 @@
+{
+  "schemaVersion": "ev-calibration-data-audit/v1",
+  "phase": "A-data-audit",
+  "source": {
+    "root": "麻雀強者の考え方",
+    "readOnlyContract": true,
+    "allInputs": {
+      "fileCount": 12,
+      "bytes": 160338341,
+      "lines": 143649,
+      "aggregateSha256": "523eb8f26f54925fc845b84379881b78e1f1a9e0a4566052776d138268a30b5b",
+      "files": [
+        {
+          "path": "data/mleague/danger/against_riichi_decisions_with_danger.jsonl",
+          "bytes": 93724737,
+          "lines": 120283,
+          "sha256": "9b6352f23e2d85aab0934886e55bb935090a208f95a5440e3a268ae97afe9b72"
+        },
+        {
+          "path": "data/mleague/paifu/2018-19.jsonl",
+          "bytes": 5698399,
+          "lines": 1993,
+          "sha256": "bf54d09c07860529086027f94c92532ba95768fcd6451c39d5a1885a8cf41f32"
+        },
+        {
+          "path": "data/mleague/paifu/2019-20.jsonl",
+          "bytes": 7595216,
+          "lines": 2660,
+          "sha256": "19e0dee18ce20aa84c67e07e5a5b86bf2fbff48d45dfaac57821cbc20096600d"
+        },
+        {
+          "path": "data/mleague/paifu/2020-21.jsonl",
+          "bytes": 7384925,
+          "lines": 2580,
+          "sha256": "4cf1ee7ecdc7092bf683cc0a3f5f0fc1dc31c6765ae7bd503b11caea0e5dc365"
+        },
+        {
+          "path": "data/mleague/paifu/2021-22.jsonl",
+          "bytes": 7562891,
+          "lines": 2633,
+          "sha256": "7ce113263d53baa366aba950694a14ae759eab572da88f9c340d3f3281bcbd94"
+        },
+        {
+          "path": "data/mleague/paifu/2022-23.jsonl",
+          "bytes": 8342958,
+          "lines": 2913,
+          "sha256": "d0f68a06a190c18be6d7c5a3aac8fc2256d09057a58a7bf2527a1e812c9d0625"
+        },
+        {
+          "path": "data/mleague/paifu/2023-24.jsonl",
+          "bytes": 9019378,
+          "lines": 3173,
+          "sha256": "353acf25e5f2a51d630cbc3fe56a586fe11b0145630225ba14c70a70ba2f5941"
+        },
+        {
+          "path": "data/mleague/paifu/2024-25.jsonl",
+          "bytes": 9066012,
+          "lines": 3190,
+          "sha256": "5ecf9ac525443d6ba64a4804614661c47447cc693bf9fcf74743f4f95f10dccf"
+        },
+        {
+          "path": "data/mleague/paifu/2025-26.jsonl",
+          "bytes": 11941406,
+          "lines": 4216,
+          "sha256": "15fa214ddc03d8a3be84a22179982f3df128f7bf5e2a28d547a123b594ffa943"
+        },
+        {
+          "path": "data/mleague/validation/hand_reconstruction_issues/2018-19.jsonl",
+          "bytes": 336,
+          "lines": 1,
+          "sha256": "f58a125206a642f9bbc93c9b92de886917638e744890f4ca54a175660d894dfb"
+        },
+        {
+          "path": "data/mleague/validation/hand_reconstruction_issues/2019-20.jsonl",
+          "bytes": 1498,
+          "lines": 5,
+          "sha256": "a846256370ff57a9bb1bd3650e84b57770eb4209617c6adbc991b06ace918c27"
+        },
+        {
+          "path": "data/mleague/validation/hand_reconstruction_issues/2023-24.jsonl",
+          "bytes": 585,
+          "lines": 2,
+          "sha256": "1c67ec7f70314827468bef29b0d33938b59bd0a07370e42c2f46b342a73edf76"
+        }
+      ]
+    },
+    "paifu": {
+      "fileCount": 8,
+      "bytes": 66611185,
+      "lines": 23358,
+      "aggregateSha256": "2c25e8d9ecf4b640ae0a8809ba88497a4043550e85a50a69ed341f04e6fdc74b",
+      "files": [
+        {
+          "path": "data/mleague/paifu/2018-19.jsonl",
+          "bytes": 5698399,
+          "lines": 1993,
+          "sha256": "bf54d09c07860529086027f94c92532ba95768fcd6451c39d5a1885a8cf41f32"
+        },
+        {
+          "path": "data/mleague/paifu/2019-20.jsonl",
+          "bytes": 7595216,
+          "lines": 2660,
+          "sha256": "19e0dee18ce20aa84c67e07e5a5b86bf2fbff48d45dfaac57821cbc20096600d"
+        },
+        {
+          "path": "data/mleague/paifu/2020-21.jsonl",
+          "bytes": 7384925,
+          "lines": 2580,
+          "sha256": "4cf1ee7ecdc7092bf683cc0a3f5f0fc1dc31c6765ae7bd503b11caea0e5dc365"
+        },
+        {
+          "path": "data/mleague/paifu/2021-22.jsonl",
+          "bytes": 7562891,
+          "lines": 2633,
+          "sha256": "7ce113263d53baa366aba950694a14ae759eab572da88f9c340d3f3281bcbd94"
+        },
+        {
+          "path": "data/mleague/paifu/2022-23.jsonl",
+          "bytes": 8342958,
+          "lines": 2913,
+          "sha256": "d0f68a06a190c18be6d7c5a3aac8fc2256d09057a58a7bf2527a1e812c9d0625"
+        },
+        {
+          "path": "data/mleague/paifu/2023-24.jsonl",
+          "bytes": 9019378,
+          "lines": 3173,
+          "sha256": "353acf25e5f2a51d630cbc3fe56a586fe11b0145630225ba14c70a70ba2f5941"
+        },
+        {
+          "path": "data/mleague/paifu/2024-25.jsonl",
+          "bytes": 9066012,
+          "lines": 3190,
+          "sha256": "5ecf9ac525443d6ba64a4804614661c47447cc693bf9fcf74743f4f95f10dccf"
+        },
+        {
+          "path": "data/mleague/paifu/2025-26.jsonl",
+          "bytes": 11941406,
+          "lines": 4216,
+          "sha256": "15fa214ddc03d8a3be84a22179982f3df128f7bf5e2a28d547a123b594ffa943"
+        }
+      ]
+    },
+    "validationIssues": {
+      "fileCount": 3,
+      "bytes": 2419,
+      "lines": 8,
+      "aggregateSha256": "02e9ac5d65d2ef5c4c360876a26a4ed36fe2b0b5f0d11598372aabd4ae40bdc8",
+      "files": [
+        {
+          "path": "data/mleague/validation/hand_reconstruction_issues/2018-19.jsonl",
+          "bytes": 336,
+          "lines": 1,
+          "sha256": "f58a125206a642f9bbc93c9b92de886917638e744890f4ca54a175660d894dfb"
+        },
+        {
+          "path": "data/mleague/validation/hand_reconstruction_issues/2019-20.jsonl",
+          "bytes": 1498,
+          "lines": 5,
+          "sha256": "a846256370ff57a9bb1bd3650e84b57770eb4209617c6adbc991b06ace918c27"
+        },
+        {
+          "path": "data/mleague/validation/hand_reconstruction_issues/2023-24.jsonl",
+          "bytes": 585,
+          "lines": 2,
+          "sha256": "1c67ec7f70314827468bef29b0d33938b59bd0a07370e42c2f46b342a73edf76"
+        }
+      ]
+    },
+    "dangerDecisions": {
+      "fileCount": 1,
+      "bytes": 93724737,
+      "lines": 120283,
+      "aggregateSha256": "4566bcfb78692935b33ebbaaac77e55f8cdc26f16364b8be12c5a42b30158365",
+      "files": [
+        {
+          "path": "data/mleague/danger/against_riichi_decisions_with_danger.jsonl",
+          "bytes": 93724737,
+          "lines": 120283,
+          "sha256": "9b6352f23e2d85aab0934886e55bb935090a208f95a5440e3a268ae97afe9b72"
+        }
+      ]
+    }
+  },
+  "coverage": {
+    "seasons": {
+      "2018-19": {
+        "rows": 1993,
+        "roundLogs": 1993,
+        "matches": 164,
+        "dateFrom": "2018-10-01",
+        "dateTo": "2019-03-31",
+        "stages": [
+          "final",
+          "regular"
+        ]
+      },
+      "2019-20": {
+        "rows": 2660,
+        "roundLogs": 2660,
+        "matches": 216,
+        "dateFrom": "2019-09-30",
+        "dateTo": "2020-06-23",
+        "stages": [
+          "final",
+          "regular",
+          "semifinal"
+        ]
+      },
+      "2020-21": {
+        "rows": 2580,
+        "roundLogs": 2580,
+        "matches": 216,
+        "dateFrom": "2020-10-05",
+        "dateTo": "2021-05-18",
+        "stages": [
+          "final",
+          "regular",
+          "semifinal"
+        ]
+      },
+      "2021-22": {
+        "rows": 2633,
+        "roundLogs": 2633,
+        "matches": 216,
+        "dateFrom": "2021-10-04",
+        "dateTo": "2022-04-26",
+        "stages": [
+          "final",
+          "regular",
+          "semifinal"
+        ]
+      },
+      "2022-23": {
+        "rows": 2913,
+        "roundLogs": 2913,
+        "matches": 234,
+        "dateFrom": "2022-10-03",
+        "dateTo": "2023-05-19",
+        "stages": [
+          "final",
+          "regular",
+          "semifinal"
+        ]
+      },
+      "2023-24": {
+        "rows": 3173,
+        "roundLogs": 3173,
+        "matches": 262,
+        "dateFrom": "2023-09-18",
+        "dateTo": "2024-05-17",
+        "stages": [
+          "final",
+          "regular",
+          "semifinal"
+        ]
+      },
+      "2024-25": {
+        "rows": 3190,
+        "roundLogs": 3190,
+        "matches": 262,
+        "dateFrom": "2024-09-16",
+        "dateTo": "2025-05-16",
+        "stages": [
+          "final",
+          "regular",
+          "semifinal"
+        ]
+      },
+      "2025-26": {
+        "rows": 4216,
+        "roundLogs": 4216,
+        "matches": 346,
+        "dateFrom": "2025-09-15",
+        "dateTo": "2026-05-15",
+        "stages": [
+          "final",
+          "regular",
+          "semifinal"
+        ]
+      }
+    },
+    "totals": {
+      "rows": 23358,
+      "roundLogs": 23358,
+      "matches": 1916
+    },
+    "requiredRowFields": [
+      "season",
+      "date",
+      "gameId",
+      "roundIndex",
+      "roundName",
+      "paifu"
+    ],
+    "missingByField": {},
+    "malformedJson": [],
+    "duplicateRoundKeys": [],
+    "paifuLogCountDistribution": {
+      "1": 23358
+    },
+    "akaRuleDistribution": {
+      "1": 23358
+    },
+    "resultTypeDistribution": {
+      "和了": 18692,
+      "流局": 4666
+    },
+    "settlementVectorCountDistribution": {
+      "1": 23358
+    },
+    "settlementDeltaSumDistribution": {
+      "-1000": 2724,
+      "-2000": 642,
+      "-3000": 20,
+      "-4000": 1,
+      "0": 8743,
+      "1000": 9393,
+      "2000": 1351,
+      "3000": 375,
+      "4000": 85,
+      "5000": 21,
+      "6000": 3
+    }
+  },
+  "splitAssignment": {
+    "train": [
+      "2018-19",
+      "2019-20",
+      "2020-21",
+      "2021-22",
+      "2022-23"
+    ],
+    "selection": [
+      "2023-24"
+    ],
+    "calibration": [
+      "2024-25"
+    ],
+    "finalTest": [
+      "2025-26"
+    ]
+  },
+  "exceptions": {
+    "policy": "該当する局全体を学習・評価候補から隔離する",
+    "issueEvents": 8,
+    "affectedRounds": 7,
+    "issueCounts": {
+      "discard_tile_missing": 7,
+      "initial_hand_not_13": 1
+    },
+    "duplicateIssueEvents": 0,
+    "malformedJson": [],
+    "unmatchedIssueIds": [],
+    "ids": [
+      {
+        "season": "2018-19",
+        "gameId": "L001_S001_0043_01A",
+        "roundIndex": 0,
+        "logIndex": 0,
+        "turnIndex": 6,
+        "seat": 0,
+        "issue": "discard_tile_missing"
+      },
+      {
+        "season": "2019-20",
+        "gameId": "L001_S003_0003_02A",
+        "roundIndex": 5,
+        "logIndex": 0,
+        "turnIndex": 10,
+        "seat": 3,
+        "issue": "discard_tile_missing"
+      },
+      {
+        "season": "2019-20",
+        "gameId": "L001_S003_0021_01A",
+        "roundIndex": 1,
+        "logIndex": 0,
+        "turnIndex": 9,
+        "seat": 1,
+        "issue": "discard_tile_missing"
+      },
+      {
+        "season": "2019-20",
+        "gameId": "L001_S003_0034_02A",
+        "roundIndex": 1,
+        "logIndex": 0,
+        "turnIndex": 1,
+        "seat": 0,
+        "issue": "discard_tile_missing"
+      },
+      {
+        "season": "2019-20",
+        "gameId": "L001_S003_0072_02A",
+        "roundIndex": 9,
+        "logIndex": 0,
+        "turnIndex": null,
+        "seat": 2,
+        "issue": "initial_hand_not_13"
+      },
+      {
+        "season": "2019-20",
+        "gameId": "L001_S005_0004_01A",
+        "roundIndex": 6,
+        "logIndex": 0,
+        "turnIndex": 13,
+        "seat": 3,
+        "issue": "discard_tile_missing"
+      },
+      {
+        "season": "2023-24",
+        "gameId": "L001_S016_0045_01A",
+        "roundIndex": 5,
+        "logIndex": 0,
+        "turnIndex": 3,
+        "seat": 3,
+        "issue": "discard_tile_missing"
+      },
+      {
+        "season": "2023-24",
+        "gameId": "L001_S016_0045_01A",
+        "roundIndex": 5,
+        "logIndex": 0,
+        "turnIndex": 7,
+        "seat": 3,
+        "issue": "discard_tile_missing"
+      }
+    ],
+    "affectedRoundKeys": [
+      {
+        "season": "2018-19",
+        "gameId": "L001_S001_0043_01A",
+        "roundIndex": 0,
+        "logIndex": 0
+      },
+      {
+        "season": "2019-20",
+        "gameId": "L001_S003_0003_02A",
+        "roundIndex": 5,
+        "logIndex": 0
+      },
+      {
+        "season": "2019-20",
+        "gameId": "L001_S003_0021_01A",
+        "roundIndex": 1,
+        "logIndex": 0
+      },
+      {
+        "season": "2019-20",
+        "gameId": "L001_S003_0034_02A",
+        "roundIndex": 1,
+        "logIndex": 0
+      },
+      {
+        "season": "2019-20",
+        "gameId": "L001_S003_0072_02A",
+        "roundIndex": 9,
+        "logIndex": 0
+      },
+      {
+        "season": "2019-20",
+        "gameId": "L001_S005_0004_01A",
+        "roundIndex": 6,
+        "logIndex": 0
+      },
+      {
+        "season": "2023-24",
+        "gameId": "L001_S016_0045_01A",
+        "roundIndex": 5,
+        "logIndex": 0
+      }
+    ]
+  },
+  "knownExclusions": {
+    "policy": "手牌復元または得点台帳に異常がある局は、フェーズB以降の学習・選択・較正・最終テストから除外する",
+    "uniqueRounds": 25,
+    "rounds": [
+      {
+        "season": "2018-19",
+        "gameId": "L001_S001_0043_01A",
+        "roundIndex": 0,
+        "logIndex": 0,
+        "reasons": [
+          "hand_reconstruction_issue"
+        ]
+      },
+      {
+        "season": "2019-20",
+        "gameId": "L001_S003_0003_02A",
+        "roundIndex": 5,
+        "logIndex": 0,
+        "reasons": [
+          "hand_reconstruction_issue"
+        ]
+      },
+      {
+        "season": "2019-20",
+        "gameId": "L001_S003_0021_01A",
+        "roundIndex": 1,
+        "logIndex": 0,
+        "reasons": [
+          "hand_reconstruction_issue"
+        ]
+      },
+      {
+        "season": "2019-20",
+        "gameId": "L001_S003_0022_01A",
+        "roundIndex": 12,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2019-20",
+        "gameId": "L001_S003_0022_01A",
+        "roundIndex": 13,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2019-20",
+        "gameId": "L001_S003_0022_01A",
+        "roundIndex": 14,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2019-20",
+        "gameId": "L001_S003_0034_02A",
+        "roundIndex": 1,
+        "logIndex": 0,
+        "reasons": [
+          "hand_reconstruction_issue"
+        ]
+      },
+      {
+        "season": "2019-20",
+        "gameId": "L001_S003_0072_02A",
+        "roundIndex": 9,
+        "logIndex": 0,
+        "reasons": [
+          "hand_reconstruction_issue"
+        ]
+      },
+      {
+        "season": "2019-20",
+        "gameId": "L001_S005_0004_01A",
+        "roundIndex": 6,
+        "logIndex": 0,
+        "reasons": [
+          "hand_reconstruction_issue"
+        ]
+      },
+      {
+        "season": "2022-23",
+        "gameId": "L001_S013_0021_01A",
+        "roundIndex": 16,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2022-23",
+        "gameId": "L001_S013_0021_01A",
+        "roundIndex": 17,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2022-23",
+        "gameId": "L001_S013_0021_01A",
+        "roundIndex": 18,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2023-24",
+        "gameId": "L001_S016_0045_01A",
+        "roundIndex": 5,
+        "logIndex": 0,
+        "reasons": [
+          "hand_reconstruction_issue"
+        ]
+      },
+      {
+        "season": "2025-26",
+        "gameId": "L001_S022_0011_01A",
+        "roundIndex": 9,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2025-26",
+        "gameId": "L001_S022_0011_01A",
+        "roundIndex": 10,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch",
+          "score_conservation_violation"
+        ]
+      },
+      {
+        "season": "2025-26",
+        "gameId": "L001_S022_0022_01A",
+        "roundIndex": 11,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2025-26",
+        "gameId": "L001_S022_0022_01A",
+        "roundIndex": 12,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2025-26",
+        "gameId": "L001_S022_0022_01A",
+        "roundIndex": 13,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2025-26",
+        "gameId": "L001_S022_0022_01A",
+        "roundIndex": 16,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2025-26",
+        "gameId": "L001_S022_0022_01A",
+        "roundIndex": 17,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2025-26",
+        "gameId": "L001_S022_0102_02A",
+        "roundIndex": 8,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2025-26",
+        "gameId": "L001_S022_0102_02A",
+        "roundIndex": 9,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2025-26",
+        "gameId": "L001_S022_0102_02A",
+        "roundIndex": 10,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2025-26",
+        "gameId": "L001_S022_0102_02A",
+        "roundIndex": 17,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2025-26",
+        "gameId": "L001_S022_0102_02A",
+        "roundIndex": 18,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      }
+    ]
+  },
+  "scoreLedger": {
+    "rewardDefinition": "R_t = 復元した局末の自分の点数 - 判断時点の自分の点数。局末点は局開始点 + result精算差分で得る",
+    "settlementRule": "result内の数値4要素ベクトルをすべて合算する。和了者自身が当該局でリーチした場合だけ、その和了者から1000点を控除する",
+    "validRoundLedgers": 23358,
+    "riichiDeclarationRounds": 16388,
+    "riichiDeclarations": 21223,
+    "scoreConservation": {
+      "invariant": "sum(scoresBefore) + 1000 * riichiSticksBefore == 100000",
+      "checked": 23358,
+      "violations": 1,
+      "examples": [
+        {
+          "season": "2025-26",
+          "gameId": "L001_S022_0011_01A",
+          "roundIndex": 10,
+          "logIndex": 0,
+          "scoresPlusKyotaku": 99000
+        }
+      ]
+    },
+    "betweenRoundContinuity": {
+      "formula": "nextScores = scoresBefore + aggregateSettlementDelta - winningPlayerOwnRiichiDeposit",
+      "checked": 21442,
+      "exactMatches": 21431,
+      "mismatches": 11,
+      "examples": [
+        {
+          "from": {
+            "season": "2019-20",
+            "gameId": "L001_S003_0022_01A",
+            "roundIndex": 12,
+            "logIndex": 0
+          },
+          "to": {
+            "season": "2019-20",
+            "gameId": "L001_S003_0022_01A",
+            "roundIndex": 13,
+            "logIndex": 0
+          },
+          "expectedNextScores": [
+            52400,
+            48100,
+            13600,
+            -17100
+          ],
+          "actualNextScores": [
+            46900,
+            38600,
+            6100,
+            8400
+          ],
+          "riichiDeclarationSeats": [
+            1,
+            3
+          ],
+          "winnerSeats": [],
+          "winnerRiichiDeductionSeats": [],
+          "settlementVectorCount": 1
+        },
+        {
+          "from": {
+            "season": "2019-20",
+            "gameId": "L001_S003_0022_01A",
+            "roundIndex": 13,
+            "logIndex": 0
+          },
+          "to": {
+            "season": "2019-20",
+            "gameId": "L001_S003_0022_01A",
+            "roundIndex": 14,
+            "logIndex": 0
+          },
+          "expectedNextScores": [
+            46900,
+            38600,
+            13000,
+            1500
+          ],
+          "actualNextScores": [
+            52400,
+            48100,
+            13600,
+            -17100
+          ],
+          "riichiDeclarationSeats": [],
+          "winnerSeats": [
+            2
+          ],
+          "winnerRiichiDeductionSeats": [],
+          "settlementVectorCount": 1
+        },
+        {
+          "from": {
+            "season": "2022-23",
+            "gameId": "L001_S013_0021_01A",
+            "roundIndex": 16,
+            "logIndex": 0
+          },
+          "to": {
+            "season": "2022-23",
+            "gameId": "L001_S013_0021_01A",
+            "roundIndex": 17,
+            "logIndex": 0
+          },
+          "expectedNextScores": [
+            20000,
+            -23600,
+            54500,
+            49100
+          ],
+          "actualNextScores": [
+            5000,
+            -42600,
+            23900,
+            113700
+          ],
+          "riichiDeclarationSeats": [
+            3
+          ],
+          "winnerSeats": [
+            3
+          ],
+          "winnerRiichiDeductionSeats": [
+            3
+          ],
+          "settlementVectorCount": 1
+        },
+        {
+          "from": {
+            "season": "2022-23",
+            "gameId": "L001_S013_0021_01A",
+            "roundIndex": 17,
+            "logIndex": 0
+          },
+          "to": {
+            "season": "2022-23",
+            "gameId": "L001_S013_0021_01A",
+            "roundIndex": 18,
+            "logIndex": 0
+          },
+          "expectedNextScores": [
+            5000,
+            -47600,
+            29900,
+            112700
+          ],
+          "actualNextScores": [
+            20000,
+            -23600,
+            54500,
+            49100
+          ],
+          "riichiDeclarationSeats": [
+            3
+          ],
+          "winnerSeats": [
+            2
+          ],
+          "winnerRiichiDeductionSeats": [],
+          "settlementVectorCount": 1
+        },
+        {
+          "from": {
+            "season": "2025-26",
+            "gameId": "L001_S022_0011_01A",
+            "roundIndex": 9,
+            "logIndex": 0
+          },
+          "to": {
+            "season": "2025-26",
+            "gameId": "L001_S022_0011_01A",
+            "roundIndex": 10,
+            "logIndex": 0
+          },
+          "expectedNextScores": [
+            54300,
+            44500,
+            -3500,
+            4700
+          ],
+          "actualNextScores": [
+            54300,
+            44500,
+            -4500,
+            4700
+          ],
+          "riichiDeclarationSeats": [],
+          "winnerSeats": [
+            0
+          ],
+          "winnerRiichiDeductionSeats": [],
+          "settlementVectorCount": 1
+        },
+        {
+          "from": {
+            "season": "2025-26",
+            "gameId": "L001_S022_0022_01A",
+            "roundIndex": 11,
+            "logIndex": 0
+          },
+          "to": {
+            "season": "2025-26",
+            "gameId": "L001_S022_0022_01A",
+            "roundIndex": 12,
+            "logIndex": 0
+          },
+          "expectedNextScores": [
+            18300,
+            39800,
+            -15400,
+            55300
+          ],
+          "actualNextScores": [
+            57800,
+            17100,
+            -18700,
+            43800
+          ],
+          "riichiDeclarationSeats": [
+            0
+          ],
+          "winnerSeats": [],
+          "winnerRiichiDeductionSeats": [],
+          "settlementVectorCount": 1
+        },
+        {
+          "from": {
+            "season": "2025-26",
+            "gameId": "L001_S022_0022_01A",
+            "roundIndex": 12,
+            "logIndex": 0
+          },
+          "to": {
+            "season": "2025-26",
+            "gameId": "L001_S022_0022_01A",
+            "roundIndex": 13,
+            "logIndex": 0
+          },
+          "expectedNextScores": [
+            57800,
+            12800,
+            -18700,
+            48100
+          ],
+          "actualNextScores": [
+            18300,
+            39800,
+            -15400,
+            55300
+          ],
+          "riichiDeclarationSeats": [
+            3
+          ],
+          "winnerSeats": [
+            3
+          ],
+          "winnerRiichiDeductionSeats": [
+            3
+          ],
+          "settlementVectorCount": 1
+        },
+        {
+          "from": {
+            "season": "2025-26",
+            "gameId": "L001_S022_0022_01A",
+            "roundIndex": 16,
+            "logIndex": 0
+          },
+          "to": {
+            "season": "2025-26",
+            "gameId": "L001_S022_0022_01A",
+            "roundIndex": 17,
+            "logIndex": 0
+          },
+          "expectedNextScores": [
+            57800,
+            17100,
+            -18700,
+            43800
+          ],
+          "actualNextScores": [
+            57800,
+            12800,
+            -18700,
+            48100
+          ],
+          "riichiDeclarationSeats": [],
+          "winnerSeats": [
+            0
+          ],
+          "winnerRiichiDeductionSeats": [],
+          "settlementVectorCount": 1
+        },
+        {
+          "from": {
+            "season": "2025-26",
+            "gameId": "L001_S022_0102_02A",
+            "roundIndex": 8,
+            "logIndex": 0
+          },
+          "to": {
+            "season": "2025-26",
+            "gameId": "L001_S022_0102_02A",
+            "roundIndex": 9,
+            "logIndex": 0
+          },
+          "expectedNextScores": [
+            39100,
+            20900,
+            11200,
+            28800
+          ],
+          "actualNextScores": [
+            99200,
+            10900,
+            -17900,
+            6800
+          ],
+          "riichiDeclarationSeats": [
+            0
+          ],
+          "winnerSeats": [
+            0
+          ],
+          "winnerRiichiDeductionSeats": [
+            0
+          ],
+          "settlementVectorCount": 1
+        },
+        {
+          "from": {
+            "season": "2025-26",
+            "gameId": "L001_S022_0102_02A",
+            "roundIndex": 9,
+            "logIndex": 0
+          },
+          "to": {
+            "season": "2025-26",
+            "gameId": "L001_S022_0102_02A",
+            "roundIndex": 10,
+            "logIndex": 0
+          },
+          "expectedNextScores": [
+            92300,
+            10900,
+            -17900,
+            14700
+          ],
+          "actualNextScores": [
+            39100,
+            20900,
+            11200,
+            28800
+          ],
+          "riichiDeclarationSeats": [],
+          "winnerSeats": [
+            3
+          ],
+          "winnerRiichiDeductionSeats": [],
+          "settlementVectorCount": 1
+        },
+        {
+          "from": {
+            "season": "2025-26",
+            "gameId": "L001_S022_0102_02A",
+            "roundIndex": 17,
+            "logIndex": 0
+          },
+          "to": {
+            "season": "2025-26",
+            "gameId": "L001_S022_0102_02A",
+            "roundIndex": 18,
+            "logIndex": 0
+          },
+          "expectedNextScores": [
+            99200,
+            10900,
+            -17900,
+            6800
+          ],
+          "actualNextScores": [
+            92300,
+            10900,
+            -17900,
+            14700
+          ],
+          "riichiDeclarationSeats": [
+            1
+          ],
+          "winnerSeats": [],
+          "winnerRiichiDeductionSeats": [],
+          "settlementVectorCount": 1
+        }
+      ]
+    },
+    "riichiDepositHypothesisCheck": {
+      "primary": {
+        "formula": "和了者自身の当該局リーチだけを1000点控除する",
+        "exactMatches": 21431
+      },
+      "alternatives": {
+        "result精算差分をそのまま使う": 12280,
+        "全リーチ宣言者を1000点ずつ再控除する": 12000
+      },
+      "conclusion": "牌譜のresult差分は、非和了者のリーチ支出と獲得供託を含むが、和了者自身の当該局リーチ支出は別に控除する"
+    },
+    "roundIndexGaps": {
+      "count": 0,
+      "examples": []
+    },
+    "quarantinePolicy": "台帳異常の両側にある局を学習・評価候補から隔離する。並べ替えによる推測修復はしない",
+    "quarantinedRounds": [
+      {
+        "season": "2019-20",
+        "gameId": "L001_S003_0022_01A",
+        "roundIndex": 12,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2019-20",
+        "gameId": "L001_S003_0022_01A",
+        "roundIndex": 13,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2019-20",
+        "gameId": "L001_S003_0022_01A",
+        "roundIndex": 14,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2022-23",
+        "gameId": "L001_S013_0021_01A",
+        "roundIndex": 16,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2022-23",
+        "gameId": "L001_S013_0021_01A",
+        "roundIndex": 17,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2022-23",
+        "gameId": "L001_S013_0021_01A",
+        "roundIndex": 18,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2025-26",
+        "gameId": "L001_S022_0011_01A",
+        "roundIndex": 9,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2025-26",
+        "gameId": "L001_S022_0011_01A",
+        "roundIndex": 10,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch",
+          "score_conservation_violation"
+        ]
+      },
+      {
+        "season": "2025-26",
+        "gameId": "L001_S022_0022_01A",
+        "roundIndex": 11,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2025-26",
+        "gameId": "L001_S022_0022_01A",
+        "roundIndex": 12,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2025-26",
+        "gameId": "L001_S022_0022_01A",
+        "roundIndex": 13,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2025-26",
+        "gameId": "L001_S022_0022_01A",
+        "roundIndex": 16,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2025-26",
+        "gameId": "L001_S022_0022_01A",
+        "roundIndex": 17,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2025-26",
+        "gameId": "L001_S022_0102_02A",
+        "roundIndex": 8,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2025-26",
+        "gameId": "L001_S022_0102_02A",
+        "roundIndex": 9,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2025-26",
+        "gameId": "L001_S022_0102_02A",
+        "roundIndex": 10,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2025-26",
+        "gameId": "L001_S022_0102_02A",
+        "roundIndex": 17,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      },
+      {
+        "season": "2025-26",
+        "gameId": "L001_S022_0102_02A",
+        "roundIndex": 18,
+        "logIndex": 0,
+        "reasons": [
+          "between_round_continuity_mismatch"
+        ]
+      }
+    ]
+  },
+  "eligibility": {
+    "status": "provisional",
+    "reason": "既存派生表には自家リーチ前状態と完全な公開局面がないため、最終適格性は原牌譜のイベント再構成後に確定する",
+    "provisionalFilter": {
+      "opponentRiichiCount": 1,
+      "openMelds": 0,
+      "shantenBeforeDiscard": 1,
+      "shantenAfterDiscard": [
+        0,
+        1
+      ],
+      "isRiichiDeclaration": false
+    },
+    "missingForFinalEligibility": [
+      "ownRiichiBefore",
+      "completePublicState",
+      "decisionTimeHand",
+      "decisionTimeRivers"
+    ],
+    "requiredDecisionFields": [
+      "season",
+      "gameId",
+      "roundIndex",
+      "logIndex",
+      "actionIndex",
+      "seat",
+      "opponentRiichiCount",
+      "openMelds",
+      "shantenBeforeDiscard",
+      "shantenAfterDiscard",
+      "isRiichiDeclaration"
+    ],
+    "missingByField": {},
+    "malformedJson": [],
+    "duplicateDecisionKeys": 0,
+    "totals": {
+      "decisionRows": 120283,
+      "independentRounds": 15594,
+      "provisionalEligibleDecisionRows": 48134,
+      "provisionalEligibleIndependentRounds": 11956,
+      "knownExcludedIndependentRounds": 9,
+      "provisionalEligibleAfterKnownExclusions": 11947
+    },
+    "seasons": {
+      "2018-19": {
+        "decisionRows": 10070,
+        "independentRounds": 1314,
+        "provisionalEligibleDecisionRows": 4100,
+        "provisionalEligibleIndependentRounds": 1019,
+        "knownExcludedIndependentRounds": 0,
+        "provisionalEligibleAfterKnownExclusions": 1019
+      },
+      "2019-20": {
+        "decisionRows": 13233,
+        "independentRounds": 1708,
+        "provisionalEligibleDecisionRows": 5644,
+        "provisionalEligibleIndependentRounds": 1371,
+        "knownExcludedIndependentRounds": 2,
+        "provisionalEligibleAfterKnownExclusions": 1369
+      },
+      "2020-21": {
+        "decisionRows": 13431,
+        "independentRounds": 1737,
+        "provisionalEligibleDecisionRows": 5649,
+        "provisionalEligibleIndependentRounds": 1341,
+        "knownExcludedIndependentRounds": 0,
+        "provisionalEligibleAfterKnownExclusions": 1341
+      },
+      "2021-22": {
+        "decisionRows": 13059,
+        "independentRounds": 1740,
+        "provisionalEligibleDecisionRows": 5222,
+        "provisionalEligibleIndependentRounds": 1336,
+        "knownExcludedIndependentRounds": 0,
+        "provisionalEligibleAfterKnownExclusions": 1336
+      },
+      "2022-23": {
+        "decisionRows": 15469,
+        "independentRounds": 1982,
+        "provisionalEligibleDecisionRows": 6422,
+        "provisionalEligibleIndependentRounds": 1543,
+        "knownExcludedIndependentRounds": 3,
+        "provisionalEligibleAfterKnownExclusions": 1540
+      },
+      "2023-24": {
+        "decisionRows": 16751,
+        "independentRounds": 2126,
+        "provisionalEligibleDecisionRows": 6660,
+        "provisionalEligibleIndependentRounds": 1639,
+        "knownExcludedIndependentRounds": 0,
+        "provisionalEligibleAfterKnownExclusions": 1639
+      },
+      "2024-25": {
+        "decisionRows": 16638,
+        "independentRounds": 2149,
+        "provisionalEligibleDecisionRows": 6343,
+        "provisionalEligibleIndependentRounds": 1617,
+        "knownExcludedIndependentRounds": 0,
+        "provisionalEligibleAfterKnownExclusions": 1617
+      },
+      "2025-26": {
+        "decisionRows": 21632,
+        "independentRounds": 2838,
+        "provisionalEligibleDecisionRows": 8094,
+        "provisionalEligibleIndependentRounds": 2090,
+        "knownExcludedIndependentRounds": 4,
+        "provisionalEligibleAfterKnownExclusions": 2086
+      }
+    }
+  },
+  "fieldMapping": [
+    {
+      "field": "roundKey",
+      "source": "paifu row: season, gameId, roundIndex + paifu.log index",
+      "status": "available"
+    },
+    {
+      "field": "scoresBefore",
+      "source": "paifu.log[*][1]",
+      "status": "available"
+    },
+    {
+      "field": "honba/riichiSticksBefore",
+      "source": "paifu.log[*][0][1:3]",
+      "status": "available"
+    },
+    {
+      "field": "roundSettlementDelta",
+      "source": "paifu.log[*][-1]内の全数値4要素ベクトル",
+      "status": "derived"
+    },
+    {
+      "field": "riichiDeposits",
+      "source": "各家の捨て牌列にあるr接頭辞",
+      "status": "derived"
+    },
+    {
+      "field": "redTileRule",
+      "source": "paifu.rule.aka",
+      "status": "available"
+    },
+    {
+      "field": "doraIndicatorsAtRoundStart",
+      "source": "paifu.log[*][2]",
+      "status": "available"
+    },
+    {
+      "field": "uraIndicators",
+      "source": "paifu.log[*][3]",
+      "status": "resultOnly",
+      "use": "特徴量へ入れない"
+    },
+    {
+      "field": "opponentRiichiCount/openMelds/shanten",
+      "source": "danger/against_riichi_decisions_with_danger.jsonl",
+      "status": "availableDerived"
+    },
+    {
+      "field": "ownRiichiBefore",
+      "source": "原牌譜の時系列",
+      "status": "requiresReconstruction"
+    },
+    {
+      "field": "decisionTimeHand",
+      "source": "原牌譜の初期手牌・ツモ・打牌・副露",
+      "status": "requiresReconstruction"
+    },
+    {
+      "field": "decisionTimeRivers",
+      "source": "原牌譜の各家捨て牌列",
+      "status": "requiresReconstruction"
+    },
+    {
+      "field": "furiten/publicState",
+      "source": "判断時点までのイベント",
+      "status": "requiresReconstruction"
+    },
+    {
+      "field": "observedRoundReward",
+      "source": "判断時点点数と復元した局末点数",
+      "status": "requiresReconstruction"
+    }
+  ],
+  "qualityGate": {
+    "status": "pass_with_exclusions",
+    "errors": [],
+    "warnings": [
+      "開始点と供託の保存則に違反する局は次フェーズで隔離する",
+      "次局開始点と連続しない局間の両側は次フェーズで隔離する",
+      "手牌復元例外8件を含む7局は次フェーズで隔離する",
+      "適格件数は暫定値。自家リーチ前状態と完全な公開局面は次フェーズで原牌譜から復元する"
+    ],
+    "knownExcludedRoundCount": 25
+  }
+}

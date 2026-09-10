@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="560" viewBox="0 0 760 560">
+<rect width="100%" height="100%" fill="white"/>
+<text x="80" y="28" font-family="sans-serif" font-size="20" font-weight="700">Immediate ron reliability — 2025-26 confirmation</text>
+<line x1="80.0" y1="50" x2="80.0" y2="480" stroke="#e5e7eb"/>
+<line x1="80" y1="480.0" x2="510" y2="480.0" stroke="#e5e7eb"/>
+<text x="80.0" y="502" text-anchor="middle" font-family="sans-serif" font-size="12">0.000</text>
+<text x="70" y="484.0" text-anchor="end" font-family="sans-serif" font-size="12">0.000</text>
+<line x1="166.0" y1="50" x2="166.0" y2="480" stroke="#e5e7eb"/>
+<line x1="80" y1="394.0" x2="510" y2="394.0" stroke="#e5e7eb"/>
+<text x="166.0" y="502" text-anchor="middle" font-family="sans-serif" font-size="12">0.045</text>
+<text x="70" y="398.0" text-anchor="end" font-family="sans-serif" font-size="12">0.045</text>
+<line x1="252.0" y1="50" x2="252.0" y2="480" stroke="#e5e7eb"/>
+<line x1="80" y1="308.0" x2="510" y2="308.0" stroke="#e5e7eb"/>
+<text x="252.0" y="502" text-anchor="middle" font-family="sans-serif" font-size="12">0.090</text>
+<text x="70" y="312.0" text-anchor="end" font-family="sans-serif" font-size="12">0.090</text>
+<line x1="338.0" y1="50" x2="338.0" y2="480" stroke="#e5e7eb"/>
+<line x1="80" y1="222.0" x2="510" y2="222.0" stroke="#e5e7eb"/>
+<text x="338.0" y="502" text-anchor="middle" font-family="sans-serif" font-size="12">0.136</text>
+<text x="70" y="226.0" text-anchor="end" font-family="sans-serif" font-size="12">0.136</text>
+<line x1="424.0" y1="50" x2="424.0" y2="480" stroke="#e5e7eb"/>
+<line x1="80" y1="136.0" x2="510" y2="136.0" stroke="#e5e7eb"/>
+<text x="424.0" y="502" text-anchor="middle" font-family="sans-serif" font-size="12">0.181</text>
+<text x="70" y="140.0" text-anchor="end" font-family="sans-serif" font-size="12">0.181</text>
+<line x1="510.0" y1="50" x2="510.0" y2="480" stroke="#e5e7eb"/>
+<line x1="80" y1="50.0" x2="510" y2="50.0" stroke="#e5e7eb"/>
+<text x="510.0" y="502" text-anchor="middle" font-family="sans-serif" font-size="12">0.226</text>
+<text x="70" y="54.0" text-anchor="end" font-family="sans-serif" font-size="12">0.226</text>
+<line x1="80" y1="480" x2="510" y2="50" stroke="#9ca3af" stroke-dasharray="5 5"/>
+<circle cx="81.2" cy="480.0" r="9.1" fill="#2563eb" fill-opacity="0.72"><title>n=2392, predicted=0.0006, observed=0.0000</title></circle>
+<circle cx="94.4" cy="466.2" r="4.5" fill="#2563eb" fill-opacity="0.72"><title>n=138, predicted=0.0075, observed=0.0072</title></circle>
+<circle cx="104.6" cy="449.8" r="4.7" fill="#2563eb" fill-opacity="0.72"><title>n=189, predicted=0.0129, observed=0.0159</title></circle>
+<circle cx="113.2" cy="436.1" r="5.0" fill="#2563eb" fill-opacity="0.72"><title>n=260, predicted=0.0174, observed=0.0231</title></circle>
+<circle cx="125.6" cy="439.7" r="5.1" fill="#2563eb" fill-opacity="0.72"><title>n=283, predicted=0.0240, observed=0.0212</title></circle>
+<circle cx="146.9" cy="433.9" r="4.6" fill="#2563eb" fill-opacity="0.72"><title>n=165, predicted=0.0352, observed=0.0242</title></circle>
+<circle cx="174.1" cy="365.1" r="5.6" fill="#2563eb" fill-opacity="0.72"><title>n=447, predicted=0.0494, observed=0.0604</title></circle>
+<circle cx="227.7" cy="342.7" r="6.0" fill="#2563eb" fill-opacity="0.72"><title>n=582, predicted=0.0776, observed=0.0722</title></circle>
+<circle cx="329.0" cy="257.1" r="5.3" fill="#2563eb" fill-opacity="0.72"><title>n=333, predicted=0.1309, observed=0.1171</title></circle>
+<circle cx="478.1" cy="480.0" r="3.3" fill="#2563eb" fill-opacity="0.72"><title>n=5, predicted=0.2092, observed=0.0000</title></circle>
+<polyline points="81.2,480.0 94.4,466.2 104.6,449.8 113.2,436.1 125.6,439.7 146.9,433.9 174.1,365.1 227.7,342.7 329.0,257.1 478.1,480.0" fill="none" stroke="#2563eb" stroke-width="2"/>
+<circle cx="80.2" cy="480.0" r="9.1" fill="#dc2626" fill-opacity="0.72"><title>n=2393, predicted=0.0001, observed=0.0000</title></circle>
+<circle cx="91.4" cy="446.7" r="5.1" fill="#dc2626" fill-opacity="0.72"><title>n=286, predicted=0.0060, observed=0.0175</title></circle>
+<circle cx="120.7" cy="444.9" r="5.1" fill="#dc2626" fill-opacity="0.72"><title>n=271, predicted=0.0214, observed=0.0185</title></circle>
+<circle cx="142.9" cy="386.4" r="6.7" fill="#dc2626" fill-opacity="0.72"><title>n=874, predicted=0.0331, observed=0.0492</title></circle>
+<circle cx="169.4" cy="332.9" r="6.9" fill="#dc2626" fill-opacity="0.72"><title>n=970, predicted=0.0470, observed=0.0773</title></circle>
+<polyline points="80.2,480.0 91.4,446.7 120.7,444.9 142.9,386.4 169.4,332.9" fill="none" stroke="#dc2626" stroke-width="2"/>
+<text x="295.0" y="535" text-anchor="middle" font-family="sans-serif" font-size="14">Mean predicted probability</text>
+<text x="20" y="265.0" text-anchor="middle" font-family="sans-serif" font-size="14" transform="rotate(-90 20 265.0)">Observed rate</text>
+<circle cx="555" cy="90" r="6" fill="#2563eb"/><text x="570" y="95" font-family="sans-serif" font-size="13">Calibrated model</text>
+<circle cx="555" cy="120" r="6" fill="#dc2626"/><text x="570" y="125" font-family="sans-serif" font-size="13">Current danger table</text>
+</svg>

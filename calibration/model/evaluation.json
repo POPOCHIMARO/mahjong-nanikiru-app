@@ -1,0 +1,110 @@
+{
+  "schemaVersion": "ev-observation-calibration-evaluation/v1",
+  "phase": "C-observed-outcome-calibration",
+  "status": "hold",
+  "testIndependence": {
+    "role": "reused-confirmatory",
+    "eligibleForNewAdoptionDecision": false,
+    "reason": "2025-26は過去のフェーズC評価で開封済み。確認用であり新しい封印テストではない"
+  },
+  "interpretation": "観測行動後の直後放銃と局収支の評価。未選択行動や継続方策のEVではない",
+  "modelSha256": "b085c35976d7b2503dcbbb9d803a08d5176171df78a002c49b0f521892729c30",
+  "datasetAggregateSha256": "0df18566afb99ff225aaf2b20a026abdf714c89e29c7b92cbbd2f47f97894f5d",
+  "finalTest": {
+    "season": "2025-26",
+    "decisions": 2015,
+    "rounds": 1246,
+    "matches": 337,
+    "immediateRonEvents": 46,
+    "outcomes": {
+      "draw": 441,
+      "opponent_tsumo": 670,
+      "other_players_ron": 338,
+      "self_deal_in": 265,
+      "self_ron": 171,
+      "self_tsumo": 130
+    },
+    "shantenAfterDistribution": {
+      "0": 286,
+      "1": 1729
+    }
+  },
+  "scopeWarnings": [],
+  "immediateRon": {
+    "calibrated": {
+      "brier": 0.02180133648083309,
+      "logLoss": 0.0940856822345471,
+      "meanPredicted": 0.025510812832624755,
+      "observedRate": 0.0228287841191067,
+      "auc": 0.8164705103009694
+    },
+    "currentDangerTable": {
+      "brier": 0.021664038709677418,
+      "logLoss": 0.09091905212402068,
+      "meanPredicted": 0.015710669975186106,
+      "observedRate": 0.0228287841191067,
+      "auc": 0.8259599885176762
+    },
+    "comparison": {
+      "metric": "brier",
+      "differenceNewMinusBaseline": 0.00013729777115567207,
+      "cluster": "gameId",
+      "matches": 337,
+      "replicates": 2000,
+      "seed": 20260906,
+      "ci95": [
+        -0.0005910449543278056,
+        0.0007837142014559771
+      ],
+      "criterion": "95%上限が0未満",
+      "status": "inconclusive"
+    },
+    "smallGroupRule": "独立表示には200判断かつ20イベント以上が必要。満たさない群は全体モデルへ縮約"
+  },
+  "reward": {
+    "calibratedOutcomeModel": {
+      "rmse": 5282.444633949855,
+      "mae": 3366.8164089391507,
+      "meanError": -166.31493749900372
+    },
+    "coarseShrunkMeanBaseline": {
+      "rmse": 5290.585200690528,
+      "mae": 3348.1997250478826,
+      "meanError": -112.40237693192591
+    },
+    "comparison": {
+      "metric": "rmse",
+      "differenceNewMinusBaseline": -8.140566740672512,
+      "cluster": "gameId",
+      "matches": 337,
+      "replicates": 2000,
+      "seed": 20260907,
+      "ci95": [
+        -39.20333662631208,
+        22.449942076433604
+      ],
+      "criterion": "95%上限が0未満",
+      "status": "inconclusive"
+    },
+    "outcomeLogLoss": 1.5530810136372704,
+    "systematicErrorTarget": {
+      "criterion": "標本200件以上の主層で平均誤差95%区間が±150点内",
+      "segmentsChecked": 11,
+      "allWithinTarget": false
+    }
+  },
+  "currentDisplayedEvDiagnostic": {
+    "rmse": 5327.147571509094,
+    "mae": 3577.344913151365,
+    "meanError": 883.1196029776675,
+    "meanDisplayedPushEv": 65.45210918114144,
+    "meanObservedReward": -817.6674937965261,
+    "adoptionCriterion": false,
+    "reason": "現行push EVと観測局収支は継続方策・点数調整の定義が異なる"
+  },
+  "artifacts": {
+    "reliabilityCsv": "reliability.csv",
+    "reliabilitySvg": "reliability.svg",
+    "segmentErrorsCsv": "segment-errors.csv"
+  }
+}

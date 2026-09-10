@@ -1,0 +1,55 @@
+{
+  "budgetGate": {
+    "fullBuildRequiresActualMeasurement": true,
+    "withinBudget": true
+  },
+  "cold": {
+    "candidates": 139351,
+    "peakWorkingSetBytes": 840478720,
+    "phaseSeconds": {
+      "chankan_response": 0.3235252000304172,
+      "discard_response": 35.965574099784135,
+      "self_action_after_call": 1.684782900076243,
+      "self_action_after_live": 98.87784790014848,
+      "self_action_after_rinshan": 0.9896811999642523
+    },
+    "seconds": 137.84199060000537,
+    "windows": 20000
+  },
+  "persistentRead": {
+    "bytes": 7931229,
+    "candidates": 139351,
+    "firstWindowId": "mleague:2018-19:L001_S001_0001_01A:0:0:e4:self_action_after_live",
+    "lastWindowId": "mleague:2022-23:L001_S015_0008_02A:11:0:e90:self_action_after_live",
+    "path": "debug-features.jsonl.gz",
+    "seconds": 3.0571323999902233,
+    "sha256": "356aba49942b765c427b1edfdb27906693455470cf556ddfc78bd3abb1fdb67e",
+    "windows": 20000
+  },
+  "projection": {
+    "datasetWindows": 2085155,
+    "fullBuildProjectionIsGate": false,
+    "fullBuildSecondsFromColdMean": 14371.09579547771
+  },
+  "runtimeEnvironment": {
+    "numpyVersion": "2.3.5",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 186 Stepping 2, GenuineIntel",
+    "pythonVersion": "3.12.14"
+  },
+  "schemaVersion": "ev-policy-opponent-feature-probe/v1",
+  "status": "pass",
+  "warm": {
+    "candidates": 139351,
+    "peakWorkingSetBytes": 1518096384,
+    "phaseSeconds": {
+      "chankan_response": 0.2654109998693457,
+      "discard_response": 30.7222807003418,
+      "self_action_after_call": 0.9250041999184759,
+      "self_action_after_live": 64.93543709981896,
+      "self_action_after_rinshan": 0.6817795000533806
+    },
+    "seconds": 97.53056569999899,
+    "windows": 20000
+  }
+}

@@ -1,0 +1,872 @@
+{
+  "developmentConfirmationIsIndependent": false,
+  "eligibleForD33": false,
+  "finalTest": false,
+  "metrics": {
+    "calibration": {
+      "meanNll": 0.7902459197621642,
+      "observedKinds": {
+        "ankan": 148,
+        "discard": 136575,
+        "kakan": 45,
+        "riichi_discard": 2636,
+        "tsumo": 951
+      },
+      "phases": {
+        "chankan_response": {
+          "meanNll": 0.0,
+          "nll": 0.0,
+          "windows": 45
+        },
+        "discard_response": {
+          "meanNll": 0.09190178855868021,
+          "nll": 12784.73351176368,
+          "windows": 139113
+        },
+        "self_action_after_call": {
+          "meanNll": 1.478844770439628,
+          "nll": 5854.746446170487,
+          "windows": 3959
+        },
+        "self_action_after_live": {
+          "meanNll": 1.4837174250213692,
+          "nll": 202071.92726593532,
+          "windows": 136193
+        },
+        "self_action_after_rinshan": {
+          "meanNll": 0.8502489980839429,
+          "nll": 172.60054661104041,
+          "windows": 203
+        }
+      },
+      "rates": {
+        "publicResponseResolution": {
+          "observed": {
+            "chi": 0.011907328360568563,
+            "daiminkan": 7.186076258641256e-05,
+            "pass": 0.9630132654967735,
+            "pon": 0.01653516147113353,
+            "ron": 0.008472383908938041
+          },
+          "predicted": {
+            "chi": 0.00956705317118361,
+            "daiminkan": 0.0007819858443491829,
+            "pass": 0.970113835384046,
+            "pon": 0.01335515386429337,
+            "ron": 0.0061819717361263245
+          },
+          "windows": 139158
+        },
+        "selfAction": {
+          "observed": {
+            "ankan": 0.0010544690249723915,
+            "discard": 0.9730682911189484,
+            "kakan": 0.0003206155819172812,
+            "riichi_discard": 0.018780948309643403,
+            "tsumo": 0.006775675964518542
+          },
+          "predicted": {
+            "ankan": 0.0018114649367428366,
+            "discard": 0.9760460512489432,
+            "kakan": 0.0007713915129677324,
+            "riichi_discard": 0.015621496073322888,
+            "tsumo": 0.005749596228029357
+          },
+          "windows": 140355
+        }
+      },
+      "responseMeanNll": 0.09187206996194024,
+      "selfKindBrier": 0.021013145739782167,
+      "selfMeanNll": 1.4826637758449452,
+      "selfTopKindCalibration": {
+        "bins": [
+          {
+            "accuracy": null,
+            "lower": 0.0,
+            "meanConfidence": null,
+            "upper": 0.1,
+            "windows": 0
+          },
+          {
+            "accuracy": null,
+            "lower": 0.1,
+            "meanConfidence": null,
+            "upper": 0.2,
+            "windows": 0
+          },
+          {
+            "accuracy": null,
+            "lower": 0.2,
+            "meanConfidence": null,
+            "upper": 0.3,
+            "windows": 0
+          },
+          {
+            "accuracy": null,
+            "lower": 0.3,
+            "meanConfidence": null,
+            "upper": 0.4,
+            "windows": 0
+          },
+          {
+            "accuracy": 0.5238095238095238,
+            "lower": 0.4,
+            "meanConfidence": 0.4584958942191869,
+            "upper": 0.5,
+            "windows": 42
+          },
+          {
+            "accuracy": 0.5386297376093294,
+            "lower": 0.5,
+            "meanConfidence": 0.5521695874539415,
+            "upper": 0.6,
+            "windows": 2744
+          },
+          {
+            "accuracy": 0.6401259559154296,
+            "lower": 0.6,
+            "meanConfidence": 0.6451274859856828,
+            "upper": 0.7,
+            "windows": 2223
+          },
+          {
+            "accuracy": 0.8124108416547788,
+            "lower": 0.7,
+            "meanConfidence": 0.744250648960495,
+            "upper": 0.8,
+            "windows": 1402
+          },
+          {
+            "accuracy": 0.9307909604519774,
+            "lower": 0.8,
+            "meanConfidence": 0.840595059184801,
+            "upper": 0.9,
+            "windows": 708
+          },
+          {
+            "accuracy": 0.9999474616470023,
+            "lower": 0.9,
+            "meanConfidence": 0.9998523790695186,
+            "upper": 1.0,
+            "windows": 133236
+          }
+        ],
+        "ece": 0.0015895595619019422
+      },
+      "skipped": {
+        "masked": 152,
+        "structural_probability_one": 104626
+      },
+      "windows": 279513
+    },
+    "developmentConfirmation": {
+      "meanNll": 0.7983437899841052,
+      "observedKinds": {
+        "ankan": 187,
+        "discard": 179294,
+        "kakan": 81,
+        "riichi_discard": 3492,
+        "tsumo": 1305
+      },
+      "phases": {
+        "chankan_response": {
+          "meanNll": 0.0,
+          "nll": 0.0,
+          "windows": 81
+        },
+        "discard_response": {
+          "meanNll": 0.09006402951613837,
+          "nll": 16452.35652783106,
+          "windows": 182674
+        },
+        "self_action_after_call": {
+          "meanNll": 1.5055411600171318,
+          "nll": 7661.698963327183,
+          "windows": 5089
+        },
+        "self_action_after_live": {
+          "meanNll": 1.5011905767094331,
+          "nll": 268716.11561214196,
+          "windows": 179002
+        },
+        "self_action_after_rinshan": {
+          "meanNll": 0.9440709437633501,
+          "nll": 253.01101292857783,
+          "windows": 268
+        }
+      },
+      "rates": {
+        "publicResponseResolution": {
+          "observed": {
+            "chi": 0.011414188394298377,
+            "daiminkan": 1.0943613033843124e-05,
+            "pass": 0.9637656972449454,
+            "pon": 0.01642636316379853,
+            "ron": 0.008382807583923832
+          },
+          "predicted": {
+            "chi": 0.009493800964018808,
+            "daiminkan": 0.0007594998701429941,
+            "pass": 0.9705341322069911,
+            "pon": 0.013052824985547839,
+            "ron": 0.006159741973300432
+          },
+          "windows": 182755
+        },
+        "selfAction": {
+          "observed": {
+            "ankan": 0.0010143253109422376,
+            "discard": 0.9725264294121795,
+            "kakan": 0.0004393601614241778,
+            "riichi_discard": 0.018941304736953445,
+            "tsumo": 0.007078580378500642
+          },
+          "predicted": {
+            "ankan": 0.0015272890740595454,
+            "discard": 0.9759948652608081,
+            "kakan": 0.0008551297139776788,
+            "riichi_discard": 0.015595561936407619,
+            "tsumo": 0.006027154014748803
+          },
+          "windows": 184359
+        }
+      },
+      "responseMeanNll": 0.090024111667703,
+      "selfKindBrier": 0.021178666105099244,
+      "selfMeanNll": 1.500500792412602,
+      "selfTopKindCalibration": {
+        "bins": [
+          {
+            "accuracy": null,
+            "lower": 0.0,
+            "meanConfidence": null,
+            "upper": 0.1,
+            "windows": 0
+          },
+          {
+            "accuracy": null,
+            "lower": 0.1,
+            "meanConfidence": null,
+            "upper": 0.2,
+            "windows": 0
+          },
+          {
+            "accuracy": null,
+            "lower": 0.2,
+            "meanConfidence": null,
+            "upper": 0.3,
+            "windows": 0
+          },
+          {
+            "accuracy": 1.0,
+            "lower": 0.3,
+            "meanConfidence": 0.3844485170065852,
+            "upper": 0.4,
+            "windows": 1
+          },
+          {
+            "accuracy": 0.4482758620689655,
+            "lower": 0.4,
+            "meanConfidence": 0.4637511342171444,
+            "upper": 0.5,
+            "windows": 29
+          },
+          {
+            "accuracy": 0.5197949302193108,
+            "lower": 0.5,
+            "meanConfidence": 0.5520924260323756,
+            "upper": 0.6,
+            "windows": 3511
+          },
+          {
+            "accuracy": 0.6325936704256093,
+            "lower": 0.6,
+            "meanConfidence": 0.6463077577677255,
+            "upper": 0.7,
+            "windows": 2749
+          },
+          {
+            "accuracy": 0.7992849846782432,
+            "lower": 0.7,
+            "meanConfidence": 0.7461724724554061,
+            "upper": 0.8,
+            "windows": 1958
+          },
+          {
+            "accuracy": 0.8995305164319248,
+            "lower": 0.8,
+            "meanConfidence": 0.8451920169452173,
+            "upper": 0.9,
+            "windows": 1065
+          },
+          {
+            "accuracy": 0.9999257338071136,
+            "lower": 0.9,
+            "meanConfidence": 0.9998364558234069,
+            "upper": 1.0,
+            "windows": 175046
+          }
+        ],
+        "ece": 0.001788105940583453
+      },
+      "skipped": {
+        "masked": 195,
+        "structural_probability_one": 137530
+      },
+      "windows": 367114
+    },
+    "selection": {
+      "meanNll": 0.7958888822741268,
+      "observedKinds": {
+        "ankan": 144,
+        "discard": 137518,
+        "kakan": 56,
+        "riichi_discard": 2610,
+        "tsumo": 950
+      },
+      "phases": {
+        "chankan_response": {
+          "meanNll": 0.0,
+          "nll": 0.0,
+          "windows": 56
+        },
+        "discard_response": {
+          "meanNll": 0.0857779080163022,
+          "nll": 12013.110239775106,
+          "windows": 140049
+        },
+        "self_action_after_call": {
+          "meanNll": 1.493541680022261,
+          "nll": 5432.011090240963,
+          "windows": 3637
+        },
+        "self_action_after_live": {
+          "meanNll": 1.5013711720611749,
+          "nll": 206340.94703222756,
+          "windows": 137435
+        },
+        "self_action_after_rinshan": {
+          "meanNll": 0.7938495082297834,
+          "nll": 163.53299869533538,
+          "windows": 206
+        }
+      },
+      "rates": {
+        "publicResponseResolution": {
+          "observed": {
+            "chi": 0.01058491845401663,
+            "daiminkan": 4.282502408907605e-05,
+            "pass": 0.9657114307126797,
+            "pon": 0.015374183647978303,
+            "ron": 0.008286642161236216
+          },
+          "predicted": {
+            "chi": 0.009634951205545297,
+            "daiminkan": 0.000780727113459038,
+            "pass": 0.97036212213594,
+            "pon": 0.01314360521079759,
+            "ron": 0.006078594334257687
+          },
+          "windows": 140105
+        },
+        "selfAction": {
+          "observed": {
+            "ankan": 0.0010192669771655885,
+            "discard": 0.973385806707343,
+            "kakan": 0.0003963816022310622,
+            "riichi_discard": 0.01847421396112629,
+            "tsumo": 0.00672433075213409
+          },
+          "predicted": {
+            "ankan": 0.0014401993440135332,
+            "discard": 0.9752595936273408,
+            "kakan": 0.0008948022332012326,
+            "riichi_discard": 0.01664817170895793,
+            "tsumo": 0.005757233086490221
+          },
+          "windows": 141278
+        }
+      },
+      "responseMeanNll": 0.08574362256718251,
+      "selfKindBrier": 0.021900650594847294,
+      "selfMeanNll": 1.500137962889935,
+      "selfTopKindCalibration": {
+        "bins": [
+          {
+            "accuracy": null,
+            "lower": 0.0,
+            "meanConfidence": null,
+            "upper": 0.1,
+            "windows": 0
+          },
+          {
+            "accuracy": null,
+            "lower": 0.1,
+            "meanConfidence": null,
+            "upper": 0.2,
+            "windows": 0
+          },
+          {
+            "accuracy": null,
+            "lower": 0.2,
+            "meanConfidence": null,
+            "upper": 0.3,
+            "windows": 0
+          },
+          {
+            "accuracy": null,
+            "lower": 0.3,
+            "meanConfidence": null,
+            "upper": 0.4,
+            "windows": 0
+          },
+          {
+            "accuracy": 0.47619047619047616,
+            "lower": 0.4,
+            "meanConfidence": 0.46724547028069713,
+            "upper": 0.5,
+            "windows": 42
+          },
+          {
+            "accuracy": 0.5440972222222222,
+            "lower": 0.5,
+            "meanConfidence": 0.5511279111522043,
+            "upper": 0.6,
+            "windows": 2880
+          },
+          {
+            "accuracy": 0.6192803198578409,
+            "lower": 0.6,
+            "meanConfidence": 0.644128499053729,
+            "upper": 0.7,
+            "windows": 2251
+          },
+          {
+            "accuracy": 0.8051496172581768,
+            "lower": 0.7,
+            "meanConfidence": 0.74687873123414,
+            "upper": 0.8,
+            "windows": 1437
+          },
+          {
+            "accuracy": 0.9325842696629213,
+            "lower": 0.8,
+            "meanConfidence": 0.8418016458062555,
+            "upper": 0.9,
+            "windows": 801
+          },
+          {
+            "accuracy": 0.9999551793944736,
+            "lower": 0.9,
+            "meanConfidence": 0.9998577532933355,
+            "upper": 1.0,
+            "windows": 133867
+          }
+        ],
+        "ece": 0.0017416130646193755
+      },
+      "skipped": {
+        "masked": 139,
+        "structural_probability_one": 105331
+      },
+      "windows": 281383
+    },
+    "train": {
+      "meanNll": 0.8135253535824996,
+      "observedKinds": {
+        "ankan": 536,
+        "discard": 565608,
+        "kakan": 182,
+        "riichi_discard": 10222,
+        "tsumo": 3907
+      },
+      "phases": {
+        "chankan_response": {
+          "meanNll": 0.0,
+          "nll": 0.0,
+          "windows": 182
+        },
+        "discard_response": {
+          "meanNll": 0.07550792899955339,
+          "nll": 43460.40072598894,
+          "windows": 575574
+        },
+        "self_action_after_call": {
+          "meanNll": 1.4961934715192071,
+          "nll": 18630.601107357168,
+          "windows": 12452
+        },
+        "self_action_after_live": {
+          "meanNll": 1.5475787614046006,
+          "nll": 877896.5515607492,
+          "windows": 567271
+        },
+        "self_action_after_rinshan": {
+          "meanNll": 0.846187427410373,
+          "nll": 619.409196864393,
+          "windows": 732
+        }
+      },
+      "rates": {
+        "publicResponseResolution": {
+          "observed": {
+            "chi": 0.008604339338191873,
+            "daiminkan": 2.43158560223428e-05,
+            "pass": 0.9706507617810323,
+            "pon": 0.01301766720624709,
+            "ron": 0.00770291581850645
+          },
+          "predicted": {
+            "chi": 0.00972404460167422,
+            "daiminkan": 0.0007679150753396398,
+            "pass": 0.9704498290430776,
+            "pon": 0.01340558950949723,
+            "ron": 0.005652621770389245
+          },
+          "windows": 575756
+        },
+        "selfAction": {
+          "observed": {
+            "ankan": 0.0009234135290418724,
+            "discard": 0.9744217898028271,
+            "kakan": 0.00031354713112988946,
+            "riichi_discard": 0.0176103229363172,
+            "tsumo": 0.006730926600683946
+          },
+          "predicted": {
+            "ankan": 0.0016366916025338952,
+            "discard": 0.9743269259415742,
+            "kakan": 0.0006288794458334223,
+            "riichi_discard": 0.017688009026225405,
+            "tsumo": 0.005719493983830088
+          },
+          "windows": 580455
+        }
+      },
+      "responseMeanNll": 0.0754840604804621,
+      "selfKindBrier": 0.022201981998210014,
+      "selfMeanNll": 1.54559192679014,
+      "selfTopKindCalibration": {
+        "bins": [
+          {
+            "accuracy": null,
+            "lower": 0.0,
+            "meanConfidence": null,
+            "upper": 0.1,
+            "windows": 0
+          },
+          {
+            "accuracy": null,
+            "lower": 0.1,
+            "meanConfidence": null,
+            "upper": 0.2,
+            "windows": 0
+          },
+          {
+            "accuracy": null,
+            "lower": 0.2,
+            "meanConfidence": null,
+            "upper": 0.3,
+            "windows": 0
+          },
+          {
+            "accuracy": 0.3333333333333333,
+            "lower": 0.3,
+            "meanConfidence": 0.38847683146262074,
+            "upper": 0.4,
+            "windows": 3
+          },
+          {
+            "accuracy": 0.44171779141104295,
+            "lower": 0.4,
+            "meanConfidence": 0.461809631111113,
+            "upper": 0.5,
+            "windows": 163
+          },
+          {
+            "accuracy": 0.5512778772586684,
+            "lower": 0.5,
+            "meanConfidence": 0.5514962227902296,
+            "upper": 0.6,
+            "windows": 12286
+          },
+          {
+            "accuracy": 0.6878354203935599,
+            "lower": 0.6,
+            "meanConfidence": 0.6450686470251564,
+            "upper": 0.7,
+            "windows": 10062
+          },
+          {
+            "accuracy": 0.8295671546785487,
+            "lower": 0.7,
+            "meanConfidence": 0.7468566297250016,
+            "upper": 0.8,
+            "windows": 6284
+          },
+          {
+            "accuracy": 0.9302536231884058,
+            "lower": 0.8,
+            "meanConfidence": 0.8428350344356327,
+            "upper": 0.9,
+            "windows": 3312
+          },
+          {
+            "accuracy": 0.9999161112073603,
+            "lower": 0.9,
+            "meanConfidence": 0.9998320130983998,
+            "upper": 1.0,
+            "windows": 548345
+          }
+        ],
+        "ece": 0.0022255650300443764
+      },
+      "skipped": {
+        "masked": 448,
+        "structural_probability_one": 431043
+      },
+      "windows": 1156211
+    }
+  },
+  "rateDiagnostic": {
+    "diagnosticThresholdsNotAdoptionThresholds": {
+      "maximumAbsoluteRateError": 0.005,
+      "maximumRareRateRatio": 5.0,
+      "rareObservedRateMaximum": 0.001
+    },
+    "differences": {
+      "chi": {
+        "absoluteError": 0.0019203874302795697,
+        "observed": 0.011414188394298377,
+        "predicted": 0.009493800964018808
+      },
+      "daiminkan": {
+        "absoluteError": 0.000748556257109151,
+        "observed": 1.0943613033843124e-05,
+        "predicted": 0.0007594998701429941
+      },
+      "pass": {
+        "absoluteError": 0.006768434962045711,
+        "observed": 0.9637656972449454,
+        "predicted": 0.9705341322069911
+      },
+      "pon": {
+        "absoluteError": 0.003373538178250691,
+        "observed": 0.01642636316379853,
+        "predicted": 0.013052824985547839
+      },
+      "ron": {
+        "absoluteError": 0.0022230656106233997,
+        "observed": 0.008382807583923832,
+        "predicted": 0.006159741973300432
+      }
+    },
+    "period": "developmentConfirmation",
+    "reasons": [
+      "maximum_absolute_rate_error_above_0.005",
+      "rare_rate_ratio_above_5:daiminkan"
+    ],
+    "status": "hold"
+  },
+  "schemaVersion": "ev-policy-opponent-evaluation/v1",
+  "status": "confirmation_only_not_independent_test",
+  "support": {
+    "bySplit": {
+      "calibration": {
+        "heldOrCensored": {
+          "censoredResponseLabels": 10488,
+          "heldSelfWindows": 52
+        },
+        "informativeResponseWindows": {
+          "chankan_response": 0,
+          "discard_response": 34596
+        },
+        "legalWinSkips": {
+          "ron": 3,
+          "tsumo": 0
+        },
+        "observed": {
+          "ankan": 148,
+          "chi": 1657,
+          "daiminkan": 10,
+          "discard": 136576,
+          "kakan": 45,
+          "pass": 402039,
+          "pon": 2302,
+          "riichi_discard": 2636,
+          "ron": 1275,
+          "tsumo": 951
+        },
+        "opportunities": {
+          "ankan": 995,
+          "chi": 23188,
+          "daiminkan": 726,
+          "discard": 140408,
+          "kakan": 274,
+          "pass": 417771,
+          "pon": 13218,
+          "riichi_discard": 5406,
+          "ron": 1197,
+          "tsumo": 951
+        },
+        "responseWindows": {
+          "chankan_response": 45,
+          "discard_response": 139212
+        }
+      },
+      "developmentConfirmation": {
+        "heldOrCensored": {
+          "censoredResponseLabels": 13458,
+          "heldSelfWindows": 73
+        },
+        "informativeResponseWindows": {
+          "chankan_response": 0,
+          "discard_response": 45298
+        },
+        "legalWinSkips": {
+          "ron": 3,
+          "tsumo": 1
+        },
+        "observed": {
+          "ankan": 187,
+          "chi": 2087,
+          "daiminkan": 2,
+          "discard": 179299,
+          "kakan": 81,
+          "pass": 528429,
+          "pon": 3002,
+          "riichi_discard": 3492,
+          "ron": 1638,
+          "tsumo": 1305
+        },
+        "opportunities": {
+          "ankan": 1138,
+          "chi": 30620,
+          "daiminkan": 936,
+          "discard": 184437,
+          "kakan": 388,
+          "pass": 548616,
+          "pon": 17011,
+          "riichi_discard": 7149,
+          "ron": 1552,
+          "tsumo": 1306
+        },
+        "responseWindows": {
+          "chankan_response": 81,
+          "discard_response": 182791
+        }
+      },
+      "selection": {
+        "heldOrCensored": {
+          "censoredResponseLabels": 9764,
+          "heldSelfWindows": 52
+        },
+        "informativeResponseWindows": {
+          "chankan_response": 0,
+          "discard_response": 34815
+        },
+        "legalWinSkips": {
+          "ron": 1,
+          "tsumo": 1
+        },
+        "observed": {
+          "ankan": 144,
+          "chi": 1483,
+          "daiminkan": 6,
+          "discard": 137522,
+          "kakan": 56,
+          "pass": 405918,
+          "pon": 2154,
+          "riichi_discard": 2610,
+          "ron": 1239,
+          "tsumo": 950
+        },
+        "opportunities": {
+          "ankan": 841,
+          "chi": 23593,
+          "daiminkan": 729,
+          "discard": 141334,
+          "kakan": 307,
+          "pass": 420564,
+          "pon": 13065,
+          "riichi_discard": 5812,
+          "ron": 1169,
+          "tsumo": 951
+        },
+        "responseWindows": {
+          "chankan_response": 56,
+          "discard_response": 140132
+        }
+      },
+      "train": {
+        "heldOrCensored": {
+          "censoredResponseLabels": 34282,
+          "heldSelfWindows": 166
+        },
+        "informativeResponseWindows": {
+          "chankan_response": 0,
+          "discard_response": 144881
+        },
+        "legalWinSkips": {
+          "ron": 10,
+          "tsumo": 11
+        },
+        "observed": {
+          "ankan": 536,
+          "chi": 4957,
+          "daiminkan": 14,
+          "discard": 565621,
+          "kakan": 182,
+          "pass": 1676652,
+          "pon": 7495,
+          "riichi_discard": 10222,
+          "ron": 4675,
+          "tsumo": 3907
+        },
+        "opportunities": {
+          "ankan": 3894,
+          "chi": 97826,
+          "daiminkan": 2951,
+          "discard": 580634,
+          "kakan": 902,
+          "pass": 1728075,
+          "pon": 54733,
+          "riichi_discard": 25767,
+          "ron": 4481,
+          "tsumo": 3918
+        },
+        "responseWindows": {
+          "chankan_response": 182,
+          "discard_response": 575843
+        }
+      }
+    },
+    "thresholdRole": "diagnostic_only_D4_must_freeze_adoption_thresholds",
+    "unidentifiedComponents": [
+      {
+        "component": "ron_pass",
+        "observedSkips": 17,
+        "reason": "observed_skip_below_30",
+        "status": "opponent_component_unidentified"
+      },
+      {
+        "component": "tsumo_pass",
+        "observedSkips": 13,
+        "reason": "observed_skip_below_30",
+        "status": "opponent_component_unidentified"
+      },
+      {
+        "component": "chankan_response_policy",
+        "informativeWindows": 0,
+        "reason": "all_legal_sets_are_structural_pass_only",
+        "status": "opponent_component_unidentified"
+      },
+      {
+        "component": "daiminkan_policy",
+        "observedActions": 32,
+        "reason": "observed_action_below_100_and_rate_unstable",
+        "status": "opponent_component_unidentified"
+      }
+    ]
+  }
+}

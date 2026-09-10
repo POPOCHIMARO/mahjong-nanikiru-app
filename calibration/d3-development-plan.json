@@ -1,0 +1,331 @@
+{
+  "schemaVersion": "ev-policy-d3-development-plan/v1",
+  "createdDate": "2026-09-07",
+  "status": "implementation_in_progress",
+  "implementationStatus": "D3_2_core_complete_adoption_held",
+  "eligibleForAdoption": false,
+  "designPath": "PHASE_D3_DESIGN.md",
+  "reservationPath": "future-evaluation-reservation.json",
+  "doesNotAmendFutureReservation": true,
+  "nextPhase": "D.3.2a",
+  "models": {
+    "designRecommendation": "Astra/high",
+    "implementationRecommendation": "Sol/high",
+    "automaticModelSwitch": false,
+    "subagentAuthorizationIncluded": false
+  },
+  "developmentSplits": {
+    "train": [
+      "2018-19",
+      "2019-20",
+      "2020-21",
+      "2021-22",
+      "2022-23"
+    ],
+    "selection": [
+      "2023-24"
+    ],
+    "calibration": [
+      "2024-25"
+    ],
+    "developmentConfirmation": [
+      "2025-26"
+    ],
+    "notAnIndependentTest": true,
+    "clusterKey": [
+      "season",
+      "gameId"
+    ],
+    "enforceReservationAllowlistOnEveryCommand": true
+  },
+  "scope": {
+    "players": 4,
+    "redFivesPerSuit": 1,
+    "startPhase": "self_action_after_normal_draw",
+    "ownShantenBeforeDraw": 1,
+    "ownRiichiActive": false,
+    "activeOpponentRiichiCount": 1,
+    "priorCallsOrKans": false,
+    "maximumKyokuInclusive": 6,
+    "subsequentCallsKansAndRiichiSupported": true,
+    "futureEventsMayNotDefineInitialEligibility": true
+  },
+  "readOnlyAudit20260907": {
+    "d1Decisions": 35218,
+    "south4OrLater": 3199,
+    "south4OrLaterPrimary": 1278,
+    "beforeSouth4": 32019,
+    "d1ReplayEvidence": "same_extractor_snapshot_reproducibility",
+    "independentRoundEngineReplay": "deterministic_256_round_sample_254_pass_2_source_inventory_holds",
+    "runtimeAuditPath": "policy-runtime-audit.json"
+  },
+  "opponent": {
+    "observationDatasetStatus": "verified",
+    "observationDatasetPath": "dataset-opponent",
+    "teacherWindows": 2085155,
+    "inferencePrefixes": 32019,
+    "labelDefinition": "joint-public-resolution-v1",
+    "labelDefinitionChangedFromDesign": false,
+    "modelFamily": "hierarchical_conditional_softmax",
+    "sharedAcrossPlayers": true,
+    "hiddenPlayerStyle": false,
+    "selfActionKinds": [
+      "discard",
+      "riichi_discard",
+      "ankan",
+      "kakan",
+      "tsumo"
+    ],
+    "responseKinds": [
+      "pass",
+      "ron",
+      "chi",
+      "pon",
+      "daiminkan"
+    ],
+    "discardOrigins": [
+      "drawn",
+      "concealed"
+    ],
+    "censoredResponseLikelihood": "sum_over_joint_claims_matching_public_resolution",
+    "unknownFuritenSupervision": "mask_affected_head",
+    "unidentifiedComponentStatus": "held",
+    "regularizationGrid": [
+      0.01,
+      0.1,
+      1.0,
+      10.0,
+      100.0
+    ],
+    "temperatureFitPeriod": "2024-25",
+    "classRebalancingWithoutCorrection": false,
+    "modelStatus": "fit_and_calibrated_with_adoption_holds",
+    "modelPath": "model-opponent/model.json",
+    "fitSummaryPath": "model-opponent/fit-summary.json",
+    "evaluationPath": "model-opponent/evaluation.json",
+    "reportPath": "PHASE_D32_REPORT.md",
+    "selectedLambda": 0.01,
+    "selectedTemperatures": {
+      "self_action_after_live": 0.75,
+      "self_action_after_call": 0.75,
+      "self_action_after_rinshan": 0.75,
+      "discard_response": 1.0,
+      "chankan_response": 1.0
+    },
+    "eligibleForD33": false,
+    "unidentifiedComponents": [
+      "ron_pass",
+      "tsumo_pass",
+      "chankan_response_policy",
+      "daiminkan_policy"
+    ],
+    "featureHolds": [
+      "exact_candidate_ukeire"
+    ],
+    "modelFitHolds": [
+      "response_rate_miscalibration"
+    ]
+  },
+  "belief": {
+    "target": "full_prefix_posterior_given_target_private_and_public_history",
+    "selfHistoricalActions": "known_controls",
+    "initialPrior": "uniform_shuffle_without_replacement",
+    "tileCategories": 37,
+    "wallRepresentation": "deferred_slot_assignment",
+    "baselineProposal": "exact_one_event_observation_adapted",
+    "incrementalWeight": "K_over_q_equals_G_for_baseline",
+    "knownDrawProbabilityRetained": true,
+    "resampling": "systematic",
+    "resampleWhenEssFractionBelow": 0.5,
+    "recordDiagnosticsBeforeResampling": true,
+    "requiredDiagnostics": [
+      "ess",
+      "maxNormalizedWeight",
+      "zeroWeightReasons",
+      "initialAncestorCount",
+      "previousAncestorCount",
+      "uniqueRiichiHandSignatures",
+      "resamplingCount",
+      "independentReplicateDifferences",
+      "normalizingConstantEstimate"
+    ],
+    "resampleMoveImplementation": "requires_pilot_and_separate_proposal_design",
+    "uniformFallbackAllowed": false,
+    "futureOutcomeConditioningAllowed": false,
+    "candidateSpecificInitialPosteriorAllowed": false
+  },
+  "pilot": {
+    "status": "planned_not_executed",
+    "samplePeriod": "train",
+    "decisionCount": 16,
+    "selectionUsesOnlyPublicPreActionInformation": true,
+    "sampleIds": [],
+    "sampleManifestRequiredBeforeExecution": true,
+    "replaceFailedDecisions": false,
+    "particleCountGrid": [
+      256,
+      1024,
+      4096
+    ],
+    "independentReplicatesPerSetting": 4,
+    "startParticleCount": 256,
+    "resourceLimits": {
+      "status": "must_set_before_pilot",
+      "maximumTransitionEvaluations": null,
+      "maximumWallClockSeconds": null,
+      "maximumWorkingSetBytes": null
+    },
+    "posteriorAcceptanceThresholds": {
+      "status": "pending_pilot_and_D4_freeze",
+      "minimumEss": null,
+      "maximumNormalizedWeight": null,
+      "minimumAncestorDiversity": null,
+      "minimumHandDiversity": null,
+      "maximumReplicateDisagreement": null
+    },
+    "nullThresholdsMayPassGate": false
+  },
+  "simulation": {
+    "policyVersionsPlanned": [
+      "closed_push_v2",
+      "closed_fold_v2"
+    ],
+    "preserveDebugV1": true,
+    "commonInitialWorlds": true,
+    "actionRngKeys": [
+      "runSeed",
+      "worldIndex",
+      "replicate",
+      "relativeSeat",
+      "phase",
+      "localDecisionCount",
+      "purpose"
+    ],
+    "candidateIdInRngKey": false,
+    "workerIdInRngKey": false,
+    "anyPositiveWeightRolloutFailure": "hold_entire_decision_and_null_comparison",
+    "reward": "round_end_score_minus_score_before_initial_action",
+    "artificialFoldCost": 0,
+    "observedRewardContinuation": "opponent_model_also_for_target_player",
+    "uncertainty": "fixed_model_numerical_variability_not_final_confidence_interval"
+  },
+  "phases": [
+    {
+      "id": "D.3.0",
+      "status": "complete_with_runtime_holds",
+      "focus": "runtime_preconditions_and_independent_replay"
+    },
+    {
+      "id": "D.3.1",
+      "status": "complete_verified",
+      "focus": "observation_windows_and_private_prefix"
+    },
+    {
+      "id": "D.3.2",
+      "status": "core_complete_adoption_held",
+      "focus": "opponent_fit_calibration_and_identifiability",
+      "holds": [
+        "opponent_component_unidentified",
+        "exact_candidate_ukeire_not_implemented",
+        "response_rate_miscalibration"
+      ]
+    },
+    {
+      "id": "D.3.2a",
+      "status": "implementation_in_progress_full_build_pending",
+      "focus": "exact_candidate_ukeire_performance_and_refit",
+      "designPath": "PHASE_D32A_DESIGN.md",
+      "featureSchema": "ev-policy-opponent-features/v2",
+      "modelSchema": "ev-policy-opponent-model/v2",
+      "featureCachePath": "features-opponent-v2",
+      "modelOutputPath": "model-opponent-v2",
+      "labelDefinitionChanged": false,
+      "benchmarkSeed": 20260909,
+      "benchmarkTrainWindows": 20000,
+      "benchmarkMinimumPerPhaseWhenAvailable": 256,
+      "edgeWindowsPerLegalActionKindMaximum": 64,
+      "resourceLimits": {
+        "status": "probe_pass_full_measurement_pending",
+        "maximumProbeWallClockSeconds": 3600,
+        "maximumFeatureBuildAndVerifySeconds": 28800,
+        "maximumFitAndEvaluateSeconds": 28800,
+        "maximumWorkingSetBytes": 4294967296,
+        "maximumFeatureCacheBytes": 8589934592,
+        "maximumShapeCacheEntries": 100000,
+        "maximumWindowsPerShard": 10000,
+        "measuredProbe": {
+          "windows": 20000,
+          "candidates": 139351,
+          "coldSeconds": 137.84199060000537,
+          "warmSeconds": 97.53056569999899,
+          "persistentReadSeconds": 3.0571323999902233,
+          "coldPeakWorkingSetBytes": 840478720,
+          "warmPeakWorkingSetBytes": 1518096384,
+          "persistentShardBytes": 7931229,
+          "projectedFullBuildSecondsNotAGate": 14371.09579547771,
+          "probePath": "probes/opponent-features-v2/probe.json"
+        }
+      },
+      "acceptanceTestIds": [
+        "D32A-01",
+        "D32A-02",
+        "D32A-03",
+        "D32A-04",
+        "D32A-05",
+        "D32A-06",
+        "D32A-07",
+        "D32A-08"
+      ],
+      "completionDoesNotAuthorizeD33": true,
+      "remainingFeatureHoldsOutsideScope": [
+        "full_multi_riichi_danger_class",
+        "explicit_yaku_shape_features"
+      ]
+    },
+    {
+      "id": "D.3.3",
+      "status": "not_started",
+      "focus": "reference_smc_and_coverage_pilot"
+    },
+    {
+      "id": "D.3.4",
+      "status": "not_started",
+      "focus": "paired_all_candidate_simulation"
+    },
+    {
+      "id": "D.3.5",
+      "status": "not_started",
+      "focus": "integration_validation_and_D4_handoff"
+    }
+  ],
+  "acceptanceTestIds": [
+    "D30-01",
+    "D30-02",
+    "D30-03",
+    "D31-01",
+    "D31-02",
+    "D31-03",
+    "D31-04",
+    "D32-01",
+    "D32-02",
+    "D32A-01",
+    "D32A-02",
+    "D32A-03",
+    "D32A-04",
+    "D32A-05",
+    "D32A-06",
+    "D32A-07",
+    "D32A-08",
+    "D33-01",
+    "D33-02",
+    "D33-03",
+    "D33-04",
+    "D33-05",
+    "D34-01",
+    "D34-02",
+    "D34-03",
+    "D34-04",
+    "D35-01",
+    "D35-02"
+  ]
+}
