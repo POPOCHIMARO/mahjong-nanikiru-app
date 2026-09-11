@@ -2,9 +2,9 @@
 
 `tools/calibrate_ev.py` が、読み取り専用のMリーグ原牌譜から生成する。
 現在はフェーズC.1まで実装済み。観測結果モデルは確認評価で採用基準を満たさなかったため、アプリへ接続しない。
-フェーズD.1、D.2、D.3.0、D.3.1とD.3.2の相手行動モデル学習まで実装済み。詳細は [PHASE_D_DESIGN.md](PHASE_D_DESIGN.md)、[D.1レポート](PHASE_D1_REPORT.md)、[D.2cレポート](PHASE_D2C_REPORT.md)、[D.3.0レポート](PHASE_D30_REPORT.md)、[D.3.1レポート](PHASE_D31_REPORT.md)、[D.3.2レポート](PHASE_D32_REPORT.md) を参照する。
-[D.3設計](PHASE_D3_DESIGN.md) と [開発計画](d3-development-plan.json) に従い、[D.3.2a](PHASE_D32A_DESIGN.md) の実装を開始した。厳密な候補別受け入れ、特徴cache、性能probe、v2再学習経路を実装済みであり、次は全件cache生成、検証、再学習を行う。未識別成分などの採用holdは別に扱い、相手モデルはまだD.3.3へ接続しない。
-D.3.2aの固定20,000窓probeはcold 137.84秒、warm 97.53秒、永続読込3.06秒、peak working set 1.42 GiBで設計予算内だった。全件生成時間の外挿は約4時間だが、この外挿は合格判定に使わず、全2,085,155窓の実測で8時間上限を判定する。
+フェーズD.1、D.2、D.3.0、D.3.1、D.3.2の相手行動モデル学習、D.3.2aの厳密受け入れによる全件再学習まで実装済み。詳細は [PHASE_D_DESIGN.md](PHASE_D_DESIGN.md)、[D.1レポート](PHASE_D1_REPORT.md)、[D.2cレポート](PHASE_D2C_REPORT.md)、[D.3.0レポート](PHASE_D30_REPORT.md)、[D.3.1レポート](PHASE_D31_REPORT.md)、[D.3.2レポート](PHASE_D32_REPORT.md)、[D.3.2aレポート](PHASE_D32A_REPORT.md) を参照する。
+[D.3設計](PHASE_D3_DESIGN.md)、[D.3.2a設計](PHASE_D32A_DESIGN.md)、[開発計画](d3-development-plan.json) に従い、厳密な候補別受け入れ、特徴cache、性能probe、全2,085,155窓のcache生成・検証、v2再学習、保存モデル再評価を完了した。未実装特徴2件、未識別成分、応答率の較正不一致をholdし、相手モデルはまだD.3.3へ接続しない。
+D.3.2aの固定20,000窓probeはcold 137.84秒、warm 97.53秒、永続読込3.06秒、peak working set 1.42 GiBだった。全件特徴生成は6,845.10秒、cacheは約690.3 MiBで設計予算内だった。全件ピークworking setの直接値は未記録であり、メモリ判定は同一実装probeと有界LRUに基づく。
 D.2の [ルール解釈と依存選定](PHASE_D2_RULES_AND_DEPENDENCIES.md)、[D.2aの得点と精算](PHASE_D2A_REPORT.md)、[D.2bの一局状態機械](PHASE_D2B_REPORT.md)、[D.2cの決定的方策、合成局、牌譜prefix再検証](PHASE_D2C_REPORT.md) は完了した。
 
 2026-27の [将来評価台帳](future-evaluation-reservation.json) は予約のみで、データ取得やモデル凍結を示さない。

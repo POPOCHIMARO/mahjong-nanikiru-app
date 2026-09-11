@@ -174,11 +174,11 @@
       },
       {
         "path": "teacher-windows.jsonl.gz",
-        "bytes": 62870185,
-        "sha256": "5bd36467a2cd8c0b96bc132f3d5213006b028c1bb52f2abd4fc353b644225253"
+        "bytes": 62870179,
+        "sha256": "0020d6ff26723f1a2027b6629193b823fd61432ffda89f11fd4d4fae19d8d95b"
       }
     ],
-    "aggregateSha256": "e313caa3fe978719d714c53dcebd906d1305620fe181afff258b25e91e0f780f"
+    "aggregateSha256": "0504eef69fa62d645a79cdb2e5cab9f421d992da3e2457720fd9c3db599cd4b4"
   },
   "runtimeEnvironment": {
     "pythonVersion": "3.12.14",
@@ -193,8 +193,8 @@
       },
       {
         "path": "tools/calibrate_ev.py",
-        "bytes": 119402,
-        "sha256": "66e20b52792a6d1b27d24f7e48a04284e2fad4e90cd8d84250300f75b8cd8254"
+        "bytes": 128139,
+        "sha256": "7e8eaec130995ca5641a4118f83cba47a1cc35177432819847aedfbd1fa88712"
       },
       {
         "path": "tools/ev_calibration_state.py",
@@ -213,8 +213,8 @@
       },
       {
         "path": "tools/ev_policy_round.py",
-        "bytes": 41711,
-        "sha256": "7ebc6ad3118c01287240e259fab3b77aedff1c6e2e98390b3d77a4e3c4dc857c"
+        "bytes": 42320,
+        "sha256": "a5030789ad5f2c288262bc959f41720699b3522d4710ab4f44c277c0e89bbd72"
       },
       {
         "path": "tools/ev_policy_scoring.py",
@@ -227,7 +227,7 @@
         "sha256": "f30ee14c2d0e4ddba4208c0e6f7456301b33526294999a3bf7fe39f935e7232b"
       }
     ],
-    "aggregateSha256": "7a9df119295e1f009d0cca78f29b981e5ec168bc2fa2c420f48f342c80c49a5e"
+    "aggregateSha256": "9b4e0cbd5f3d276283a0f7ad67db8af715e6bcbdd69681102906227449795bc0"
   },
-  "runtimeSeconds": 1386.6361235000659
+  "runtimeSeconds": 1694.8098667000013
 }

@@ -226,6 +226,35 @@ class PolicyRoundTest(unittest.TestCase):
             state.discard(prohibited)
         self.assertEqual(kuikae_forbidden_tile34("chi", 0, (1, 2)), frozenset({0, 3}))
 
+    def test_chi_without_legal_followup_discard_is_not_a_legal_claim(self) -> None:
+        def chi_claims(concealed: dict[str, str]) -> tuple[ResponseClaim, ...]:
+            pool = TilePool()
+            seat_hand = pool.hand(**concealed, honors="111222333")
+            discard = pool.one(16)
+            state = make_state({1: seat_hand}, pool, live_front=(discard,))
+
+            concealed_ids = [
+                tile_id for tile_id in state.hands[1]
+                if state.tile_by_id[tile_id].tile34 < 27
+            ]
+            honor_ids = [
+                tile_id for tile_id in state.hands[1]
+                if state.tile_by_id[tile_id].tile34 >= 27
+            ]
+            state.hands[1] = concealed_ids
+            state.melds[1] = [
+                RoundMeld("pon", tuple(honor_ids[offset:offset + 3]), honor_ids[offset], 0)
+                for offset in range(0, 9, 3)
+            ]
+            state.calls_occurred = True
+
+            state.draw()
+            state.discard(discard)
+            return tuple(claim for claim in state.legal_call_claims(1) if claim.kind == "chi")
+
+        self.assertEqual(chi_claims({"pin": "5567"}), ())
+        self.assertEqual(len(chi_claims({"man": "1", "pin": "567"})), 1)
+
     def test_temporary_furiten_survives_draw_and_clears_after_discard(self) -> None:
         state, _ = head_bump_state()
         state.resolve_discard_responses([])

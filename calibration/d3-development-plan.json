@@ -1,13 +1,13 @@
 {
   "schemaVersion": "ev-policy-d3-development-plan/v1",
   "createdDate": "2026-09-07",
-  "status": "implementation_in_progress",
-  "implementationStatus": "D3_2_core_complete_adoption_held",
+  "status": "D3_2a_complete_D3_3_held",
+  "implementationStatus": "D3_2a_full_pipeline_complete_adoption_held",
   "eligibleForAdoption": false,
   "designPath": "PHASE_D3_DESIGN.md",
   "reservationPath": "future-evaluation-reservation.json",
   "doesNotAmendFutureReservation": true,
-  "nextPhase": "D.3.2a",
+  "nextPhase": "D.3.2_hold_resolution",
   "models": {
     "designRecommendation": "Astra/high",
     "implementationRecommendation": "Sol/high",
@@ -99,11 +99,11 @@
     ],
     "temperatureFitPeriod": "2024-25",
     "classRebalancingWithoutCorrection": false,
-    "modelStatus": "fit_and_calibrated_with_adoption_holds",
-    "modelPath": "model-opponent/model.json",
-    "fitSummaryPath": "model-opponent/fit-summary.json",
-    "evaluationPath": "model-opponent/evaluation.json",
-    "reportPath": "PHASE_D32_REPORT.md",
+    "modelStatus": "v2_fit_and_calibrated_with_adoption_holds",
+    "modelPath": "model-opponent-v2/model.json",
+    "fitSummaryPath": "model-opponent-v2/fit-summary.json",
+    "evaluationPath": "model-opponent-v2/evaluation.json",
+    "reportPath": "PHASE_D32A_REPORT.md",
     "selectedLambda": 0.01,
     "selectedTemperatures": {
       "self_action_after_live": 0.75,
@@ -120,7 +120,8 @@
       "daiminkan_policy"
     ],
     "featureHolds": [
-      "exact_candidate_ukeire"
+      "full_multi_riichi_danger_class",
+      "explicit_yaku_shape_features"
     ],
     "modelFitHolds": [
       "response_rate_miscalibration"
@@ -222,17 +223,18 @@
     },
     {
       "id": "D.3.2",
-      "status": "core_complete_adoption_held",
+      "status": "superseded_by_D3_2a_adoption_held",
       "focus": "opponent_fit_calibration_and_identifiability",
       "holds": [
         "opponent_component_unidentified",
-        "exact_candidate_ukeire_not_implemented",
+        "full_multi_riichi_danger_class",
+        "explicit_yaku_shape_features",
         "response_rate_miscalibration"
       ]
     },
     {
       "id": "D.3.2a",
-      "status": "implementation_in_progress_full_build_pending",
+      "status": "complete_with_D33_holds",
       "focus": "exact_candidate_ukeire_performance_and_refit",
       "designPath": "PHASE_D32A_DESIGN.md",
       "featureSchema": "ev-policy-opponent-features/v2",
@@ -245,7 +247,7 @@
       "benchmarkMinimumPerPhaseWhenAvailable": 256,
       "edgeWindowsPerLegalActionKindMaximum": 64,
       "resourceLimits": {
-        "status": "probe_pass_full_measurement_pending",
+        "status": "pass_with_full_peak_telemetry_note",
         "maximumProbeWallClockSeconds": 3600,
         "maximumFeatureBuildAndVerifySeconds": 28800,
         "maximumFitAndEvaluateSeconds": 28800,
@@ -264,6 +266,18 @@
           "persistentShardBytes": 7931229,
           "projectedFullBuildSecondsNotAGate": 14371.09579547771,
           "probePath": "probes/opponent-features-v2/probe.json"
+        },
+        "measuredFullRun": {
+          "windows": 2085155,
+          "candidates": 14533857,
+          "featureBuildSeconds": 6845.098068899999,
+          "featureBuildAndVerifySecondsApproximate": 7108,
+          "fitAndEvaluateSecondsApproximate": 3405,
+          "featureCacheBytes": 723835611,
+          "shards": 209,
+          "peakWorkingSetBytes": null,
+          "peakWorkingSetEvidence": "bounded_LRU_and_same_implementation_probe_only",
+          "status": "time_and_disk_pass_full_peak_not_directly_recorded"
         }
       },
       "acceptanceTestIds": [
@@ -277,6 +291,15 @@
         "D32A-08"
       ],
       "completionDoesNotAuthorizeD33": true,
+      "eligibleForD33": false,
+      "selectedLambda": 0.01,
+      "holds": [
+        "full_multi_riichi_danger_class",
+        "explicit_yaku_shape_features",
+        "opponent_component_unidentified",
+        "response_rate_miscalibration"
+      ],
+      "reportPath": "PHASE_D32A_REPORT.md",
       "remainingFeatureHoldsOutsideScope": [
         "full_multi_riichi_danger_class",
         "explicit_yaku_shape_features"

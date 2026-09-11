@@ -1,0 +1,33 @@
+{
+  "batchSize": 256,
+  "calibrationSplit": "calibration",
+  "confirmationSplit": "developmentConfirmation",
+  "datasetManifestHash": "5f08500954eb5836d92f9b08de77a478a6b7a8ee3c63cdf01d22e5c0b7da9ca1",
+  "epochs": 2,
+  "exactCalculationVersion": "exact-candidate-ukeire/v1",
+  "featureCacheManifestHash": "8649dfd0eb8222d5e0e46979c57e3a7ccad7f4c5a86fbd890034615f1c335c65",
+  "featureSchemaVersion": "ev-policy-opponent-features/v2",
+  "labelDefinitionVersion": "joint-public-resolution-v1",
+  "learningRate": 0.03,
+  "maximumWindows": null,
+  "optimizer": "deterministic_minibatch_sgd",
+  "regularizationGrid": [
+    0.01,
+    0.1,
+    1.0,
+    10.0,
+    100.0
+  ],
+  "schemaVersion": "ev-policy-opponent-fit-manifest/v2",
+  "seed": 20260909,
+  "selectionSplit": "selection",
+  "temperatureGrid": [
+    0.5,
+    0.75,
+    1.0,
+    1.25,
+    1.5,
+    2.0
+  ],
+  "trainSplit": "train"
+}

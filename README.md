@@ -53,9 +53,9 @@ Tailwind CSSのみCDNから読み込むため、完全オフライン時も問�
 
 較正は段階的に実装する。フェーズAの監査、フェーズBの学習用レコード抽出、フェーズCの観測値較正、フェーズC.1の全適格打牌による軽量較正まで実装済み。C.1も採用基準を満たさなかったため、アプリへの反映は行わない。
 
-フェーズDはD.1の状態管理・選択前抽出・入力検査、D.2の一局シミュレーション基盤、D.3.0の独立牌譜イベント監査、D.3.1の相手モデル用観測データ、D.3.2の相手行動モデル学習まで実装した。D.3.2aは候補別の厳密受け入れ、特徴cache、v2再学習経路まで実装し、全件生成と再学習を残している。
+フェーズDはD.1の状態管理・選択前抽出・入力検査、D.2の一局シミュレーション基盤、D.3.0の独立牌譜イベント監査、D.3.1の相手モデル用観測データ、D.3.2の相手行動モデル学習まで実装した。D.3.2aでは候補別の厳密受け入れ、特徴cache、全2,085,155教師窓の生成・検証、v2再学習と保存モデル再評価まで完了した。未実装特徴、未識別成分、応答率の較正不一致が残るため、D.3.3への接続はholdしている。
 D.2の [ルール解釈と依存選定](calibration/PHASE_D2_RULES_AND_DEPENDENCIES.md)、[D.2aの得点と精算](calibration/PHASE_D2A_REPORT.md)、[D.2bの一局状態機械](calibration/PHASE_D2B_REPORT.md)、[D.2cの方策と合成局](calibration/PHASE_D2C_REPORT.md) はデバッグ基盤として実装済み。
-[D.3の設計](calibration/PHASE_D3_DESIGN.md) に基づく[D.3.0](calibration/PHASE_D30_REPORT.md)では、35,218判断の独立入口復元と7,849局のresult差分を全件照合し、局実行器は決定的標本256局のうち254局が一致した。残る2局は原牌譜の牌在庫不整合としてholdにした。[D.3.1](calibration/PHASE_D31_REPORT.md)では23,358局から2,085,155教師窓と32,019推論prefixを生成し、公開・私有情報の遮断と共同応答ラベルを全件検証した。[D.3.2](calibration/PHASE_D32_REPORT.md)では階層付き相手行動モデルを全件学習・較正したが、厳密な候補別受け入れと未識別成分が残るためD.3.3への接続はholdしている。
+[D.3の設計](calibration/PHASE_D3_DESIGN.md) に基づく[D.3.0](calibration/PHASE_D30_REPORT.md)では、35,218判断の独立入口復元と7,849局のresult差分を全件照合し、局実行器は決定的標本256局のうち254局が一致した。残る2局は原牌譜の牌在庫不整合としてholdにした。[D.3.1](calibration/PHASE_D31_REPORT.md)では23,358局から2,085,155教師窓と32,019推論prefixを生成し、公開・私有情報の遮断と共同応答ラベルを全件検証した。[D.3.2](calibration/PHASE_D32_REPORT.md)では階層付き相手行動モデルを全件学習・較正した。[D.3.2a](calibration/PHASE_D32A_REPORT.md)では厳密な候補別受け入れを全件計算してv2を再学習したが、4件のholdが残り、`eligibleForD33=false`である。
 2026-27は [将来評価枠](calibration/future-evaluation-reservation.json) として予約している。牌譜は未取得、モデル凍結は未了であり、それまでの開発には2025-26以前を使う。
 
 ```powershell
@@ -122,7 +122,7 @@ python tests/test_calibrate_ev.py
 - `calibration/PHASE_D30_REPORT.md`, `calibration/policy-runtime-audit.json` — D.3.0の全件入口、result差分、局実行器標本の照合結果
 - `calibration/PHASE_D31_REPORT.md`, `calibration/dataset-opponent/` — D.3.1の全件抽出・検証結果と再生成データmanifest
 - `calibration/PHASE_D32_REPORT.md`, `calibration/model-opponent/` — D.3.2の全件学習・較正、期間別評価、未識別成分と特徴hold
-- `calibration/PHASE_D32A_DESIGN.md`, `calibration/probes/opponent-features-v2/` — D.3.2aの計算仕様、固定性能標本、cold／warm／永続読込測定
+- `calibration/PHASE_D32A_DESIGN.md`, `calibration/PHASE_D32A_REPORT.md`, `calibration/probes/opponent-features-v2/` — D.3.2aの計算仕様、全件再学習結果、固定性能標本、cold／warm／永続読込測定
 - `EV_CALIBRATION_DESIGN.md` — 実牌譜EV較正の設計、分割、合否条件、段階計画
 - `REFACTOR_NOTES.md` — 今回の調査結果と検証記録、追加の改善案
 

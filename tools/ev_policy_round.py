@@ -653,7 +653,17 @@ class RoundState:
                 if all(by_type.get(tile_type) for tile_type in needed):
                     for left in by_type[needed[0]]:
                         for right in by_type[needed[1]]:
-                            claims.append(ResponseClaim("chi", seat, (left, right)))
+                            consumed = (left, right)
+                            forbidden = kuikae_forbidden_tile34(
+                                "chi",
+                                called_type,
+                                tuple(self.tile_by_id[tile_id].tile34 for tile_id in consumed),
+                            )
+                            remaining = (
+                                tile_id for tile_id in self.hands[seat] if tile_id not in consumed
+                            )
+                            if any(self.tile_by_id[tile_id].tile34 not in forbidden for tile_id in remaining):
+                                claims.append(ResponseClaim("chi", seat, consumed))
         return tuple(claims)
 
     def legal_response_claims(self, seat: int) -> tuple[ResponseClaim, ...]:
