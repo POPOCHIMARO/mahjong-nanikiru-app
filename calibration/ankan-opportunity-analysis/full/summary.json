@@ -1,0 +1,827 @@
+{
+  "schemaVersion": "ankan-opportunity-analysis/v1",
+  "executedAt": "2026-09-11T14:46:00.226322+00:00",
+  "maximumRounds": null,
+  "totals": {
+    "rounds": 20446,
+    "seat_rounds": 81784,
+    "teacher_windows": 2085155,
+    "self_windows": 1046813,
+    "self_action_after_live": 1020265,
+    "plain_live_windows": 842413,
+    "app_structural_windows": 65962,
+    "app_no_opponent_riichi_windows": 50638,
+    "self_action_after_call": 25137,
+    "covered_public_ankan": 1015,
+    "app_no_honor_candidate_windows": 38696,
+    "observed_ankan": 1015,
+    "ankan_windows": 6868,
+    "ankan_observation_exact": 6866,
+    "ankan_win_action_known": 6867,
+    "ankan_candidates": 6877,
+    "ankan_without_tsumo": 6843,
+    "self_action_after_rinshan": 1411,
+    "plain_live_ankan": 5862,
+    "app_quad_windows": 623,
+    "app_structural_ankan": 618,
+    "app_no_opponent_riichi_ankan": 407,
+    "app_no_honor_candidate_ankan": 402,
+    "ankan_observation_hold": 2,
+    "ankan_with_tsumo": 25,
+    "ankan_win_action_hold": 1,
+    "unique_games": 1916,
+    "unique_observed_seat_rounds": 81784,
+    "unique_ankan_seat_rounds": 2241,
+    "unique_ankan_rounds": 2114,
+    "unique_ankan_games": 1294,
+    "unique_opportunity_episodes": 2268,
+    "unique_app_episodes": 529
+  },
+  "seasons": {
+    "2018-19": {
+      "rounds": 1750,
+      "seat_rounds": 7000,
+      "teacher_windows": 180257,
+      "self_windows": 90481,
+      "self_action_after_live": 88312,
+      "plain_live_windows": 73829,
+      "app_structural_windows": 5626,
+      "app_no_opponent_riichi_windows": 4403,
+      "self_action_after_call": 2044,
+      "covered_public_ankan": 85,
+      "app_no_honor_candidate_windows": 3135,
+      "observed_ankan": 85,
+      "ankan_windows": 556,
+      "ankan_observation_exact": 555,
+      "ankan_win_action_known": 556,
+      "ankan_candidates": 557,
+      "ankan_without_tsumo": 556,
+      "self_action_after_rinshan": 125,
+      "plain_live_ankan": 486,
+      "app_quad_windows": 51,
+      "app_structural_ankan": 51,
+      "app_no_opponent_riichi_ankan": 37,
+      "app_no_honor_candidate_ankan": 31,
+      "ankan_observation_hold": 1
+    },
+    "2019-20": {
+      "rounds": 2319,
+      "seat_rounds": 9276,
+      "teacher_windows": 238406,
+      "self_windows": 119664,
+      "self_action_after_live": 117071,
+      "plain_live_windows": 98847,
+      "app_structural_windows": 7709,
+      "app_no_opponent_riichi_windows": 5965,
+      "app_no_honor_candidate_windows": 4219,
+      "covered_public_ankan": 95,
+      "self_action_after_call": 2460,
+      "ankan_windows": 822,
+      "ankan_observation_exact": 822,
+      "ankan_win_action_known": 822,
+      "ankan_candidates": 822,
+      "ankan_without_tsumo": 818,
+      "plain_live_ankan": 726,
+      "app_quad_windows": 77,
+      "app_structural_ankan": 77,
+      "observed_ankan": 95,
+      "self_action_after_rinshan": 133,
+      "app_no_opponent_riichi_ankan": 52,
+      "app_no_honor_candidate_ankan": 50,
+      "ankan_with_tsumo": 4
+    },
+    "2020-21": {
+      "rounds": 2249,
+      "seat_rounds": 8996,
+      "teacher_windows": 232873,
+      "self_windows": 116899,
+      "self_action_after_live": 114277,
+      "plain_live_windows": 95579,
+      "app_structural_windows": 7449,
+      "app_no_opponent_riichi_windows": 5705,
+      "app_no_honor_candidate_windows": 4205,
+      "self_action_after_call": 2458,
+      "covered_public_ankan": 125,
+      "ankan_windows": 836,
+      "ankan_observation_exact": 836,
+      "ankan_win_action_known": 836,
+      "ankan_candidates": 837,
+      "ankan_without_tsumo": 834,
+      "plain_live_ankan": 713,
+      "app_quad_windows": 94,
+      "app_structural_ankan": 92,
+      "app_no_opponent_riichi_ankan": 59,
+      "app_no_honor_candidate_ankan": 51,
+      "observed_ankan": 125,
+      "self_action_after_rinshan": 164,
+      "ankan_with_tsumo": 2
+    },
+    "2021-22": {
+      "rounds": 2323,
+      "seat_rounds": 9292,
+      "teacher_windows": 241281,
+      "self_windows": 121136,
+      "self_action_after_live": 118399,
+      "plain_live_windows": 99054,
+      "app_structural_windows": 7722,
+      "app_no_opponent_riichi_windows": 5987,
+      "app_no_honor_candidate_windows": 4356,
+      "ankan_windows": 908,
+      "ankan_observation_exact": 908,
+      "ankan_win_action_known": 908,
+      "ankan_candidates": 910,
+      "ankan_without_tsumo": 904,
+      "plain_live_ankan": 788,
+      "observed_ankan": 123,
+      "app_quad_windows": 93,
+      "app_structural_ankan": 93,
+      "app_no_honor_candidate_ankan": 63,
+      "self_action_after_rinshan": 165,
+      "covered_public_ankan": 123,
+      "self_action_after_call": 2572,
+      "app_no_opponent_riichi_ankan": 54,
+      "ankan_with_tsumo": 4
+    },
+    "2022-23": {
+      "rounds": 2560,
+      "seat_rounds": 10240,
+      "teacher_windows": 263842,
+      "self_windows": 132454,
+      "self_action_after_live": 129391,
+      "plain_live_windows": 107767,
+      "app_structural_windows": 8495,
+      "app_no_opponent_riichi_windows": 6375,
+      "app_no_honor_candidate_windows": 4901,
+      "covered_public_ankan": 108,
+      "self_action_after_call": 2918,
+      "observed_ankan": 108,
+      "ankan_windows": 772,
+      "ankan_observation_exact": 771,
+      "ankan_win_action_known": 771,
+      "ankan_candidates": 772,
+      "ankan_without_tsumo": 769,
+      "plain_live_ankan": 657,
+      "self_action_after_rinshan": 145,
+      "app_quad_windows": 63,
+      "app_structural_ankan": 62,
+      "app_no_opponent_riichi_ankan": 50,
+      "app_no_honor_candidate_ankan": 43,
+      "ankan_with_tsumo": 3,
+      "ankan_observation_hold": 1,
+      "ankan_win_action_hold": 1
+    },
+    "2023-24": {
+      "rounds": 2786,
+      "seat_rounds": 11144,
+      "teacher_windows": 281522,
+      "self_windows": 141334,
+      "self_action_after_live": 137491,
+      "plain_live_windows": 112404,
+      "app_structural_windows": 8828,
+      "app_no_opponent_riichi_windows": 6795,
+      "app_no_honor_candidate_windows": 5287,
+      "self_action_after_call": 3637,
+      "covered_public_ankan": 144,
+      "self_action_after_rinshan": 206,
+      "observed_ankan": 144,
+      "ankan_windows": 841,
+      "ankan_observation_exact": 841,
+      "ankan_win_action_known": 841,
+      "ankan_candidates": 843,
+      "ankan_without_tsumo": 839,
+      "plain_live_ankan": 742,
+      "app_quad_windows": 73,
+      "app_structural_ankan": 71,
+      "app_no_opponent_riichi_ankan": 58,
+      "app_no_honor_candidate_ankan": 53,
+      "ankan_with_tsumo": 2
+    },
+    "2024-25": {
+      "rounds": 2785,
+      "seat_rounds": 11140,
+      "teacher_windows": 279665,
+      "self_windows": 140408,
+      "self_action_after_live": 136246,
+      "plain_live_windows": 110160,
+      "app_structural_windows": 8605,
+      "app_no_opponent_riichi_windows": 6617,
+      "self_action_after_call": 3959,
+      "covered_public_ankan": 148,
+      "app_no_honor_candidate_windows": 5439,
+      "observed_ankan": 148,
+      "ankan_windows": 995,
+      "ankan_observation_exact": 995,
+      "ankan_win_action_known": 995,
+      "ankan_candidates": 996,
+      "ankan_without_tsumo": 989,
+      "self_action_after_rinshan": 203,
+      "plain_live_ankan": 796,
+      "app_quad_windows": 74,
+      "app_structural_ankan": 74,
+      "app_no_honor_candidate_ankan": 45,
+      "app_no_opponent_riichi_ankan": 45,
+      "ankan_with_tsumo": 6
+    },
+    "2025-26": {
+      "rounds": 3674,
+      "seat_rounds": 14696,
+      "teacher_windows": 367309,
+      "self_windows": 184437,
+      "self_action_after_live": 179078,
+      "plain_live_windows": 144773,
+      "ankan_windows": 1138,
+      "ankan_observation_exact": 1138,
+      "ankan_win_action_known": 1138,
+      "ankan_candidates": 1140,
+      "ankan_without_tsumo": 1134,
+      "plain_live_ankan": 954,
+      "self_action_after_call": 5089,
+      "app_structural_windows": 11528,
+      "app_no_opponent_riichi_windows": 8791,
+      "app_no_honor_candidate_windows": 7154,
+      "ankan_with_tsumo": 4,
+      "covered_public_ankan": 187,
+      "self_action_after_rinshan": 270,
+      "observed_ankan": 187,
+      "app_quad_windows": 98,
+      "app_structural_ankan": 98,
+      "app_no_opponent_riichi_ankan": 52,
+      "app_no_honor_candidate_ankan": 66
+    }
+  },
+  "strata": {
+    "self_action_after_live": {
+      "windows": 6857,
+      "ankan": 1010,
+      "tsumo_available": 25,
+      "discard": 5644,
+      "riichi_discard": 173,
+      "unknown": 1,
+      "tsumo": 26,
+      "kakan": 3
+    },
+    "own_riichi": {
+      "windows": 276,
+      "ankan": 268,
+      "tsumo_available": 0,
+      "discard": 8
+    },
+    "no_opponent_riichi": {
+      "windows": 4638,
+      "ankan": 758,
+      "tsumo_available": 14,
+      "discard": 3733,
+      "riichi_discard": 130,
+      "tsumo": 14,
+      "kakan": 3
+    },
+    "no_fixed_meld": {
+      "windows": 6131,
+      "ankan": 875,
+      "tsumo_available": 14,
+      "discard": 5068,
+      "riichi_discard": 173,
+      "unknown": 1,
+      "tsumo": 14
+    },
+    "shanten_0": {
+      "windows": 1173,
+      "ankan": 444,
+      "tsumo_available": 0,
+      "discard": 555,
+      "riichi_discard": 173,
+      "kakan": 1
+    },
+    "tile_connected_number": {
+      "candidate_windows": 4618,
+      "chosen": 375
+    },
+    "not_own_riichi": {
+      "windows": 6592,
+      "ankan": 747,
+      "tsumo_available": 25,
+      "discard": 5642,
+      "riichi_discard": 173,
+      "unknown": 1,
+      "tsumo": 26,
+      "kakan": 3
+    },
+    "plain_live": {
+      "windows": 5862,
+      "ankan": 614,
+      "tsumo_available": 14,
+      "discard": 5060,
+      "riichi_discard": 173,
+      "unknown": 1,
+      "tsumo": 14
+    },
+    "tile_unconnected_number": {
+      "candidate_windows": 1533,
+      "chosen": 454
+    },
+    "shanten_1": {
+      "windows": 2671,
+      "ankan": 430,
+      "tsumo_available": 0,
+      "discard": 2238,
+      "unknown": 1,
+      "kakan": 2
+    },
+    "tile_honor": {
+      "candidate_windows": 726,
+      "chosen": 186
+    },
+    "opponent_riichi": {
+      "windows": 2230,
+      "discard": 1917,
+      "tsumo_available": 11,
+      "ankan": 257,
+      "unknown": 1,
+      "riichi_discard": 43,
+      "tsumo": 12
+    },
+    "shanten_2": {
+      "windows": 2170,
+      "discard": 2053,
+      "tsumo_available": 0,
+      "ankan": 117
+    },
+    "app_structural": {
+      "windows": 618,
+      "discard": 524,
+      "tsumo_available": 0,
+      "ankan": 93,
+      "unknown": 1
+    },
+    "app_no_honor_candidate": {
+      "windows": 402,
+      "ankan": 59,
+      "tsumo_available": 0,
+      "discard": 342,
+      "unknown": 1
+    },
+    "shanten_3": {
+      "windows": 701,
+      "discard": 678,
+      "tsumo_available": 0,
+      "ankan": 23
+    },
+    "fixed_meld_present": {
+      "windows": 737,
+      "ankan": 140,
+      "tsumo_available": 11,
+      "discard": 582,
+      "tsumo": 12,
+      "kakan": 3
+    },
+    "shanten_4": {
+      "windows": 115,
+      "discard": 114,
+      "tsumo_available": 0,
+      "ankan": 1
+    },
+    "shanten_-1": {
+      "windows": 27,
+      "discard": 1,
+      "tsumo_available": 25,
+      "tsumo": 26
+    },
+    "shanten_5": {
+      "windows": 11,
+      "discard": 11,
+      "tsumo_available": 0
+    },
+    "self_action_after_rinshan": {
+      "windows": 11,
+      "ankan": 5,
+      "tsumo_available": 0,
+      "discard": 6
+    }
+  },
+  "episodeChoices": {
+    "episodes": 2268,
+    "first_chosen": 753,
+    "ever_chosen": 1015,
+    "deferred_then_chosen": 262,
+    "never_chosen_in_observed_prefix": 1253
+  },
+  "sourceFiles": [
+    {
+      "season": "2018-19",
+      "path": "data/mleague/paifu/2018-19.jsonl",
+      "bytes": 5698399,
+      "sha256": "bf54d09c07860529086027f94c92532ba95768fcd6451c39d5a1885a8cf41f32",
+      "records": 1993
+    },
+    {
+      "season": "2019-20",
+      "path": "data/mleague/paifu/2019-20.jsonl",
+      "bytes": 7595216,
+      "sha256": "19e0dee18ce20aa84c67e07e5a5b86bf2fbff48d45dfaac57821cbc20096600d",
+      "records": 2660
+    },
+    {
+      "season": "2020-21",
+      "path": "data/mleague/paifu/2020-21.jsonl",
+      "bytes": 7384925,
+      "sha256": "4cf1ee7ecdc7092bf683cc0a3f5f0fc1dc31c6765ae7bd503b11caea0e5dc365",
+      "records": 2580
+    },
+    {
+      "season": "2021-22",
+      "path": "data/mleague/paifu/2021-22.jsonl",
+      "bytes": 7562891,
+      "sha256": "7ce113263d53baa366aba950694a14ae759eab572da88f9c340d3f3281bcbd94",
+      "records": 2633
+    },
+    {
+      "season": "2022-23",
+      "path": "data/mleague/paifu/2022-23.jsonl",
+      "bytes": 8342958,
+      "sha256": "d0f68a06a190c18be6d7c5a3aac8fc2256d09057a58a7bf2527a1e812c9d0625",
+      "records": 2913
+    },
+    {
+      "season": "2023-24",
+      "path": "data/mleague/paifu/2023-24.jsonl",
+      "bytes": 9019378,
+      "sha256": "353acf25e5f2a51d630cbc3fe56a586fe11b0145630225ba14c70a70ba2f5941",
+      "records": 3173
+    },
+    {
+      "season": "2024-25",
+      "path": "data/mleague/paifu/2024-25.jsonl",
+      "bytes": 9066012,
+      "sha256": "5ecf9ac525443d6ba64a4804614661c47447cc693bf9fcf74743f4f95f10dccf",
+      "records": 3190
+    },
+    {
+      "season": "2025-26",
+      "path": "data/mleague/paifu/2025-26.jsonl",
+      "bytes": 11941406,
+      "sha256": "15fa214ddc03d8a3be84a22179982f3df128f7bf5e2a28d547a123b594ffa943",
+      "records": 4216
+    }
+  ],
+  "datasetHashes": {
+    "private-events.jsonl.gz": "c1239a6e4684950ebb8d25e7cd0583d493516150fcf378906b711b87bed39ea0",
+    "public-events.jsonl.gz": "9ef1d4f47a8e639f9668b23da30e8dae3e45fe10be6e538c2e8e6f24ec05cf29",
+    "teacher-windows.jsonl.gz": "0020d6ff26723f1a2027b6629193b823fd61432ffda89f11fd4d4fae19d8d95b"
+  },
+  "datasetTotals": {
+    "heldSouth4OrLaterD1": 3199,
+    "heldSouth4OrLaterRounds": 2891,
+    "inferencePrefixes": 32019,
+    "outcomes": 20447,
+    "privateRoundSeats": 93352,
+    "publicRounds": 23338,
+    "roundsSeen": 23358,
+    "teacherWindows": 2085155
+  },
+  "datasetRejectionReasons": {
+    "IllegalAction:この打牌ではリーチできない": 3,
+    "IllegalAction:リーチ後はツモ切りだけ可能": 1,
+    "RecordedChronologyError:discard_count_mismatch": 6,
+    "RecordedChronologyError:initial_dora_missing": 6,
+    "RecordedChronologyError:initial_hand_invalid:2": 1,
+    "RecordedChronologyError:unparseable_draw": 1,
+    "RecordedChronologyError:手牌にない牌token: 13": 1,
+    "RecordedChronologyError:手牌にない牌token: 15": 1,
+    "RecordedChronologyError:手牌にない牌token: 36": 1,
+    "RecordedChronologyError:手牌にない牌token: 43": 1,
+    "RecordedChronologyError:手牌にない牌token: 46": 1,
+    "RecordedChronologyError:手牌にない牌token: 53": 1,
+    "additional_dora_missing": 6,
+    "initial_inventory_invalid": 1,
+    "observed_inventory_invalid": 13,
+    "south4_or_later_outside_initial_policy_scope": 2891
+  },
+  "discardShantenChecks": [
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:0:0:e48:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:0:0:e50:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:0:0:e62:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:1:0:e58:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:1:0:e62:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:2:0:e6:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:2:0:e42:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:3:0:e40:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:4:0:e64:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:4:0:e92:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:5:0:e24:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:5:0:e58:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:5:0:e60:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:5:0:e70:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:6:0:e16:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:6:0:e26:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:6:0:e90:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:7:0:e32:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:7:0:e46:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:8:0:e30:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:8:0:e32:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:8:0:e42:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:8:0:e58:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:9:0:e32:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:9:0:e44:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:9:0:e58:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:9:0:e84:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:9:0:e86:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:10:0:e26:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:10:0:e54:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:10:0:e60:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:10:0:e64:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:11:0:e12:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:11:0:e34:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:11:0:e36:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:11:0:e82:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:11:0:e92:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:12:0:e66:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:12:0:e96:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0001_01A:12:0:e104:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0004_01A:5:0:e60:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0004_01A:5:0:e100:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0004_02A:7:0:e48:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0010_01A:0:0:e14:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0011_01A:2:0:e56:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0011_01A:3:0:e22:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0011_01A:3:0:e110:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0013_01A:5:0:e36:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0014_01A:6:0:e26:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0015_01A:7:0:e16:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0015_01A:7:0:e24:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0015_01A:7:0:e32:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0017_01A:5:0:e62:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0018_02A:12:0:e132:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0020_02A:3:0:e38:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0028_01A:5:0:e48:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0028_02A:7:0:e40:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0033_01A:4:0:e98:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0034_02A:8:0:e52:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0035_02A:5:0:e44:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0035_02A:7:0:e38:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0036_02A:2:0:e140:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0038_01A:4:0:e70:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0038_01A:9:0:e56:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0038_01A:9:0:e64:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0046_02A:12:0:e60:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0047_02A:8:0:e44:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0051_01A:6:0:e120:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0051_02A:3:0:e18:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0054_01A:2:0:e52:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0054_02A:3:0:e52:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0056_01A:4:0:e42:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0056_02A:3:0:e34:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0057_01A:6:0:e32:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0060_01A:13:0:e26:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0060_02A:8:0:e48:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0061_02A:1:0:e52:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0062_01A:5:0:e62:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0062_01A:7:0:e40:self_action_after_live",
+      "minimumDiscardShanten": 1
+    },
+    {
+      "windowId": "mleague:2018-19:L001_S001_0062_02A:1:0:e128:self_action_after_live",
+      "minimumDiscardShanten": 1
+    }
+  ],
+  "analysisCodeSha256": "79d408f5b5346e33984c79c93388cda45e686562a5178dbb680c1cc49abedd7c",
+  "runtimeSeconds": 332.0309999999881,
+  "metadataOnlyCorrection": {
+    "reason": "Source JSONL line count is records, not distinct games. Core aggregate unchanged; distinct games remain totals.unique_games=1916.",
+    "currentScriptSha256": "b236cd5366a85eb4a00ee822f8cb13d57908b9bc49e287ee9f1c903fc6ec5c08"
+  }
+}

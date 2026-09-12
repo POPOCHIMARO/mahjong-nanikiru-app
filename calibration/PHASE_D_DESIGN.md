@@ -308,7 +308,7 @@ Dの出力には、`ruleVersion`、`policyVersions`、`beliefVersion`、`opponen
 
 ## 11. 根拠と未検証事項
 
-- 上位設計：`../EV_CALIBRATION_DESIGN.md`の4、7、8、9節。
+- 上位設計：`../docs/EV_CALIBRATION_DESIGN.md`の4、7、8、9節。
 - 現状の結果：`PHASE_C1_REPORT.md`、`model-c1/evaluation.json`。確認4,794打牌、128放銃、Brier差の95%区間は0をまたぐ。
 - ローカル実装：`extract_round`の実打牌後シャンテン採用条件、候補生成の`remaining_wall >= 4`、`ev_calibration_state.py`の牌理計算を2026-09-06に確認。
 - ルール：2026-09-06に[Mリーグ公式ルール](https://m-league.jp/about/)を確認。D.2で対象期間のルール版と個々の固定例へ結び付ける。

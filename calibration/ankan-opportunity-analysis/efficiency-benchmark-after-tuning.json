@@ -1,0 +1,503 @@
+{
+  "label": "after-tuning",
+  "engineSha256": "e9dbd7a8fcdc3b609e80893cea20d553071f2a06bfb08c6e5b080e3e6df1cf15",
+  "seed": 20260911,
+  "prng": "Mulberry32",
+  "requestedPerDifficulty": 20,
+  "generationOrder": "20 standard, then 20 hard, one continuous PRNG stream",
+  "nodeVersion": "v24.18.0",
+  "elapsedMs": 147906.477,
+  "byDifficulty": {
+    "standard": {
+      "requested": 20,
+      "generated": 20,
+      "failures": 0,
+      "medianMs": 2662.1301999999996,
+      "p95Ms": 8013.640999999996,
+      "maxMs": 8697.165200000003
+    },
+    "hard": {
+      "requested": 20,
+      "generated": 20,
+      "failures": 0,
+      "medianMs": 3323.2167999999947,
+      "p95Ms": 8592.654899999994,
+      "maxMs": 8932.111000000004
+    }
+  },
+  "overall": {
+    "requested": 40,
+    "generated": 40,
+    "failures": 0,
+    "medianMs": 3045.0934000000016,
+    "p95Ms": 8592.654899999994,
+    "maxMs": 8932.111000000004
+  },
+  "samples": [
+    {
+      "difficulty": "standard",
+      "index": 1,
+      "generated": true,
+      "elapsedMs": 5686.5109999999995,
+      "traps": [],
+      "targetDifficulty": "standard",
+      "targetHasTrap": true,
+      "attempts": 62,
+      "usedFallback": true
+    },
+    {
+      "difficulty": "standard",
+      "index": 2,
+      "generated": true,
+      "elapsedMs": 1061.9996,
+      "traps": [],
+      "targetDifficulty": "standard",
+      "targetHasTrap": false,
+      "attempts": 8,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "standard",
+      "index": 3,
+      "generated": true,
+      "elapsedMs": 841.1514999999999,
+      "traps": [],
+      "targetDifficulty": "standard",
+      "targetHasTrap": false,
+      "attempts": 15,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "standard",
+      "index": 4,
+      "generated": true,
+      "elapsedMs": 1396.9003000000002,
+      "traps": [],
+      "targetDifficulty": "standard",
+      "targetHasTrap": false,
+      "attempts": 1,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "standard",
+      "index": 5,
+      "generated": true,
+      "elapsedMs": 5447.895,
+      "traps": [],
+      "targetDifficulty": "standard",
+      "targetHasTrap": true,
+      "attempts": 79,
+      "usedFallback": true
+    },
+    {
+      "difficulty": "standard",
+      "index": 6,
+      "generated": true,
+      "elapsedMs": 6811.664699999999,
+      "traps": [
+        "float-quality"
+      ],
+      "targetDifficulty": "standard",
+      "targetHasTrap": true,
+      "attempts": 34,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "standard",
+      "index": 7,
+      "generated": true,
+      "elapsedMs": 4999.4274000000005,
+      "traps": [
+        "only-pair"
+      ],
+      "targetDifficulty": "standard",
+      "targetHasTrap": true,
+      "attempts": 41,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "standard",
+      "index": 8,
+      "generated": true,
+      "elapsedMs": 4467.5545999999995,
+      "traps": [],
+      "targetDifficulty": "standard",
+      "targetHasTrap": false,
+      "attempts": 41,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "standard",
+      "index": 9,
+      "generated": true,
+      "elapsedMs": 1996.0594999999994,
+      "traps": [
+        "double-acceptance"
+      ],
+      "targetDifficulty": "standard",
+      "targetHasTrap": true,
+      "attempts": 41,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "standard",
+      "index": 10,
+      "generated": true,
+      "elapsedMs": 3525.7057999999997,
+      "traps": [],
+      "targetDifficulty": "standard",
+      "targetHasTrap": false,
+      "attempts": 16,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "standard",
+      "index": 11,
+      "generated": true,
+      "elapsedMs": 2874.517,
+      "traps": [],
+      "targetDifficulty": "standard",
+      "targetHasTrap": false,
+      "attempts": 19,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "standard",
+      "index": 12,
+      "generated": true,
+      "elapsedMs": 814.3617999999988,
+      "traps": [
+        "double-acceptance"
+      ],
+      "targetDifficulty": "standard",
+      "targetHasTrap": true,
+      "attempts": 5,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "standard",
+      "index": 13,
+      "generated": true,
+      "elapsedMs": 2181.0288,
+      "traps": [],
+      "targetDifficulty": "standard",
+      "targetHasTrap": false,
+      "attempts": 16,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "standard",
+      "index": 14,
+      "generated": true,
+      "elapsedMs": 2449.7433999999994,
+      "traps": [
+        "only-pair"
+      ],
+      "targetDifficulty": "standard",
+      "targetHasTrap": true,
+      "attempts": 21,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "standard",
+      "index": 15,
+      "generated": true,
+      "elapsedMs": 2011.7867000000042,
+      "traps": [],
+      "targetDifficulty": "standard",
+      "targetHasTrap": false,
+      "attempts": 12,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "standard",
+      "index": 16,
+      "generated": true,
+      "elapsedMs": 3215.6698000000033,
+      "traps": [],
+      "targetDifficulty": "standard",
+      "targetHasTrap": false,
+      "attempts": 15,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "standard",
+      "index": 17,
+      "generated": true,
+      "elapsedMs": 2229.7382,
+      "traps": [],
+      "targetDifficulty": "standard",
+      "targetHasTrap": false,
+      "attempts": 13,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "standard",
+      "index": 18,
+      "generated": true,
+      "elapsedMs": 8013.640999999996,
+      "traps": [
+        "float-quality"
+      ],
+      "targetDifficulty": "standard",
+      "targetHasTrap": true,
+      "attempts": 46,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "standard",
+      "index": 19,
+      "generated": true,
+      "elapsedMs": 8697.165200000003,
+      "traps": [],
+      "targetDifficulty": "standard",
+      "targetHasTrap": true,
+      "attempts": 62,
+      "usedFallback": true
+    },
+    {
+      "difficulty": "standard",
+      "index": 20,
+      "generated": true,
+      "elapsedMs": 1159.8043000000034,
+      "traps": [
+        "float-quality"
+      ],
+      "targetDifficulty": "standard",
+      "targetHasTrap": true,
+      "attempts": 1,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "hard",
+      "index": 1,
+      "generated": true,
+      "elapsedMs": 1064.460899999991,
+      "traps": [],
+      "targetDifficulty": "hard",
+      "targetHasTrap": false,
+      "attempts": 1,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "hard",
+      "index": 2,
+      "generated": true,
+      "elapsedMs": 3374.029699999999,
+      "traps": [],
+      "targetDifficulty": "hard",
+      "targetHasTrap": false,
+      "attempts": 82,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "hard",
+      "index": 3,
+      "generated": true,
+      "elapsedMs": 2113.0562999999966,
+      "traps": [],
+      "targetDifficulty": "hard",
+      "targetHasTrap": false,
+      "attempts": 18,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "hard",
+      "index": 4,
+      "generated": true,
+      "elapsedMs": 8592.654899999994,
+      "traps": [
+        "only-pair"
+      ],
+      "targetDifficulty": "hard",
+      "targetHasTrap": true,
+      "attempts": 93,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "hard",
+      "index": 5,
+      "generated": true,
+      "elapsedMs": 7553.043300000005,
+      "traps": [],
+      "targetDifficulty": "hard",
+      "targetHasTrap": true,
+      "attempts": 115,
+      "usedFallback": true
+    },
+    {
+      "difficulty": "hard",
+      "index": 6,
+      "generated": true,
+      "elapsedMs": 1615.845399999991,
+      "traps": [
+        "float-quality"
+      ],
+      "targetDifficulty": "hard",
+      "targetHasTrap": true,
+      "attempts": 17,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "hard",
+      "index": 7,
+      "generated": true,
+      "elapsedMs": 547.1426000000065,
+      "traps": [],
+      "targetDifficulty": "hard",
+      "targetHasTrap": false,
+      "attempts": 1,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "hard",
+      "index": 8,
+      "generated": true,
+      "elapsedMs": 5163.339299999992,
+      "traps": [],
+      "targetDifficulty": "hard",
+      "targetHasTrap": true,
+      "attempts": 113,
+      "usedFallback": true
+    },
+    {
+      "difficulty": "hard",
+      "index": 9,
+      "generated": true,
+      "elapsedMs": 3769.0313999999926,
+      "traps": [],
+      "targetDifficulty": "hard",
+      "targetHasTrap": false,
+      "attempts": 30,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "hard",
+      "index": 10,
+      "generated": true,
+      "elapsedMs": 1731.159799999994,
+      "traps": [],
+      "targetDifficulty": "hard",
+      "targetHasTrap": false,
+      "attempts": 19,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "hard",
+      "index": 11,
+      "generated": true,
+      "elapsedMs": 8465.2013,
+      "traps": [],
+      "targetDifficulty": "hard",
+      "targetHasTrap": true,
+      "attempts": 60,
+      "usedFallback": true
+    },
+    {
+      "difficulty": "hard",
+      "index": 12,
+      "generated": true,
+      "elapsedMs": 3272.4038999999902,
+      "traps": [],
+      "targetDifficulty": "hard",
+      "targetHasTrap": false,
+      "attempts": 29,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "hard",
+      "index": 13,
+      "generated": true,
+      "elapsedMs": 863.9973000000027,
+      "traps": [
+        "float-quality",
+        "only-pair"
+      ],
+      "targetDifficulty": "hard",
+      "targetHasTrap": true,
+      "attempts": 10,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "hard",
+      "index": 14,
+      "generated": true,
+      "elapsedMs": 1801.4575999999943,
+      "traps": [],
+      "targetDifficulty": "hard",
+      "targetHasTrap": false,
+      "attempts": 13,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "hard",
+      "index": 15,
+      "generated": true,
+      "elapsedMs": 4317.392399999997,
+      "traps": [],
+      "targetDifficulty": "hard",
+      "targetHasTrap": true,
+      "attempts": 65,
+      "usedFallback": true
+    },
+    {
+      "difficulty": "hard",
+      "index": 16,
+      "generated": true,
+      "elapsedMs": 1917.3447999999917,
+      "traps": [],
+      "targetDifficulty": "hard",
+      "targetHasTrap": false,
+      "attempts": 7,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "hard",
+      "index": 17,
+      "generated": true,
+      "elapsedMs": 767.835500000001,
+      "traps": [],
+      "targetDifficulty": "hard",
+      "targetHasTrap": false,
+      "attempts": 11,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "hard",
+      "index": 18,
+      "generated": true,
+      "elapsedMs": 6325.631500000018,
+      "traps": [
+        "double-acceptance"
+      ],
+      "targetDifficulty": "hard",
+      "targetHasTrap": true,
+      "attempts": 41,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "hard",
+      "index": 19,
+      "generated": true,
+      "elapsedMs": 5835.395599999989,
+      "traps": [
+        "float-quality"
+      ],
+      "targetDifficulty": "hard",
+      "targetHasTrap": true,
+      "attempts": 54,
+      "usedFallback": false
+    },
+    {
+      "difficulty": "hard",
+      "index": 20,
+      "generated": true,
+      "elapsedMs": 8932.111000000004,
+      "traps": [],
+      "targetDifficulty": "hard",
+      "targetHasTrap": true,
+      "attempts": 80,
+      "usedFallback": true
+    }
+  ]
+}

@@ -40,6 +40,14 @@ function actionKey(action) {
   return `${action.type}:${action.tile}`;
 }
 
+function analyzedHand(notation) {
+  const hand = parse(notation);
+  assert.strictEqual(hand.length, 14, `${notation} は14枚である`);
+  const counts = Engine.toCounts(hand);
+  assert.ok(counts.every((count) => count >= 0 && count <= 4), `${notation} は各牌4枚以下である`);
+  return { counts, analysis: Engine.analyzeDiscards(counts) };
+}
+
 let passed = 0;
 function check(name, actual, expected) {
   assert.deepStrictEqual(actual, expected, `${name}: got ${JSON.stringify(actual)}, want ${JSON.stringify(expected)}`);
@@ -206,12 +214,42 @@ function referenceTwoDraw(counts14, discard) {
   check("報告局面: 出題ガードが不出題と判定する", Engine.efficiencyAnswerIsSound(counts, an.keep), false);
 }
 {
-  // 健全な僅差問題は引き続き出題できることの確認:
-  // 1m2m3m4m4m 4p6p7p8p8p 5s6s7s 北 は北切り(受け入れ最大)が変化でも劣らない。
-  const counts = Engine.toCounts(parse("12344m46788p567s4z"));
-  const an = Engine.analyzeDiscards(counts, null);
-  check("健全な僅差問題の受け入れ最大は北切り", Engine.tileShort(an.keep[0].discard), "北");
-  check("受け入れと2ツモの進展率で優位な問題は通る", Engine.efficiencyAnswerIsSound(counts, an.keep), true);
+  // 北切りの数値自体は変えず、字牌切りを比較できることを理由に問題だけを除外する。
+  const { counts, analysis } = analyzedHand("12344m46788p567s4z");
+  check("北切り問題の受け入れ最大は変更しない", Engine.tileShort(analysis.keep[0].discard), "北");
+  check("字牌候補がある北切り問題は出題しない", Engine.efficiencyAnswerIsSound(counts, analysis.keep), false);
+}
+{
+  // 保存標本 standard-045。正解は1mだが、南の暗刻を崩しても1シャンテンを維持できる。
+  const { counts, analysis } = analyzedHand("1m2334578p123s222z");
+  check("数牌正解でも字牌の維持候補がある", analysis.keep.some((row) => row.discard >= 27), true);
+  check("正解が数牌でも字牌候補があれば出題しない", Engine.efficiencyCandidateSetIsAllowed(counts, analysis.keep), false);
+}
+{
+  // 保存標本 standard-016。西の対子は、1枚切るとシャンテンが悪化するので比較候補ではない。
+  const { counts, analysis } = analyzedHand("6m2p3445567789s33z");
+  check("字牌の対子があっても字牌切りが維持候補でなければ許可", Engine.efficiencyCandidateSetIsAllowed(counts, analysis.keep), true);
+  check("字牌対子を残す既存の有効手は出題できる", Engine.efficiencyAnswerIsSound(counts, analysis.keep), true);
+}
+{
+  for (const notation of ["567m38p334444555s", "678m38p334444555s"]) {
+    const { counts, analysis } = analyzedHand(notation);
+    check(`${notation} は四枚使いのため出題しない`, Engine.efficiencyCandidateSetIsAllowed(counts, analysis.keep), false);
+  }
+}
+{
+  // 保存標本 standard-025。四枚ある2sではなく3pが正解でも、暗槓を比較できないため除外する。
+  const { counts, analysis } = analyzedHand("2m2334558p122223s");
+  check("四枚使いとは別の牌が受け入れ最大", Engine.tileShort(analysis.keep[0].discard), "3p");
+  check("四枚から切らない問題も出題しない", Engine.efficiencyCandidateSetIsAllowed(counts, analysis.keep), false);
+}
+{
+  // 保存標本から、通常、高難度、変化タイブレークの数牌だけの有効手を固定する。
+  for (const notation of ["6m2p3445567789s33z", "2m234455677p5678s", "2223456778m12p49s"]) {
+    const { counts, analysis } = analyzedHand(notation);
+    check(`${notation} は新しい形の除外条件を通る`, Engine.efficiencyCandidateSetIsAllowed(counts, analysis.keep), true);
+    check(`${notation} は既存の2ツモ条件も通る`, Engine.efficiencyAnswerIsSound(counts, analysis.keep), true);
+  }
 }
 // --- 罠型の判定（固定の手牌で4種を1つずつ確認する） ---
 // 問題生成はランダムなので、罠型の正しさは生成結果の割合ではなく
@@ -473,12 +511,15 @@ for (let i = 0; i < efficiencySamplesPerDifficulty * efficiencyDifficulties.leng
   assert.strictEqual(p.redFlags.length, 14, "赤5フラグは手牌と同じ14要素");
   const isolatedHonorKinds = Engine.toCounts(p.hand).slice(27).filter((count) => count === 1).length;
   assert.ok(isolatedHonorKinds < 2, "孤立字牌は2種類未満");
+  assert.ok(Engine.toCounts(p.hand).every((count) => count < 4), "同種4枚を含まない");
   assert.ok(Array.isArray(p.traps), "罠型は配列で保持する");
   assert.ok(p.traps.every((trap) => allowedTraps.has(trap)), "罠型は定義済みの4種類だけ");
+  assert.ok(!p.traps.includes("isolated-honor"), "字牌候補を除外するため孤立字牌の罠は出題されない");
   if (p.traps.length > 0) trappedProblems++;
 
   const analysis = Engine.analyzeDiscards(Engine.toCounts(p.hand));
   assert.strictEqual(analysis.minShanten, 1, "このツモから1シャンテンに進める");
+  assert.ok(analysis.keep.every((row) => row.discard < 27), "1シャンテン維持候補に字牌がない");
   const bestU = p.analysis[0].ukeire;
   assert.ok(bestU > 0, "テンパイへの最大受け入れは1枚以上");
   for (const row of p.analysis) {
@@ -508,8 +549,6 @@ for (let i = 0; i < efficiencySamplesPerDifficulty * efficiencyDifficulties.leng
   const maxPot = Math.max(...topRows.map((r) => r.variation.total));
   assert.ok(p.analysis.every(r => r.variation.twoDrawNumerator <= p.analysis[0].variation.twoDrawNumerator),
     "下位候補も含め2ツモ以内の進展率で逆転しない");
-  const honor = Engine.toCounts(p.hand).findIndex((count, t) => t >= 27 && count === 1);
-  if (honor >= 0) assert.deepStrictEqual(p.bestDiscards, [honor], "孤立字牌を残す正解を出さない");
   const expectedBest = topRows.filter((r) => r.variation.total === maxPot).map((r) => r.discard).sort((a, b) => a - b);
   assert.deepStrictEqual([...p.bestDiscards].sort((a, b) => a - b), expectedBest, "受け入れ最大かつ変化最大の打牌だけが正解");
   if (difficulty === "standard") {

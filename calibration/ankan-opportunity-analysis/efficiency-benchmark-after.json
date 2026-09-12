@@ -1,0 +1,278 @@
+{
+  "label": "after",
+  "engineSha256": "ce021233bc38f99f805b0a9097d063d337647198d940f185084be565d3dd3572",
+  "seed": 20260911,
+  "prng": "Mulberry32",
+  "requestedPerDifficulty": 20,
+  "generationOrder": "20 standard, then 20 hard, one continuous PRNG stream",
+  "nodeVersion": "v24.18.0",
+  "elapsedMs": 200142.42250000002,
+  "byDifficulty": {
+    "standard": {
+      "requested": 20,
+      "generated": 20,
+      "failures": 0,
+      "medianMs": 2433.8784499999983,
+      "p95Ms": 16777.0493,
+      "maxMs": 24539.90740000001
+    },
+    "hard": {
+      "requested": 20,
+      "generated": 20,
+      "failures": 0,
+      "medianMs": 2544.139699999985,
+      "p95Ms": 13370.30770000002,
+      "maxMs": 18060.983299999993
+    }
+  },
+  "overall": {
+    "requested": 40,
+    "generated": 40,
+    "failures": 0,
+    "medianMs": 2433.8784499999983,
+    "p95Ms": 16777.0493,
+    "maxMs": 24539.90740000001
+  },
+  "samples": [
+    {
+      "difficulty": "standard",
+      "index": 1,
+      "generated": true,
+      "elapsedMs": 8984.4764
+    },
+    {
+      "difficulty": "standard",
+      "index": 2,
+      "generated": true,
+      "elapsedMs": 2439.6061999999984
+    },
+    {
+      "difficulty": "standard",
+      "index": 3,
+      "generated": true,
+      "elapsedMs": 1553.0740000000005
+    },
+    {
+      "difficulty": "standard",
+      "index": 4,
+      "generated": true,
+      "elapsedMs": 1778.1098000000002
+    },
+    {
+      "difficulty": "standard",
+      "index": 5,
+      "generated": true,
+      "elapsedMs": 1884.3253000000004
+    },
+    {
+      "difficulty": "standard",
+      "index": 6,
+      "generated": true,
+      "elapsedMs": 423.9942999999985
+    },
+    {
+      "difficulty": "standard",
+      "index": 7,
+      "generated": true,
+      "elapsedMs": 1239.0030000000006
+    },
+    {
+      "difficulty": "standard",
+      "index": 8,
+      "generated": true,
+      "elapsedMs": 16777.0493
+    },
+    {
+      "difficulty": "standard",
+      "index": 9,
+      "generated": true,
+      "elapsedMs": 9118.682100000005
+    },
+    {
+      "difficulty": "standard",
+      "index": 10,
+      "generated": true,
+      "elapsedMs": 10937.519200000002
+    },
+    {
+      "difficulty": "standard",
+      "index": 11,
+      "generated": true,
+      "elapsedMs": 1903.5704000000042
+    },
+    {
+      "difficulty": "standard",
+      "index": 12,
+      "generated": true,
+      "elapsedMs": 6794.938799999996
+    },
+    {
+      "difficulty": "standard",
+      "index": 13,
+      "generated": true,
+      "elapsedMs": 2786.1763000000064
+    },
+    {
+      "difficulty": "standard",
+      "index": 14,
+      "generated": true,
+      "elapsedMs": 2811.7776000000013
+    },
+    {
+      "difficulty": "standard",
+      "index": 15,
+      "generated": true,
+      "elapsedMs": 24539.90740000001
+    },
+    {
+      "difficulty": "standard",
+      "index": 16,
+      "generated": true,
+      "elapsedMs": 312.9838000000018
+    },
+    {
+      "difficulty": "standard",
+      "index": 17,
+      "generated": true,
+      "elapsedMs": 2855.375
+    },
+    {
+      "difficulty": "standard",
+      "index": 18,
+      "generated": true,
+      "elapsedMs": 2428.1506999999983
+    },
+    {
+      "difficulty": "standard",
+      "index": 19,
+      "generated": true,
+      "elapsedMs": 1773.9665999999997
+    },
+    {
+      "difficulty": "standard",
+      "index": 20,
+      "generated": true,
+      "elapsedMs": 1407.3723000000027
+    },
+    {
+      "difficulty": "hard",
+      "index": 1,
+      "generated": true,
+      "elapsedMs": 1420.3548999999912
+    },
+    {
+      "difficulty": "hard",
+      "index": 2,
+      "generated": true,
+      "elapsedMs": 1001.8571000000084
+    },
+    {
+      "difficulty": "hard",
+      "index": 3,
+      "generated": true,
+      "elapsedMs": 11624.506900000008
+    },
+    {
+      "difficulty": "hard",
+      "index": 4,
+      "generated": true,
+      "elapsedMs": 1634.4314999999915
+    },
+    {
+      "difficulty": "hard",
+      "index": 5,
+      "generated": true,
+      "elapsedMs": 1690.7477999999974
+    },
+    {
+      "difficulty": "hard",
+      "index": 6,
+      "generated": true,
+      "elapsedMs": 558.7461000000039
+    },
+    {
+      "difficulty": "hard",
+      "index": 7,
+      "generated": true,
+      "elapsedMs": 581.7535000000062
+    },
+    {
+      "difficulty": "hard",
+      "index": 8,
+      "generated": true,
+      "elapsedMs": 13370.30770000002
+    },
+    {
+      "difficulty": "hard",
+      "index": 9,
+      "generated": true,
+      "elapsedMs": 3158.7016000000003
+    },
+    {
+      "difficulty": "hard",
+      "index": 10,
+      "generated": true,
+      "elapsedMs": 5710.853199999983
+    },
+    {
+      "difficulty": "hard",
+      "index": 11,
+      "generated": true,
+      "elapsedMs": 1520.5571000000054
+    },
+    {
+      "difficulty": "hard",
+      "index": 12,
+      "generated": true,
+      "elapsedMs": 18060.983299999993
+    },
+    {
+      "difficulty": "hard",
+      "index": 13,
+      "generated": true,
+      "elapsedMs": 9056.481899999984
+    },
+    {
+      "difficulty": "hard",
+      "index": 14,
+      "generated": true,
+      "elapsedMs": 4696.140699999989
+    },
+    {
+      "difficulty": "hard",
+      "index": 15,
+      "generated": true,
+      "elapsedMs": 13028.939899999998
+    },
+    {
+      "difficulty": "hard",
+      "index": 16,
+      "generated": true,
+      "elapsedMs": 3025.8796999999904
+    },
+    {
+      "difficulty": "hard",
+      "index": 17,
+      "generated": true,
+      "elapsedMs": 2133.4193999999843
+    },
+    {
+      "difficulty": "hard",
+      "index": 18,
+      "generated": true,
+      "elapsedMs": 1516.3566999999748
+    },
+    {
+      "difficulty": "hard",
+      "index": 19,
+      "generated": true,
+      "elapsedMs": 2954.859999999986
+    },
+    {
+      "difficulty": "hard",
+      "index": 20,
+      "generated": true,
+      "elapsedMs": 641.6733999999997
+    }
+  ]
+}

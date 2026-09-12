@@ -360,13 +360,16 @@
     });
   }
 
+  // 牌効率モードは打牌だけを比較するため、暗槓との比較が必要になる四枚使いと、
+  // 数牌の形より先に字牌切りを選べる問題を出題対象から外す。
+  function efficiencyCandidateSetIsAllowed(counts14, keepRows) {
+    if (!keepRows.length || counts14.some(function (count) { return count === 4; })) return false;
+    return keepRows.every(function (row) { return !isHonor(row.discard); });
+  }
+
   function efficiencyRowsAreSound(counts14, rows) {
-    if (!rows.length || hasMultipleIsolatedHonors(counts14)) return false;
+    if (!efficiencyCandidateSetIsAllowed(counts14, rows)) return false;
     var best = rows[0];
-    // 字牌を残して数牌を切る判断が紛らわしい手は、保守的に丸ごと出題しない。
-    for (var h = 27; h < 34; h++) {
-      if (counts14[h] === 1 && best.discard !== h) return false;
-    }
     // 変化の多さだけでは、元の受け入れが狭い手を過大評価してしまう。
     // 全ツモとその後の最善打牌を調べ、2ツモ以内に進む確率で逆転する手を除く。
     // 正解は受け入れ最大、同数時は変化最大のままで、逆転時は出題しない。
@@ -376,6 +379,7 @@
   }
 
   function efficiencyAnswerIsSound(counts14, keepRows) {
+    if (!efficiencyCandidateSetIsAllowed(counts14, keepRows)) return false;
     return efficiencyRowsAreSound(counts14, efficiencyRowsWithVariation(counts14, keepRows));
   }
 
@@ -590,18 +594,24 @@
   // ---------------------------------------------------------------
   var EFFICIENCY_HARD_RATE = 0.5;
   var EFFICIENCY_TRAP_RATE = 0.5;
-  var EFFICIENCY_TRAP_SEARCH_LIMIT = 120;
+  // 字牌候補を除外した後は罠型の供給が減るため、有効問題を確保した後の
+  // 追加探索を60回に抑え、罠型探しだけで待ち時間が伸びることを防ぐ。
+  var EFFICIENCY_TRAP_SEARCH_LIMIT = 60;
   // 探索の絶対上限。条件を満たす手が見つからないまま無限に回り続けて
   // 画面が固まることを防ぐための保険で、通常はここまで到達しない。
   var EFFICIENCY_MAX_ATTEMPTS = 5000;
 
-  function generateEfficiencyProblem(difficulty) {
+  function generateEfficiencyProblem(difficulty, diagnostics) {
     // テストでは難易度を固定できる。通常の画面からは未指定なので半数ずつ選ばれる。
     var targetDifficulty = difficulty === "hard" || difficulty === "standard"
       ? difficulty
       : (Math.random() < EFFICIENCY_HARD_RATE ? "hard" : "standard");
     // 半数は罠型を狙い、残り半数は通常形を狙う。見つからない場合は最初の有効問題を返す。
     var targetHasTrap = Math.random() < EFFICIENCY_TRAP_RATE;
+    if (diagnostics) {
+      diagnostics.targetDifficulty = targetDifficulty;
+      diagnostics.targetHasTrap = targetHasTrap;
+    }
     var fallback = null;
     var fallbackAttempt = -1;
 
@@ -609,23 +619,28 @@
     // 条件を満たさないまま上限に達した場合はnullを返し、画面で再試行を案内する。
     for (var attempt = 0; attempt < EFFICIENCY_MAX_ATTEMPTS && (attempt < 1200 || !fallback); attempt++) {
       // 有効問題を確保した後は追加探索を制限し、罠型が見つからない回でも待たせすぎない。
-      if (fallback && attempt - fallbackAttempt >= EFFICIENCY_TRAP_SEARCH_LIMIT) return fallback;
+      if (fallback && attempt - fallbackAttempt >= EFFICIENCY_TRAP_SEARCH_LIMIT) {
+        if (diagnostics) {
+          diagnostics.attempts = attempt;
+          diagnostics.usedFallback = true;
+        }
+        return fallback;
+      }
 
       var wall = newWall();
       var hand = buildStructuredHand(wall);
       if (hand.length !== 14) continue;
       var counts = toCounts(hand);
-      if (hasMultipleIsolatedHonors(counts)) continue;
+      // 四枚使いは暗槓との比較が必要になるため、高価な打牌分析より前に除外する。
+      if (counts.some(function (count) { return count === 4; })) continue;
       var an = analyzeDiscards(counts, null);
       if (an.minShanten !== 1) continue;
       if (an.keep.length < 2) continue; // 候補が1つだけでは問題にならない
+      // 1シャンテンを維持する字牌切りが1種類でもあれば、問題全体を除外する。
+      if (!efficiencyCandidateSetIsAllowed(counts, an.keep)) continue;
       var bestU = an.keep[0].ukeire;
       if (bestU <= 0) continue;
       var bests = an.keep.filter(function (r) { return r.ukeire === bestU; });
-      // 高価な変化計算の前に、孤立字牌が受け入れ最大にならない手を除く。
-      if (counts.some(function (count, tile) {
-        return tile >= 27 && count === 1 && !bests.some(function (row) { return row.discard === tile; });
-      })) continue;
       var second = an.keep.filter(function (r) { return r.ukeire < bestU; });
       if (bests.length > 2) continue;                       // 正解が多すぎる手は避ける
       if (second.length === 0) continue;                    // 全部同点なら出題しない
@@ -668,13 +683,23 @@
         traps: traps,
         redFlags: assignRedFives(split.hand),
       };
-      if ((traps.length > 0) === targetHasTrap) return problem;
+      if ((traps.length > 0) === targetHasTrap) {
+        if (diagnostics) {
+          diagnostics.attempts = attempt + 1;
+          diagnostics.usedFallback = false;
+        }
+        return problem;
+      }
       if (!fallback) {
         fallback = problem;
         fallbackAttempt = attempt;
       }
     }
     // 狙った罠有無が見つからなくても、確保済みの有効問題を返して出題を止めない。
+    if (diagnostics) {
+      diagnostics.attempts = EFFICIENCY_MAX_ATTEMPTS;
+      diagnostics.usedFallback = Boolean(fallback);
+    }
     return fallback;
   }
 
@@ -1197,6 +1222,7 @@
     isIsolatedTile: isIsolatedTile,
     hasDoubleAcceptance: hasDoubleAcceptance,
     detectEfficiencyTraps: detectEfficiencyTraps,
+    efficiencyCandidateSetIsAllowed: efficiencyCandidateSetIsAllowed,
     efficiencyAnswerIsSound: efficiencyAnswerIsSound,
     analyzeDiscards: analyzeDiscards,
     analyzeChinitsuActions: analyzeChinitsuActions,

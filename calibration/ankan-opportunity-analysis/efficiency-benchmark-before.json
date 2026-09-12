@@ -1,0 +1,278 @@
+{
+  "label": "before",
+  "engineSha256": "ccbbfcaec712be0e5f4e35867951815f486a13cf3a94986c6de32a2e9414e5f8",
+  "seed": 20260911,
+  "prng": "Mulberry32",
+  "requestedPerDifficulty": 20,
+  "generationOrder": "20 standard, then 20 hard, one continuous PRNG stream",
+  "nodeVersion": "v24.18.0",
+  "elapsedMs": 194467.8866,
+  "byDifficulty": {
+    "standard": {
+      "requested": 20,
+      "generated": 20,
+      "failures": 0,
+      "medianMs": 2673.5205499999993,
+      "p95Ms": 14149.656499999997,
+      "maxMs": 20121.375
+    },
+    "hard": {
+      "requested": 20,
+      "generated": 20,
+      "failures": 0,
+      "medianMs": 2210.4479999999894,
+      "p95Ms": 10880.011999999988,
+      "maxMs": 11483.515699999989
+    }
+  },
+  "overall": {
+    "requested": 40,
+    "generated": 40,
+    "failures": 0,
+    "medianMs": 2577.4066999999977,
+    "p95Ms": 13348.498,
+    "maxMs": 20121.375
+  },
+  "samples": [
+    {
+      "difficulty": "standard",
+      "index": 1,
+      "generated": true,
+      "elapsedMs": 2837.3352999999997
+    },
+    {
+      "difficulty": "standard",
+      "index": 2,
+      "generated": true,
+      "elapsedMs": 9783.2089
+    },
+    {
+      "difficulty": "standard",
+      "index": 3,
+      "generated": true,
+      "elapsedMs": 1091.4015
+    },
+    {
+      "difficulty": "standard",
+      "index": 4,
+      "generated": true,
+      "elapsedMs": 10737.5102
+    },
+    {
+      "difficulty": "standard",
+      "index": 5,
+      "generated": true,
+      "elapsedMs": 5167.6656
+    },
+    {
+      "difficulty": "standard",
+      "index": 6,
+      "generated": true,
+      "elapsedMs": 2596.771499999999
+    },
+    {
+      "difficulty": "standard",
+      "index": 7,
+      "generated": true,
+      "elapsedMs": 978.0349999999962
+    },
+    {
+      "difficulty": "standard",
+      "index": 8,
+      "generated": true,
+      "elapsedMs": 14149.656499999997
+    },
+    {
+      "difficulty": "standard",
+      "index": 9,
+      "generated": true,
+      "elapsedMs": 13348.498
+    },
+    {
+      "difficulty": "standard",
+      "index": 10,
+      "generated": true,
+      "elapsedMs": 1779.4907999999996
+    },
+    {
+      "difficulty": "standard",
+      "index": 11,
+      "generated": true,
+      "elapsedMs": 1618.1306999999942
+    },
+    {
+      "difficulty": "standard",
+      "index": 12,
+      "generated": true,
+      "elapsedMs": 7684.4328999999925
+    },
+    {
+      "difficulty": "standard",
+      "index": 13,
+      "generated": true,
+      "elapsedMs": 9072.448100000009
+    },
+    {
+      "difficulty": "standard",
+      "index": 14,
+      "generated": true,
+      "elapsedMs": 921.8879999999917
+    },
+    {
+      "difficulty": "standard",
+      "index": 15,
+      "generated": true,
+      "elapsedMs": 505.80259999999544
+    },
+    {
+      "difficulty": "standard",
+      "index": 16,
+      "generated": true,
+      "elapsedMs": 2750.2695999999996
+    },
+    {
+      "difficulty": "standard",
+      "index": 17,
+      "generated": true,
+      "elapsedMs": 388.0262999999977
+    },
+    {
+      "difficulty": "standard",
+      "index": 18,
+      "generated": true,
+      "elapsedMs": 2558.0418999999965
+    },
+    {
+      "difficulty": "standard",
+      "index": 19,
+      "generated": true,
+      "elapsedMs": 20121.375
+    },
+    {
+      "difficulty": "standard",
+      "index": 20,
+      "generated": true,
+      "elapsedMs": 2014.8698000000004
+    },
+    {
+      "difficulty": "hard",
+      "index": 1,
+      "generated": true,
+      "elapsedMs": 518.9516999999905
+    },
+    {
+      "difficulty": "hard",
+      "index": 2,
+      "generated": true,
+      "elapsedMs": 1225.0038000000059
+    },
+    {
+      "difficulty": "hard",
+      "index": 3,
+      "generated": true,
+      "elapsedMs": 8125.902300000002
+    },
+    {
+      "difficulty": "hard",
+      "index": 4,
+      "generated": true,
+      "elapsedMs": 1180.400800000003
+    },
+    {
+      "difficulty": "hard",
+      "index": 5,
+      "generated": true,
+      "elapsedMs": 7203.503600000011
+    },
+    {
+      "difficulty": "hard",
+      "index": 6,
+      "generated": true,
+      "elapsedMs": 781.4695000000065
+    },
+    {
+      "difficulty": "hard",
+      "index": 7,
+      "generated": true,
+      "elapsedMs": 10880.011999999988
+    },
+    {
+      "difficulty": "hard",
+      "index": 8,
+      "generated": true,
+      "elapsedMs": 2095.4619999999995
+    },
+    {
+      "difficulty": "hard",
+      "index": 9,
+      "generated": true,
+      "elapsedMs": 3322.9986999999965
+    },
+    {
+      "difficulty": "hard",
+      "index": 10,
+      "generated": true,
+      "elapsedMs": 1167.5946000000113
+    },
+    {
+      "difficulty": "hard",
+      "index": 11,
+      "generated": true,
+      "elapsedMs": 2325.4339999999793
+    },
+    {
+      "difficulty": "hard",
+      "index": 12,
+      "generated": true,
+      "elapsedMs": 5047.591599999985
+    },
+    {
+      "difficulty": "hard",
+      "index": 13,
+      "generated": true,
+      "elapsedMs": 3922.8366999999853
+    },
+    {
+      "difficulty": "hard",
+      "index": 14,
+      "generated": true,
+      "elapsedMs": 11483.515699999989
+    },
+    {
+      "difficulty": "hard",
+      "index": 15,
+      "generated": true,
+      "elapsedMs": 1294.6573999999964
+    },
+    {
+      "difficulty": "hard",
+      "index": 16,
+      "generated": true,
+      "elapsedMs": 10339.323700000008
+    },
+    {
+      "difficulty": "hard",
+      "index": 17,
+      "generated": true,
+      "elapsedMs": 985.6216999999888
+    },
+    {
+      "difficulty": "hard",
+      "index": 18,
+      "generated": true,
+      "elapsedMs": 798.6216999999888
+    },
+    {
+      "difficulty": "hard",
+      "index": 19,
+      "generated": true,
+      "elapsedMs": 828.9666999999899
+    },
+    {
+      "difficulty": "hard",
+      "index": 20,
+      "generated": true,
+      "elapsedMs": 10829.004000000015
+    }
+  ]
+}
