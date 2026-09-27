@@ -379,10 +379,12 @@ def score_hand(request: HandScoreRequest) -> HandScore:
     mapping = _library_tile_map((request.tiles, request.dora_indicators, request.ura_dora_indicators))
     library_tiles = [mapping[tile.tile_id] for tile in request.tiles]
     api = _mahjong_api()
+    # mahjong 2.0.0は面子の先頭牌を順子の開始牌とみなす。実行器は鳴いた牌を末尾に置くため、
+    # ライブラリIDの昇順（牌種の昇順）へそろえて渡す。刻子と槓子は並びで結果が変わらない。
     library_melds = [
         api["Meld"](
             meld_type=getattr(api["Meld"], meld.kind.upper()),
-            tiles=[mapping[tile_id] for tile_id in meld.tile_ids],
+            tiles=sorted(mapping[tile_id] for tile_id in meld.tile_ids),
             opened=meld.opened,
             called_tile=mapping[meld.called_tile_id] if meld.called_tile_id is not None else None,
         )

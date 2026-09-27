@@ -143,6 +143,32 @@ class PolicyScoringTest(unittest.TestCase):
         self.assertEqual({item.name for item in result.yaku}, {"Tanyao"})
         self.assertEqual((result.base.han, result.base.fu, result.base.main), (1, 30, 1000))
 
+    def test_chi_meld_is_scored_regardless_of_called_tile_position(self) -> None:
+        # D.3.2b：実行器は鳴いた牌を面子の末尾に置く。mahjong 2.0.0は面子の先頭牌を
+        # 順子の開始牌とみなすため、4萬を56萬で鳴いた[5,6,4]の順では和了形を認めなかった。
+        for order in ((0, 1, 2), (1, 2, 0), (0, 2, 1), (2, 1, 0)):
+            with self.subTest(order=order):
+                pool = TilePool()
+                tiles = pool.hand(man="456", pin="789", sou="11678", honors="777")
+                chi = [tile.tile_id for tile in tiles if tile.tile34 in (3, 4, 5)]
+                chi_ids = tuple(chi[index] for index in order)
+                pon_ids = tuple(tile.tile_id for tile in tiles if tile.tile34 == 33)
+                win = next(tile for tile in tiles if tile.tile34 == 23)
+                result = score_hand(
+                    HandScoreRequest(
+                        tiles,
+                        win.tile_id,
+                        SOUTH,
+                        EAST,
+                        melds=(
+                            MeldInput("chi", chi_ids, True, chi_ids[-1]),
+                            MeldInput("pon", pon_ids, True, pon_ids[-1]),
+                        ),
+                    )
+                )
+                self.assertEqual({item.name for item in result.yaku}, {"Yakuhai (chun)"})
+                self.assertEqual((result.base.han, result.base.fu, result.base.main), (1, 30, 1000))
+
     def test_no_yaku_is_not_silently_scored(self) -> None:
         pool = TilePool()
         tiles = pool.hand(man="123456", pin="789", sou="345", honors="11")

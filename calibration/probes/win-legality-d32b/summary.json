@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "ev-policy-win-legality-investigation/v1",
+  "design": "calibration/PHASE_D32B_DESIGN.md#4",
+  "targets": 925,
+  "unclassified": 0,
+  "residualExceptions": 0,
+  "byCauseAndExpected": [
+    {
+      "cause": "chi_meld_order_adapter",
+      "expected": {
+        "for": "legal_win_not_taken",
+        "legalWinAction": "ron"
+      },
+      "count": 10
+    },
+    {
+      "cause": "chi_meld_order_adapter",
+      "expected": {
+        "for": "legal_win_not_taken",
+        "legalWinAction": "tsumo"
+      },
+      "count": 1
+    },
+    {
+      "cause": "chi_meld_order_adapter",
+      "expected": {
+        "for": "observed_win",
+        "legalWinAction": "ron"
+      },
+      "count": 510
+    },
+    {
+      "cause": "chi_meld_order_adapter",
+      "expected": {
+        "for": "observed_win",
+        "legalWinAction": "tsumo"
+      },
+      "count": 333
+    },
+    {
+      "cause": "chi_meld_order_adapter",
+      "expected": {
+        "illegalReason": "no_yaku"
+      },
+      "count": 70
+    },
+    {
+      "cause": "truncated_prefix_terminal_label",
+      "expected": {
+        "legalWinAction": null,
+        "selfActionLabel": "next_recorded_event"
+      },
+      "count": 1
+    }
+  ]
+}

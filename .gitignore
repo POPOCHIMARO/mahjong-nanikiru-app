@@ -10,6 +10,8 @@ calibration/dataset-policy/*.jsonl
 calibration/dataset-policy/.*.tmp
 calibration/dataset-opponent/*.jsonl.gz
 calibration/dataset-opponent/.*.tmp
+calibration/dataset-opponent-v3/*.jsonl.gz
+calibration/dataset-opponent-v3/.*.tmp
 calibration/features-opponent-v2/*.jsonl.gz
 calibration/features-opponent-v2/*.tmp
 calibration/probes/opponent-features-v2/debug-features.jsonl.gz
@@ -22,3 +24,4 @@ __pycache__/
 # 調査や性能測定で作る一時作業物（用途は scratch/README.md を参照）
 scratch/d32a/
 scratch/data-analysis/
+scratch/d32b/

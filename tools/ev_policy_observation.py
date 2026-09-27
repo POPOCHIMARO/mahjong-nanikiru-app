@@ -560,10 +560,13 @@ def _self_teacher_window(
     round_id: str,
     *,
     phase: str,
+    label_source: ParsedRound,
 ) -> dict[str, Any]:
     event = parsed.events[position]
     actions, score_status, score_reason = semantic_self_actions(state)
-    observed = recorded_self_action(parsed, position, state)
+    # 実行prefixが途中で切れた局でも、次の記録イベントは切る前の牌譜から読む。
+    # prefixだけを渡すと、最後の自摸窓に局末のツモ和了を誤って割り当てる（D.3.2b）。
+    observed = recorded_self_action(label_source, position, state)
     matched = _recorded_action_matches(actions, observed)
     public_count = projection.raw_cutoffs[event.event_index + 1]
     seat = state.turn_seat
@@ -666,6 +669,7 @@ def extract_teacher_windows(
                         position,
                         round_id,
                         phase="self_action_after_" + str(event.draw_source),
+                        label_source=parsed,
                     )
                 )
             elif event.kind == "discard":
@@ -686,6 +690,7 @@ def extract_teacher_windows(
                             position,
                             round_id,
                             phase="self_action_after_call",
+                            label_source=parsed,
                         )
                     )
             elif event.kind == "ankan":

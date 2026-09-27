@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "ev-policy-observation-verification/v1",
+  "status": "pass",
+  "errors": {},
+  "counts": {
+    "outcome": 20447,
+    "prefix": 32019,
+    "private": 93352,
+    "public": 23338,
+    "teacher": 2085155
+  },
+  "inputAggregateSha256": "1392dd28215bb9b3aab1b6114a87afbac20e933b71d4c13bfdb4375e35f5edd8"
+}

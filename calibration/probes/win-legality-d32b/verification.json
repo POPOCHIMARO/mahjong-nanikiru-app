@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "ev-policy-win-legality-verification/v1",
+  "dataset": "calibration/dataset-opponent-v3",
+  "windows": 2085155,
+  "casesExpected": 925,
+  "casesFound": 925,
+  "caseChecks": [
+    {
+      "cause": "chi_meld_order_adapter",
+      "ok": true,
+      "count": 924
+    },
+    {
+      "cause": "truncated_prefix_terminal_label",
+      "ok": true,
+      "count": 1
+    }
+  ],
+  "caseFailures": [],
+  "observedWinInLegalSet": [
+    {
+      "kind": "ron_observed",
+      "inLegalSet": true,
+      "count": 8827
+    },
+    {
+      "kind": "tsumo_observed",
+      "inLegalSet": true,
+      "count": 7446
+    }
+  ],
+  "observedWinExceptions": [],
+  "winActionStatusCounts": [
+    {
+      "phase": "response",
+      "status": "known",
+      "count": 3115026
+    },
+    {
+      "phase": "self",
+      "status": "known",
+      "count": 1046813
+    }
+  ],
+  "status": "pass"
+}

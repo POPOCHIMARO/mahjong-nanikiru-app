@@ -111,6 +111,21 @@ class ObservationBoundaryTest(unittest.TestCase):
         windows, suffix = extract_teacher_windows(changed, project_round(changed, "round"), "round")
         self.assertEqual((len(windows), suffix["rawEventIndex"]), (6, 6))
 
+    def test_truncated_prefix_labels_last_draw_from_recorded_next_event(self) -> None:
+        # D.3.2b：自摸直後で実行prefixが切れた局でも、局末のツモ和了を最後の窓の行動にしない。
+        # 実例は加槓の新ドラ表示牌が牌譜にない局（加槓の直前で打ち切り、局末は同じ家のツモ和了）。
+        parsed = parse_recorded_round(valid_four_turn_log())
+        won = replace(parsed, result=["和了", [-1000, -1000, -1000, 3000], [3, 3, 3, "fixture"]])
+        truncated = replace(won, events=won.events[:7], dora_raw=won.dora_raw[:1], ura_raw=())
+        rejection = {"reason": "additional_dora_missing", "rawEventIndex": 7}
+        with patch("tools.ev_policy_observation.runtime_prefix", return_value=(truncated, rejection)):
+            windows, suffix = extract_teacher_windows(won, project_round(won, "round"), "round")
+        self.assertEqual(suffix, rejection)
+        last = windows[-1]
+        self.assertEqual((last["rawEventIndex"], last["actorSeat"]), (6, 3))
+        self.assertEqual(last["observation"]["action"]["kind"], "discard")
+        self.assertEqual(last["observation"]["status"], "exact")
+
 
 class SemanticActionTest(unittest.TestCase):
     def test_d31_02_physical_copies_collapse_but_red_and_origin_remain(self) -> None:
