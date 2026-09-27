@@ -580,6 +580,16 @@ class FeatureCacheTests(unittest.TestCase):
             self.assertEqual(fitted["holds"], evaluated["holds"])
             self.assertFalse(fitted["eligibleForD33"])
             self.assertFalse(evaluated["eligibleForD33"])
+            # D.3.2b：固定定数の往復結果とシナリオ一覧が保存され、モデルへ最終定数が入る。
+            fixed = json.loads((model_dir / "fixed-components.json").read_text(encoding="utf-8"))
+            self.assertEqual(set(fixed["roundTrips"]), {"initial", "afterFirstFit", "final"})
+            self.assertEqual(fixed["estimationSplits"], ["calibration", "selection", "train"])
+            self.assertGreaterEqual(fixed["scenarioCounts"]["D.3.3"], 16)
+            self.assertEqual(fixed["scenarioCounts"]["D.3.4"], fixed["scenarioCounts"]["D.3.3"] + 1)
+            model = json.loads((model_dir / "model.json").read_text(encoding="utf-8"))
+            self.assertEqual(model["fixedConstants"], fixed["roundTrips"]["final"]["constants"])
+            for value in model["fixedConstants"].values():
+                self.assertTrue(0.0 < value < 1.0)
 
 
 if __name__ == "__main__":

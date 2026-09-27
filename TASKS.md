@@ -28,10 +28,12 @@
 
 ## 工程3：固定成分（Opus 5.5/high）
 
-- [ ] 合成規則
-- [ ] 尤度、ツモのBeta事後、ε_ron・ρの2次元積分
-- [ ] 層別推定とシナリオ一覧
-- [ ] D32B-06〜08
+- [x] 合成規則（`HierarchicalSoftmax.fixed`、`compose_probabilities`）。固定種別の勾配0、学習・評価・率診断が自動で合成方策を使う
+- [x] 尤度、ツモのBeta厳密事後、ε_ron・ρの2次元u中点格子（`tools/ev_policy_fixed.py`）
+- [x] 層別推定（difference_detected/unsupported/consistent）とシナリオ一覧（16+K / 17+K、ε_chankan追従、zero別種別）
+- [x] fitを「初期定数→θ学習→定数推定→θ再学習→定数再推定」へ組替え。`fixed-components.json`を出力
+- [x] D32B-06〜08のテスト14件合格。全Python 130件合格
+- メモ：全件での格子推定の計算時間は未測定（工程5で記録）
 
 ## 工程4：診断と採用判定（Sonnet 5）
 
@@ -48,3 +50,4 @@
 - 2026-09-27：開発計画にD.3.2bを登録し、工程1に着手。
 - 2026-09-27：工程1完了。次は工程2（Sonnet 5推奨）。以後の特徴・学習は`dataset-opponent-v3`を入力にする。
 - 2026-09-27：工程2完了。次は工程3（Opus 5.5/high）。
+- 2026-09-27：工程3完了。次は工程4（Sonnet 5推奨）。

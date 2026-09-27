@@ -45,6 +45,21 @@ try:
         write_json_atomic,
     )
     from .ev_calibration_model import DANGER_RATES
+    from .ev_policy_fixed import (
+        CHANKAN_ASSUMPTION,
+        ESTIMATION_SPLITS,
+        FixedConstants,
+        build_scenarios,
+        collect_estimation_inputs,
+        compose_probabilities,
+        constants_from_posteriors,
+        estimate_base_posteriors,
+        estimate_strata,
+        fixed_kind_masses,
+        initial_constants,
+        scenario_count_summary,
+        stratum_attributes,
+    )
     from .ev_policy_observation import resolve_joint_response
 except ImportError:
     from ev_calibration_state import shanten
@@ -66,6 +81,21 @@ except ImportError:
         write_json_atomic,
     )
     from ev_calibration_model import DANGER_RATES
+    from ev_policy_fixed import (
+        CHANKAN_ASSUMPTION,
+        ESTIMATION_SPLITS,
+        FixedConstants,
+        build_scenarios,
+        collect_estimation_inputs,
+        compose_probabilities,
+        constants_from_posteriors,
+        estimate_base_posteriors,
+        estimate_strata,
+        fixed_kind_masses,
+        initial_constants,
+        scenario_count_summary,
+        stratum_attributes,
+    )
     from ev_policy_observation import resolve_joint_response
 
 
@@ -73,7 +103,7 @@ MODEL_SCHEMA = "ev-policy-opponent-model/v3"
 FIT_SCHEMA = "ev-policy-opponent-fit/v3"
 EVALUATION_SCHEMA = "ev-policy-opponent-evaluation/v3"
 FEATURE_SCHEMA = "ev-policy-opponent-features/v3"
-MODEL_VERSION = "shared-hierarchical-softmax-v2"
+MODEL_VERSION = "shared-hierarchical-softmax-v3-fixed-constants"
 LABEL_DEFINITION_VERSION = "joint-public-resolution-v1"
 
 KINDS = (
@@ -226,19 +256,41 @@ class HierarchicalSoftmax:
     kind_weights: np.ndarray
     detail_weights: np.ndarray
     temperatures: dict[str, float]
+    # D.3.2b：未識別成分の固定定数。Noneなら全種別を学習分布で扱う（v2までの動作）。
+    fixed: FixedConstants | None = None
 
     @classmethod
-    def zeros(cls) -> "HierarchicalSoftmax":
+    def zeros(cls, fixed: FixedConstants | None = None) -> "HierarchicalSoftmax":
         return cls(
             np.zeros((len(KINDS), len(KIND_FEATURE_NAMES)), dtype=float),
             np.zeros((len(KINDS), len(DETAIL_FEATURE_NAMES)), dtype=float),
             {phase: 1.0 for phase in PHASES},
+            fixed,
         )
 
     def copy(self) -> "HierarchicalSoftmax":
-        return HierarchicalSoftmax(self.kind_weights.copy(), self.detail_weights.copy(), dict(self.temperatures))
+        return HierarchicalSoftmax(
+            self.kind_weights.copy(), self.detail_weights.copy(), dict(self.temperatures), self.fixed
+        )
+
+    def with_fixed(self, fixed: FixedConstants | None) -> "HierarchicalSoftmax":
+        """同じ係数で固定定数だけを替えたモデル（感度シナリオ用）。"""
+        return HierarchicalSoftmax(self.kind_weights, self.detail_weights, dict(self.temperatures), fixed)
 
     def probabilities(self, candidates: Sequence[EncodedCandidate], phase: str) -> np.ndarray:
+        """合法集合上の行動確率。固定定数があれば、固定成分へ定数の質量を与える（設計7.2節）。"""
+        if self.fixed is None:
+            return self.base_probabilities(candidates, phase)
+        kinds = [candidate.kind for candidate in candidates]
+        return compose_probabilities(
+            kinds,
+            phase,
+            self.fixed,
+            lambda indices: self.base_probabilities([candidates[index] for index in indices], phase),
+        )
+
+    def base_probabilities(self, candidates: Sequence[EncodedCandidate], phase: str) -> np.ndarray:
+        """固定成分を考えない学習分布（係数と温度だけで決まる階層softmax）。"""
         if not candidates:
             raise ValueError("合法手集合が空")
         temperature = float(self.temperatures.get(phase, 1.0))
@@ -288,6 +340,7 @@ class HierarchicalSoftmax:
             "kindWeights": self.kind_weights.tolist(),
             "detailWeights": self.detail_weights.tolist(),
             "temperatures": dict(sorted(self.temperatures.items())),
+            "fixedConstants": None if self.fixed is None else self.fixed.to_dict(),
         }
 
     @classmethod
@@ -310,7 +363,10 @@ class HierarchicalSoftmax:
             np.asarray(value["kindWeights"], dtype=float),
             np.asarray(value["detailWeights"], dtype=float),
             {str(key): float(item) for key, item in value["temperatures"].items()},
+            None if value.get("fixedConstants") is None else FixedConstants.from_dict(value["fixedConstants"]),
         )
+        if "fixedConstants" not in value:
+            raise ValueError("相手モデルに固定定数の欄がない")
         if model.kind_weights.shape != (len(KINDS), len(KIND_FEATURE_NAMES)):
             raise ValueError("種別係数shapeが不一致")
         if model.detail_weights.shape != (len(KINDS), len(DETAIL_FEATURE_NAMES)):
@@ -345,7 +401,28 @@ def _log_probability_gradient(
     selected_index: int,
     phase: str,
 ) -> ModelGradient:
-    """log M(a|v) の勾配。"""
+    """log M(a|v) の勾配。固定成分の確率は係数に依存しないため勾配0とする。"""
+    if model.fixed is None:
+        return _base_log_probability_gradient(model, candidates, selected_index, phase)
+    masses = fixed_kind_masses([candidate.kind for candidate in candidates], phase, model.fixed)
+    if not masses:
+        return _base_log_probability_gradient(model, candidates, selected_index, phase)
+    if candidates[selected_index].kind in masses:
+        return ModelGradient.zeros(model)
+    residual = [index for index, candidate in enumerate(candidates) if candidate.kind not in masses]
+    # 残余候補の確率は (1 - 固定質量) × 残余上の学習分布。定数倍は勾配に効かない。
+    return _base_log_probability_gradient(
+        model, [candidates[index] for index in residual], residual.index(selected_index), phase
+    )
+
+
+def _base_log_probability_gradient(
+    model: HierarchicalSoftmax,
+    candidates: Sequence[EncodedCandidate],
+    selected_index: int,
+    phase: str,
+) -> ModelGradient:
+    """固定成分を考えない学習分布での log M(a|v) の勾配。"""
     temperature = float(model.temperatures.get(phase, 1.0))
     groups: dict[str, list[int]] = {}
     for index, candidate in enumerate(candidates):
@@ -1973,7 +2050,7 @@ def fit_opponent_model(
     if feature_manifest.get("status") == "debug" and maximum_windows is None:
         raise ValueError("debug特徴cacheを全件fitへ使用できない")
     manifest = {
-        "schemaVersion": "ev-policy-opponent-fit-manifest/v2",
+        "schemaVersion": "ev-policy-opponent-fit-manifest/v3",
         "seed": 20260909,
         "optimizer": "deterministic_minibatch_sgd",
         "batchSize": 256,
@@ -1991,13 +2068,186 @@ def fit_opponent_model(
         "featureSchemaVersion": FEATURE_SCHEMA,
         "exactCalculationVersion": CALCULATION_VERSION,
         "labelDefinitionVersion": LABEL_DEFINITION_VERSION,
+        # D.3.2b 固定成分（設計7.3節）。往復回数と格子の設定を学習前に固定する。
+        "fixedComponents": {
+            "estimationSplits": sorted(ESTIMATION_SPLITS),
+            "thetaConstantRoundTrips": 1,
+            "gridStartCells": 400,
+            "gridMaxCells": 3200,
+            "gridRelativeTolerance": 0.01,
+            "prior": "jeffreys_beta_0.5_0.5",
+            "chankanRule": CHANKAN_ASSUMPTION,
+        },
     }
     output_dir.mkdir(parents=True, exist_ok=True)
     _write_json(output_dir / "fit-manifest.json", manifest)
     print(json.dumps({"progress": "opponent_fit_manifest_frozen", "epochs": manifest["epochs"]}), flush=True)
 
+    fixed_options = manifest["fixedComponents"]
+    grid_options = {
+        "start_cells": int(fixed_options["gridStartCells"]),
+        "max_cells": int(fixed_options["gridMaxCells"]),
+        "tolerance": float(fixed_options["gridRelativeTolerance"]),
+    }
+
+    def estimation_inputs(current: HierarchicalSoftmax):
+        windows = iter_cached_windows(
+            dataset_dir, feature_dir, maximum_windows, set(ESTIMATION_SPLITS), verified_manifest=feature_manifest
+        )
+        return collect_estimation_inputs(current, windows, _stratum_attributes_of)
+
+    # 1. 初期定数：exactに分かる件数比（Jeffreys補正）。θに依存しない。
+    initial = initial_constants(estimation_inputs(HierarchicalSoftmax.zeros()))
+    print(json.dumps({"progress": "opponent_initial_fixed_constants", **initial.to_dict()}), flush=True)
+
+    # 2. 初期定数の下でθを学習し、正則化を選び、温度を較正する。
     lambdas = manifest["regularizationGrid"]
-    models = [HierarchicalSoftmax.zeros() for _ in lambdas]
+    models, train_counts = _train_models(
+        dataset_dir, feature_dir, feature_manifest, manifest, lambdas, initial, maximum_windows
+    )
+    selection_metrics = _evaluate_models_one_split(
+        models, dataset_dir, feature_dir, "selection", maximum_windows, feature_manifest
+    )
+    print(json.dumps({"progress": "opponent_regularization_selection_complete"}), flush=True)
+    selection = [
+        {"lambda": regularization, "metrics": metrics}
+        for regularization, metrics in zip(lambdas, selection_metrics)
+    ]
+    eligible = [item for item in selection if item["metrics"]["meanNll"] is not None]
+    if not eligible:
+        raise ValueError("selection期間の評価窓がない")
+    selected = min(eligible, key=lambda item: (item["metrics"]["meanNll"], item["lambda"]))
+    first_model = models[lambdas.index(selected["lambda"])]
+    first_temperatures = _select_phase_temperatures(
+        first_model, dataset_dir, feature_dir, manifest["temperatureGrid"], maximum_windows, feature_manifest
+    )
+
+    # 3. 学習したθを固定して、定数の事後分布を求める。
+    first_posteriors = estimate_base_posteriors(estimation_inputs(first_model), initial, **grid_options)
+    first_constants = constants_from_posteriors(first_posteriors)
+    print(json.dumps({"progress": "opponent_fixed_constants_round1", **first_constants.to_dict()}), flush=True)
+
+    # 4. 推定した定数の下でθを学習し直す（選んだ正則化だけ）。温度も較正し直す。
+    refit_models, refit_counts = _train_models(
+        dataset_dir, feature_dir, feature_manifest, manifest, [selected["lambda"]], first_constants, maximum_windows
+    )
+    model = refit_models[0]
+    temperature_selection = _select_phase_temperatures(
+        model, dataset_dir, feature_dir, manifest["temperatureGrid"], maximum_windows, feature_manifest
+    )
+    print(json.dumps({"progress": "opponent_temperature_calibration_complete"}), flush=True)
+
+    # 5. 再学習したθで定数を推定し直し、最終の定数・層別結果・シナリオ一覧を固定する。
+    final_inputs = estimation_inputs(model)
+    final_posteriors = estimate_base_posteriors(final_inputs, first_constants, **grid_options)
+    final_constants = constants_from_posteriors(final_posteriors)
+    model.fixed = final_constants
+    strata = estimate_strata(final_inputs, final_constants, final_posteriors, **grid_options)
+    theta_id = _json_hash(
+        {"kind": model.kind_weights.tolist(), "detail": model.detail_weights.tolist(), "temperatures": model.temperatures}
+    )
+    scenarios = build_scenarios(final_posteriors, strata, theta_id=theta_id)
+    fixed_components = {
+        "schemaVersion": "ev-policy-opponent-fixed-components/v1",
+        "modelVersion": MODEL_VERSION,
+        "estimationSplits": sorted(ESTIMATION_SPLITS),
+        "roundTrips": {
+            "initial": initial.to_dict(),
+            "afterFirstFit": {
+                "constants": first_constants.to_dict(),
+                "posteriors": {key: value.to_dict() for key, value in first_posteriors.items()},
+                "temperatures": first_temperatures,
+            },
+            "final": {
+                "constants": final_constants.to_dict(),
+                "posteriors": {key: value.to_dict() for key, value in final_posteriors.items()},
+            },
+        },
+        "excludedWindows": final_inputs.excluded,
+        "observations": {"tsumoWindows": len(final_inputs.tsumo), "responseWindows": len(final_inputs.response)},
+        "assumptions": [CHANKAN_ASSUMPTION, "constants_conditioned_only_on_legality"],
+        "strata": strata,
+        "thetaId": theta_id,
+        "scenarios": scenarios,
+        "scenarioCounts": scenario_count_summary(scenarios),
+    }
+    _write_json(output_dir / "fixed-components.json", fixed_components)
+    print(json.dumps({"progress": "opponent_fixed_constants_final", **final_constants.to_dict()}), flush=True)
+
+    metrics = _evaluate_one_model_all_splits(
+        model, dataset_dir, feature_dir, maximum_windows, feature_manifest
+    )
+    print(json.dumps({"progress": "opponent_period_evaluation_complete"}), flush=True)
+    support = _support_diagnostics(dataset_dir, maximum_windows)
+    rate_diagnostic = response_rate_diagnostic(metrics)
+    holds = opponent_adoption_holds(feature_manifest, support, rate_diagnostic)
+    print(json.dumps({"progress": "opponent_identifiability_audit_complete"}), flush=True)
+    train_counts["refitVisited"] = refit_counts.get("visited", 0)
+    model_payload = model.to_dict()
+    model_payload.update(
+        {
+            "labelDefinitionVersion": LABEL_DEFINITION_VERSION,
+            "selectedLambda": selected["lambda"],
+            "datasetManifestHash": manifest["datasetManifestHash"],
+            "featureCacheManifestHash": manifest["featureCacheManifestHash"],
+            "trainingSplits": ["train", "selection", "calibration"],
+            "fixedComponentsPath": "fixed-components.json",
+            "featureCoverage": {
+                "implemented": list(feature_manifest.get("implementedGroups", [])),
+                "held": [value for value in holds if value in {
+                    "exact_candidate_ukeire_not_full_verified",
+                    "full_multi_riichi_danger_class",
+                    "explicit_yaku_shape_features",
+                }],
+                "reason": "D.3.2b_feature_gate_and_remaining_D.3_holds",
+            },
+        }
+    )
+    _write_json(output_dir / "model.json", model_payload)
+    summary = {
+        "schemaVersion": FIT_SCHEMA,
+        "status": "debug_complete" if debug else "complete_with_fixed_components",
+        "eligibleForD33": not holds,
+        "modelPath": "model.json",
+        "manifestPath": "fit-manifest.json",
+        "fixedComponentsPath": "fixed-components.json",
+        "selection": selection,
+        "selectedLambda": selected["lambda"],
+        "temperatureSelection": temperature_selection,
+        "fixedConstants": final_constants.to_dict(),
+        "metrics": metrics,
+        "support": support,
+        "training": dict(train_counts),
+        "rateDiagnostic": rate_diagnostic,
+        "holds": holds,
+    }
+    _write_json(output_dir / "fit-summary.json", summary)
+    return summary
+
+
+def _stratum_attributes_of(candidate: EncodedCandidate) -> dict[str, str]:
+    """種別特徴から、定数を使う家の層を決める（設計7.4節）。巡目は捨牌総数から近似する。"""
+    values = dict(zip(KIND_FEATURE_NAMES, candidate.kind_features))
+    discards = round(float(values["turn"]) * 72.0)
+    return stratum_attributes(
+        dealer=bool(values["dealer"] >= 0.5),
+        own_riichi=bool(values["own_riichi"] >= 0.5),
+        gap_to_top=-float(values["leader_delta"]) * 10_000.0,
+        junme=discards // 4 + 1,
+    )
+
+
+def _train_models(
+    dataset_dir: Path,
+    feature_dir: Path,
+    feature_manifest: Mapping[str, Any],
+    manifest: Mapping[str, Any],
+    lambdas: Sequence[float],
+    fixed: FixedConstants,
+    maximum_windows: int | None,
+) -> tuple[list[HierarchicalSoftmax], Counter]:
+    """固定定数を合成した方策で、正則化ごとのモデルをdeterministic minibatch SGDで学習する。"""
+    models = [HierarchicalSoftmax.zeros(fixed) for _ in lambdas]
     batch_gradients = [ModelGradient.zeros(model) for model in models]
     batch_counts = [0 for _ in models]
     train_counts = Counter()
@@ -2028,75 +2278,7 @@ def fit_opponent_model(
     for model_index, model in enumerate(models):
         if batch_counts[model_index]:
             _sgd_update(model, batch_gradients[model_index], batch_counts[model_index], float(lambdas[model_index]), float(manifest["learningRate"]))
-
-    selection_metrics = _evaluate_models_one_split(
-        models, dataset_dir, feature_dir, "selection", maximum_windows, feature_manifest
-    )
-    print(json.dumps({"progress": "opponent_regularization_selection_complete"}), flush=True)
-    selection = [
-        {"lambda": regularization, "metrics": metrics}
-        for regularization, metrics in zip(lambdas, selection_metrics)
-    ]
-    eligible = [item for item in selection if item["metrics"]["meanNll"] is not None]
-    if not eligible:
-        raise ValueError("selection期間の評価窓がない")
-    selected = min(eligible, key=lambda item: (item["metrics"]["meanNll"], item["lambda"]))
-    model = models[lambdas.index(selected["lambda"])]
-
-    temperature_selection = _select_phase_temperatures(
-        model, dataset_dir, feature_dir, manifest["temperatureGrid"], maximum_windows, feature_manifest
-    )
-    print(json.dumps({"progress": "opponent_temperature_calibration_complete"}), flush=True)
-
-    metrics = _evaluate_one_model_all_splits(
-        model, dataset_dir, feature_dir, maximum_windows, feature_manifest
-    )
-    print(json.dumps({"progress": "opponent_period_evaluation_complete"}), flush=True)
-    support = _support_diagnostics(dataset_dir, maximum_windows)
-    rate_diagnostic = response_rate_diagnostic(metrics)
-    holds = opponent_adoption_holds(feature_manifest, support, rate_diagnostic)
-    print(json.dumps({"progress": "opponent_identifiability_audit_complete"}), flush=True)
-    model_payload = model.to_dict()
-    model_payload.update(
-        {
-            "labelDefinitionVersion": LABEL_DEFINITION_VERSION,
-            "selectedLambda": selected["lambda"],
-            "datasetManifestHash": manifest["datasetManifestHash"],
-            "featureCacheManifestHash": manifest["featureCacheManifestHash"],
-            "trainingSplits": ["train", "selection", "calibration"],
-            "featureCoverage": {
-                "implemented": [
-                    "own_hand", "fixed_melds", "shanten", "dora", "discard_origin", "basic_genbutsu",
-                    "rivers", "turn", "wall", "dealer", "honba", "riichi_sticks", "score_differences", "kyoku",
-                    "exact_candidate_ukeire",
-                ],
-                "held": [value for value in holds if value in {
-                    "exact_candidate_ukeire_not_full_verified",
-                    "full_multi_riichi_danger_class",
-                    "explicit_yaku_shape_features",
-                }],
-                "reason": "D.3.2a_feature_gate_and_remaining_D.3_holds",
-            },
-        }
-    )
-    _write_json(output_dir / "model.json", model_payload)
-    summary = {
-        "schemaVersion": FIT_SCHEMA,
-        "status": "debug_complete" if debug else "complete_with_identifiability_and_feature_holds",
-        "eligibleForD33": not holds,
-        "modelPath": "model.json",
-        "manifestPath": "fit-manifest.json",
-        "selection": selection,
-        "selectedLambda": selected["lambda"],
-        "temperatureSelection": temperature_selection,
-        "metrics": metrics,
-        "support": support,
-        "training": dict(train_counts),
-        "rateDiagnostic": rate_diagnostic,
-        "holds": holds,
-    }
-    _write_json(output_dir / "fit-summary.json", summary)
-    return summary
+    return models, train_counts
 
 
 def _sgd_update(

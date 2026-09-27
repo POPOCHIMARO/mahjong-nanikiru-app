@@ -2,7 +2,7 @@
   "schemaVersion": "ev-policy-d3-development-plan/v1",
   "createdDate": "2026-09-07",
   "status": "D3_2b_in_progress_D3_3_held",
-  "implementationStatus": "D3_2b_step2_complete_step3_next",
+  "implementationStatus": "D3_2b_step3_complete_step4_next",
   "eligibleForAdoption": false,
   "designPath": "PHASE_D3_DESIGN.md",
   "reservationPath": "future-evaluation-reservation.json",
@@ -385,6 +385,13 @@
           "projectedFullBuildSecondsNotAGate": 23677.0,
           "status": "pass"
         }
+      },
+      "step3": {
+        "status": "complete",
+        "module": "tools/ev_policy_fixed.py",
+        "acceptance": "D32B-06..08 pass",
+        "fitPipeline": "initial_constants->fit->estimate->refit_selected_lambda->re-estimate",
+        "output": "model-opponent-v3/fixed-components.json"
       }
     },
     {
