@@ -29,8 +29,10 @@ try:
     from .ev_calibration_state import shanten
     from .ev_policy_features import (
         CALCULATION_VERSION,
+        DANGER_FEATURE_GROUP,
         FEATURE_CACHE_SCHEMA,
         IMPLEMENTED_FEATURE_GROUPS,
+        YAKU_SHAPE_FEATURE_GROUP,
         MeldView,
         RiichiOpponentView,
         clear_all_shape_caches,
@@ -60,13 +62,15 @@ try:
         scenario_count_summary,
         stratum_attributes,
     )
-    from .ev_policy_observation import resolve_joint_response
+    from .ev_policy_observation import resolve_joint_response, response_priority
 except ImportError:
     from ev_calibration_state import shanten
     from ev_policy_features import (
         CALCULATION_VERSION,
+        DANGER_FEATURE_GROUP,
         FEATURE_CACHE_SCHEMA,
         IMPLEMENTED_FEATURE_GROUPS,
+        YAKU_SHAPE_FEATURE_GROUP,
         MeldView,
         RiichiOpponentView,
         clear_all_shape_caches,
@@ -96,7 +100,7 @@ except ImportError:
         scenario_count_summary,
         stratum_attributes,
     )
-    from ev_policy_observation import resolve_joint_response
+    from ev_policy_observation import resolve_joint_response, response_priority
 
 
 MODEL_SCHEMA = "ev-policy-opponent-model/v3"
@@ -1843,26 +1847,36 @@ def _evaluate_one_model_all_splits(
 
 
 def _support_diagnostics(dataset_dir: Path, maximum_windows: int | None) -> dict[str, Any]:
+    """支持件数の集計（設計7.1節、D.3.2b工程4）。
+
+    D.3.2b工程1の和了判定修正後は、和了headのholdは0件になった。
+    それでも学習に使わない窓（learningMaskが偽）はここでも「observed」から除く。
+    exactラベルの見送りに加え、公開結果の優先順位から論理的に確定するロン見送り
+    （`confirmedSkips`）を別欄で数える。ロンは最優先（priority 0）なので、
+    公開結果が別の種別なら、その種別より優先度で劣後する候補のうちロンが合法な
+    家は全員ロンを選ばなかったと確定できる（頭ハネされた同順位の希望は確定しない）。
+    """
+
     opportunities = Counter()
     observed = Counter()
     legal_win_skips = Counter()
+    confirmed_ron_skips = Counter()
     held_or_censored = Counter()
     response_windows = Counter()
     informative_response_windows = Counter()
-    processed = 0
     split_processed = Counter()
     for row in _iter_jsonl_gzip(dataset_dir / "teacher-windows.jsonl.gz"):
         split = str(row["developmentSplit"])
         if maximum_windows is not None and split_processed[split] >= maximum_windows:
             continue
         split_processed[split] += 1
-        processed += 1
         if "legalActions" in row:
             legal_kinds = {str(action["kind"]) for action in row["legalActions"]}
             for kind in legal_kinds:
                 opportunities[(split, kind)] += 1
+            learnable = bool(row.get("learningMask", {}).get("kind", False))
             action = row["observation"].get("action")
-            if row["observation"]["status"] == "exact" and action:
+            if row["observation"]["status"] == "exact" and action and learnable:
                 observed[(split, str(action["kind"]))] += 1
                 if "tsumo" in legal_kinds and action["kind"] != "tsumo":
                     legal_win_skips[(split, "tsumo")] += 1
@@ -1873,15 +1887,24 @@ def _support_diagnostics(dataset_dir: Path, maximum_windows: int | None) -> dict
             response_windows[(split, phase)] += 1
             if any(len(value["actions"]) > 1 for value in row["legalBySeat"].values()):
                 informative_response_windows[(split, phase)] += 1
+            learnable = bool(row.get("learningMask", {}).get("jointKind", False))
+            resolution = row["observation"]["resolution"]
+            resolution_priority = response_priority(str(resolution["kind"]))
             for seat, value in row["legalBySeat"].items():
                 legal_kinds = {str(action["kind"]) for action in value["actions"]}
                 for kind in legal_kinds:
                     opportunities[(split, kind)] += 1
                 label = next(item for item in row["observation"]["perSeatLabels"] if str(item["seat"]) == seat)
-                if label["status"] == "exact":
+                if label["status"] == "exact" and learnable:
                     observed[(split, str(label["action"]["kind"]))] += 1
                     if "ron" in legal_kinds and label["action"]["kind"] != "ron":
                         legal_win_skips[(split, "ron")] += 1
+                elif "ron" in legal_kinds and resolution_priority > response_priority("ron"):
+                    # 公開結果の優先順位がロンより低い（数が大きい）ため、その家がロンを
+                    # 選んでいれば必ずロンが公開結果になっていたはず。実際はそうならなかった
+                    # ので、exactラベルの有無に関わらずロン見送りが確定する（R3の反例）。
+                    confirmed_ron_skips[split] += 1
+                    held_or_censored[(split, "censoredResponseLabels")] += 1
                 else:
                     held_or_censored[(split, "censoredResponseLabels")] += 1
     values = {}
@@ -1890,6 +1913,7 @@ def _support_diagnostics(dataset_dir: Path, maximum_windows: int | None) -> dict
             "opportunities": {kind: opportunities[(split, kind)] for kind in KINDS},
             "observed": {kind: observed[(split, kind)] for kind in KINDS},
             "legalWinSkips": {kind: legal_win_skips[(split, kind)] for kind in ("tsumo", "ron")},
+            "confirmedRonSkips": confirmed_ron_skips[split],
             "heldOrCensored": {
                 kind: held_or_censored[(split, kind)]
                 for kind in ("heldSelfWindows", "censoredResponseLabels")
@@ -1903,12 +1927,32 @@ def _support_diagnostics(dataset_dir: Path, maximum_windows: int | None) -> dict
                 for phase in ("discard_response", "chankan_response")
             },
         }
+        for kind in KINDS:
+            if values[split]["observed"][kind] > values[split]["opportunities"][kind]:
+                raise ValueError(
+                    f"観測が合法機会を上回る: split={split}, kind={kind}, "
+                    f"observed={values[split]['observed'][kind]}, opportunities={values[split]['opportunities'][kind]}"
+                )
     total_ron_skips = sum(legal_win_skips[(split, "ron")] for split in values)
+    total_confirmed_ron_skips = sum(confirmed_ron_skips[split] for split in values)
     total_tsumo_skips = sum(legal_win_skips[(split, "tsumo")] for split in values)
     unidentified = []
-    for kind, count in (("ron_pass", total_ron_skips), ("tsumo_pass", total_tsumo_skips)):
-        if count < 30:
-            unidentified.append({"component": kind, "status": "opponent_component_unidentified", "observedSkips": count, "reason": "observed_skip_below_30"})
+    ron_evidence = total_ron_skips + total_confirmed_ron_skips
+    if ron_evidence < 30:
+        unidentified.append({
+            "component": "ron_pass",
+            "status": "opponent_component_unidentified",
+            "observedSkips": total_ron_skips,
+            "confirmedSkips": total_confirmed_ron_skips,
+            "reason": "observed_skip_below_30",
+        })
+    if total_tsumo_skips < 30:
+        unidentified.append({
+            "component": "tsumo_pass",
+            "status": "opponent_component_unidentified",
+            "observedSkips": total_tsumo_skips,
+            "reason": "observed_skip_below_30",
+        })
     chankan_informative = sum(
         informative_response_windows[(split, "chankan_response")] for split in values
     )
@@ -1938,9 +1982,14 @@ def _support_diagnostics(dataset_dir: Path, maximum_windows: int | None) -> dict
     }
 
 
-def response_rate_diagnostic(metrics: Mapping[str, Any]) -> dict[str, Any]:
-    """開発確認期間の明瞭な率ずれを採用holdとして再現可能に判定する。"""
-    rates = metrics["developmentConfirmation"]["rates"]["publicResponseResolution"]
+def response_rate_diagnostic(metrics: Mapping[str, Any], period: str) -> dict[str, Any]:
+    """指定期間の公開応答結果の率ずれを採用holdとして再現可能に判定する（設計8.3節）。
+
+    固定成分（ロン・大明槓の定数）を含む合成方策の確率（model.probabilitiesの出力）を
+    _add_metricが使うため、この診断は固定成分を除外しない。設計9節の要件を、較正期間と
+    開発確認期間の両方で呼び出すことで満たす（opponent_adoption_holdsを参照）。
+    """
+    rates = metrics[period]["rates"]["publicResponseResolution"]
     observed = rates["observed"]
     predicted = rates["predicted"]
     differences = {
@@ -1959,7 +2008,8 @@ def response_rate_diagnostic(metrics: Mapping[str, Any]) -> dict[str, Any]:
             reasons.append(f"rare_rate_ratio_above_5:{kind}")
     return {
         "status": "hold" if reasons else "pass",
-        "period": "developmentConfirmation",
+        "period": period,
+        "developmentConfirmationReuse": "reused_non_independent" if period == "developmentConfirmation" else None,
         "diagnosticThresholdsNotAdoptionThresholds": {
             "maximumAbsoluteRateError": 0.005,
             "maximumRareRateRatio": 5.0,
@@ -1970,21 +2020,106 @@ def response_rate_diagnostic(metrics: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+WIN_LEGALITY_DECLARED_REASONS = frozenset({
+    "observed_skip_below_30", "observed_action_below_100_and_rate_unstable", "all_legal_sets_are_structural_pass_only",
+})
+FIXED_COMPONENT_BY_UNIDENTIFIED = {"ron_pass": "epsRon", "tsumo_pass": "epsTsumo",
+                                    "daiminkan_policy": "rho", "chankan_response_policy": "epsChankan"}
+
+
+def win_legality_satisfied(win_legality: Mapping[str, Any]) -> bool:
+    """4.4節の解除条件。未分類0件、全教師窓の和了照合合格、残存例外の検出体制の3点を検査する。"""
+
+    if int(win_legality.get("unclassifiedCount", 1)) != 0:
+        return False
+    if not bool(win_legality.get("allObservedWinsInLegalSet", False)):
+        return False
+    for item in win_legality.get("residualExceptions", []):
+        if not (item.get("hasDetector") and item.get("hasThreeWayHandling")):
+            return False
+    return True
+
+
+def load_win_legality_report(probe_dir: Path) -> dict[str, Any]:
+    """工程1の分類記録（calibration/probes/win-legality-d32b）からwin_legality入力を作る。"""
+
+    summary = json.loads((probe_dir / "summary.json").read_text(encoding="utf-8"))
+    verification = json.loads((probe_dir / "verification.json").read_text(encoding="utf-8"))
+    residual = [
+        {"cause": entry["cause"], "hasDetector": False, "hasThreeWayHandling": False}
+        for entry in summary.get("byCauseAndExpected", [])
+        if entry["cause"] not in {"chi_meld_order_adapter", "truncated_prefix_terminal_label"}
+    ]
+    return {
+        "unclassifiedCount": int(summary["unclassified"]),
+        "allObservedWinsInLegalSet": verification.get("status") == "pass",
+        "residualExceptions": residual,
+        "evidence": {"summaryPath": "summary.json", "verificationPath": "verification.json"},
+    }
+
+
+def fixed_components_declared(support: Mapping[str, Any], fixed_components: Mapping[str, Any] | None) -> bool:
+    """未識別成分すべてに、対応する固定成分（定数・推定方法・事後区間・シナリオ一覧）の宣言があるかを検査する。"""
+
+    unidentified = support.get("unidentifiedComponents", [])
+    if not unidentified:
+        return True
+    if fixed_components is None:
+        return False
+    constants = fixed_components.get("roundTrips", {}).get("final", {}).get("constants")
+    posteriors = fixed_components.get("roundTrips", {}).get("final", {}).get("posteriors", {})
+    scenarios = fixed_components.get("scenarios", [])
+    if not constants or not scenarios:
+        return False
+    for item in unidentified:
+        name = FIXED_COMPONENT_BY_UNIDENTIFIED.get(str(item.get("component")))
+        if name is None or name not in constants:
+            return False
+        # epsChankanはモデル仮定であり事後分布を推定しない（設計7.3節）。他3件は事後分布が必要。
+        if name != "epsChankan" and name not in posteriors:
+            return False
+    return True
+
+
 def opponent_adoption_holds(
+    win_legality: Mapping[str, Any],
     feature_manifest: Mapping[str, Any],
     support: Mapping[str, Any],
-    rate_diagnostic: Mapping[str, Any],
-) -> list[str]:
-    """fitと再読込evaluateが同じ根拠から同じhold集合を作る。"""
+    rate_diagnostics: Mapping[str, Mapping[str, Any]],
+    fixed_components: Mapping[str, Any] | None,
+    *,
+    rate_correction_degraded: bool = False,
+) -> dict[str, Any]:
+    """fitと再読込evaluateが同じ根拠から同じhold集合・条件を作る（設計9節）。"""
 
-    holds = ["full_multi_riichi_danger_class", "explicit_yaku_shape_features"]
+    holds: list[str] = []
+    if not win_legality_satisfied(win_legality):
+        holds.append("win_legality_unresolved")
+    implemented = set(feature_manifest.get("implementedGroups", []))
     if feature_manifest.get("status") != "complete":
         holds.append("exact_candidate_ukeire_not_full_verified")
-    if support.get("unidentifiedComponents"):
+    if DANGER_FEATURE_GROUP not in implemented:
+        holds.append("full_multi_riichi_danger_class")
+    if YAKU_SHAPE_FEATURE_GROUP not in implemented:
+        holds.append("explicit_yaku_shape_features")
+    if not fixed_components_declared(support, fixed_components):
         holds.append("opponent_component_unidentified")
-    if rate_diagnostic.get("status") == "hold":
+    rate_hold = any(diagnostic.get("status") == "hold" for diagnostic in rate_diagnostics.values())
+    if rate_hold or rate_correction_degraded:
         holds.append("response_rate_miscalibration")
-    return holds
+
+    d33_conditions: list[str] = []
+    if fixed_components is not None:
+        d33_conditions.append("fixed_component_sensitivity")
+    if win_legality.get("residualExceptions"):
+        d33_conditions.append("residual_win_legality_detector")
+
+    return {
+        "holds": holds,
+        "eligibleForD33": not holds,
+        "eligibleForAdoption": False,
+        "d33Conditions": d33_conditions,
+    }
 
 
 def _select_phase_temperatures(
@@ -2040,11 +2175,13 @@ def fit_opponent_model(
     dataset_dir: Path,
     feature_dir: Path,
     output_dir: Path,
+    win_legality_dir: Path,
     *,
     maximum_windows: int | None = None,
 ) -> dict[str, Any]:
     """固定manifestどおりに正則化選択、温度較正、確認評価を行う。"""
     _validate_feature_dataset(dataset_dir)
+    win_legality = load_win_legality_report(win_legality_dir)
     feature_manifest = verify_opponent_feature_cache(dataset_dir, feature_dir)
     debug = maximum_windows is not None
     if feature_manifest.get("status") == "debug" and maximum_windows is None:
@@ -2179,8 +2316,11 @@ def fit_opponent_model(
     )
     print(json.dumps({"progress": "opponent_period_evaluation_complete"}), flush=True)
     support = _support_diagnostics(dataset_dir, maximum_windows)
-    rate_diagnostic = response_rate_diagnostic(metrics)
-    holds = opponent_adoption_holds(feature_manifest, support, rate_diagnostic)
+    rate_diagnostics = {
+        period: response_rate_diagnostic(metrics, period) for period in ("calibration", "developmentConfirmation")
+    }
+    adoption = opponent_adoption_holds(win_legality, feature_manifest, support, rate_diagnostics, fixed_components)
+    holds = adoption["holds"]
     print(json.dumps({"progress": "opponent_identifiability_audit_complete"}), flush=True)
     train_counts["refitVisited"] = refit_counts.get("visited", 0)
     model_payload = model.to_dict()
@@ -2207,7 +2347,9 @@ def fit_opponent_model(
     summary = {
         "schemaVersion": FIT_SCHEMA,
         "status": "debug_complete" if debug else "complete_with_fixed_components",
-        "eligibleForD33": not holds,
+        "eligibleForD33": adoption["eligibleForD33"],
+        "eligibleForAdoption": adoption["eligibleForAdoption"],
+        "d33Conditions": adoption["d33Conditions"],
         "modelPath": "model.json",
         "manifestPath": "fit-manifest.json",
         "fixedComponentsPath": "fixed-components.json",
@@ -2218,7 +2360,8 @@ def fit_opponent_model(
         "metrics": metrics,
         "support": support,
         "training": dict(train_counts),
-        "rateDiagnostic": rate_diagnostic,
+        "winLegality": win_legality,
+        "rateDiagnostics": rate_diagnostics,
         "holds": holds,
     }
     _write_json(output_dir / "fit-summary.json", summary)
@@ -2297,24 +2440,33 @@ def evaluate_opponent_model(
     dataset_dir: Path,
     feature_dir: Path,
     model_dir: Path,
+    win_legality_dir: Path,
     *,
     maximum_windows: int | None = None,
 ) -> dict[str, Any]:
     feature_manifest = verify_opponent_feature_cache(dataset_dir, feature_dir)
     if feature_manifest.get("status") == "debug" and maximum_windows is None:
         raise ValueError("debug特徴cacheを全件evaluateへ使用できない")
+    win_legality = load_win_legality_report(win_legality_dir)
     payload = json.loads((model_dir / "model.json").read_text(encoding="utf-8"))
     if payload.get("datasetManifestHash") != _dataset_hash(dataset_dir):
         raise ValueError("モデルとD.3.1データのmanifest hashが不一致")
     if payload.get("featureCacheManifestHash") != _json_hash(feature_manifest):
         raise ValueError("モデルと特徴cacheのmanifest hashが不一致")
+    fixed_components = None
+    fixed_components_path = payload.get("fixedComponentsPath")
+    if fixed_components_path:
+        fixed_components = json.loads((model_dir / fixed_components_path).read_text(encoding="utf-8"))
     model = HierarchicalSoftmax.from_dict(payload)
     metrics = _evaluate_one_model_all_splits(
         model, dataset_dir, feature_dir, maximum_windows, feature_manifest
     )
     support = _support_diagnostics(dataset_dir, maximum_windows)
-    rate_diagnostic = response_rate_diagnostic(metrics)
-    holds = opponent_adoption_holds(feature_manifest, support, rate_diagnostic)
+    rate_diagnostics = {
+        period: response_rate_diagnostic(metrics, period) for period in ("calibration", "developmentConfirmation")
+    }
+    adoption = opponent_adoption_holds(win_legality, feature_manifest, support, rate_diagnostics, fixed_components)
+    holds = adoption["holds"]
     report = {
         "schemaVersion": EVALUATION_SCHEMA,
         "status": "debug_complete" if maximum_windows is not None else "confirmation_only_not_independent_test",
@@ -2322,9 +2474,12 @@ def evaluate_opponent_model(
         "developmentConfirmationIsIndependent": False,
         "metrics": metrics,
         "support": support,
-        "rateDiagnostic": rate_diagnostic,
+        "winLegality": win_legality,
+        "rateDiagnostics": rate_diagnostics,
         "holds": holds,
-        "eligibleForD33": not holds,
+        "eligibleForD33": adoption["eligibleForD33"],
+        "eligibleForAdoption": adoption["eligibleForAdoption"],
+        "d33Conditions": adoption["d33Conditions"],
     }
     _write_json(model_dir / "evaluation.json", report)
     return report

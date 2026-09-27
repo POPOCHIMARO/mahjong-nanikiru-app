@@ -442,8 +442,13 @@ def recorded_self_action(parsed: ParsedRound, position: int, state: RoundState) 
     return None
 
 
-def _response_priority(kind: str) -> int:
+def response_priority(kind: str) -> int:
+    """公開応答の優先順位。数が小さいほど優先。D.3.2b工程4は支持件数の推定にも使う。"""
     return {"ron": 0, "pon": 1, "daiminkan": 1, "chi": 2, "pass": 3}[kind]
+
+
+def _response_priority(kind: str) -> int:
+    return response_priority(kind)
 
 
 def resolve_joint_response(

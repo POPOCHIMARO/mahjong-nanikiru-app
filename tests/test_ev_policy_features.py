@@ -567,15 +567,30 @@ class FeatureCacheTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "calculationVersion"):
                 verify_opponent_feature_cache(dataset, feature_dir)
 
+    def _win_legality_dir(self, root: Path) -> Path:
+        # D.3.2b工程1の分類記録と同じ形の最小fixture。未分類0件、全窓の和了照合pass、残存例外なし。
+        probe_dir = root / "win-legality"
+        probe_dir.mkdir(parents=True, exist_ok=True)
+        (probe_dir / "summary.json").write_text(
+            json.dumps({"unclassified": 0, "byCauseAndExpected": [
+                {"cause": "chi_meld_order_adapter", "expected": {}, "count": 924},
+                {"cause": "truncated_prefix_terminal_label", "expected": {}, "count": 1},
+            ]}),
+            encoding="utf-8",
+        )
+        (probe_dir / "verification.json").write_text(json.dumps({"status": "pass"}), encoding="utf-8")
+        return probe_dir
+
     def test_d32a_08_debug_fit_and_reload_evaluation_keep_metrics_and_holds(self) -> None:
         with tempfile.TemporaryDirectory(dir=ROOT) as temporary:
             root = Path(temporary)
             dataset = self._dataset(root)
             feature_dir = root / "features"
             model_dir = root / "model"
+            win_legality_dir = self._win_legality_dir(root)
             build_opponent_feature_cache(dataset, feature_dir, maximum_windows=1, windows_per_shard=4)
-            fitted = fit_opponent_model(dataset, feature_dir, model_dir, maximum_windows=1)
-            evaluated = evaluate_opponent_model(dataset, feature_dir, model_dir, maximum_windows=1)
+            fitted = fit_opponent_model(dataset, feature_dir, model_dir, win_legality_dir, maximum_windows=1)
+            evaluated = evaluate_opponent_model(dataset, feature_dir, model_dir, win_legality_dir, maximum_windows=1)
             self.assertEqual(fitted["metrics"], evaluated["metrics"])
             self.assertEqual(fitted["holds"], evaluated["holds"])
             self.assertFalse(fitted["eligibleForD33"])

@@ -37,8 +37,12 @@
 
 ## 工程4：診断と採用判定（Sonnet 5）
 
-- [ ] 支持件数、公開結果の率の診断、採用判定関数
-- [ ] D32B-09〜10
+- [x] 支持件数：学習マスクで観測を数え直し、ロン見送りの公開結果確定分（confirmedRonSkips）を別欄に追加。観測が合法機会を超えないことを関数内で検査
+- [x] 公開結果の率診断をperiod引数化し、較正期間と開発確認期間の両方で実行。developmentConfirmationReuseの区分を明記
+- [x] 採用判定関数を設計9節どおり全面書換え（win_legality_satisfied、fixed_components_declared、opponent_adoption_holds）。eligibleForD33/eligibleForAdoption/d33Conditionsを返す
+- [x] fit/evaluateへwin-legality-dir引数を追加。CLI既定はcalibration/probes/win-legality-d32b
+- [x] D32B-09〜10のテスト25件合格。全Python 156件、JS 92件合格
+- [x] 実データ（300窓デバッグ）でfit→evaluateのholds/eligibleForD33/d33Conditionsが完全一致することを確認。win_legality/danger/yaku/unidentifiedの4holdは実データで解消済み、残るのはfeature cache未完成とresponse_rate_miscalibration（300窓では想定どおり）
 
 ## 工程5：全件実行とレポート（Sonnet 5、判定はOpus 5.5）
 
@@ -51,3 +55,4 @@
 - 2026-09-27：工程1完了。次は工程2（Sonnet 5推奨）。以後の特徴・学習は`dataset-opponent-v3`を入力にする。
 - 2026-09-27：工程2完了。次は工程3（Opus 5.5/high）。
 - 2026-09-27：工程3完了。次は工程4（Sonnet 5推奨）。
+- 2026-09-27：工程4完了。次は工程5（全件実行、Sonnet 5＋レポート判定はOpus 5.5）。

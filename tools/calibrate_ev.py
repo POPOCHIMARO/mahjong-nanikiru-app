@@ -68,6 +68,7 @@ DEFAULT_OPPONENT_DATASET_DIR = APP_ROOT / "calibration" / "dataset-opponent-v3"
 DEFAULT_OPPONENT_FEATURE_DIR = APP_ROOT / "calibration" / "features-opponent-v3"
 DEFAULT_OPPONENT_MODEL_DIR = APP_ROOT / "calibration" / "model-opponent-v3"
 DEFAULT_OPPONENT_FEATURE_PROBE_DIR = APP_ROOT / "calibration" / "probes" / "opponent-features-v3"
+DEFAULT_WIN_LEGALITY_DIR = APP_ROOT / "calibration" / "probes" / "win-legality-d32b"
 
 REQUIRED_PAIFU_FIELDS = ("season", "date", "gameId", "roundIndex", "roundName", "paifu")
 REQUIRED_DECISION_FIELDS = (
@@ -2162,6 +2163,7 @@ def _parser() -> argparse.ArgumentParser:
     fit_opponent.add_argument("--dataset-dir", type=Path, default=DEFAULT_OPPONENT_DATASET_DIR, help="検証済みD.3.1出力先")
     fit_opponent.add_argument("--feature-dir", type=Path, default=DEFAULT_OPPONENT_FEATURE_DIR, help="検証済みD.3.2b特徴cache")
     fit_opponent.add_argument("--output-dir", type=Path, default=DEFAULT_OPPONENT_MODEL_DIR, help="D.3.2b v3モデル出力先")
+    fit_opponent.add_argument("--win-legality-dir", type=Path, default=DEFAULT_WIN_LEGALITY_DIR, help="工程1の和了判定分類記録")
     fit_opponent.add_argument(
         "--max-windows", type=int, default=0,
         help="0は全件。正数は各splitの先頭件数だけを使うデバッグ実行",
@@ -2172,6 +2174,7 @@ def _parser() -> argparse.ArgumentParser:
     evaluate_opponent.add_argument("--dataset-dir", type=Path, default=DEFAULT_OPPONENT_DATASET_DIR, help="検証済みD.3.1出力先")
     evaluate_opponent.add_argument("--feature-dir", type=Path, default=DEFAULT_OPPONENT_FEATURE_DIR, help="fitに使ったD.3.2b特徴cache")
     evaluate_opponent.add_argument("--model-dir", type=Path, default=DEFAULT_OPPONENT_MODEL_DIR, help="fit-opponentの出力先")
+    evaluate_opponent.add_argument("--win-legality-dir", type=Path, default=DEFAULT_WIN_LEGALITY_DIR, help="工程1の和了判定分類記録")
     evaluate_opponent.add_argument(
         "--max-windows", type=int, default=0,
         help="0は全件。正数は各splitの先頭件数だけを使うデバッグ実行",
@@ -2510,6 +2513,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.dataset_dir.resolve(),
                 args.feature_dir.resolve(),
                 args.output_dir.resolve(),
+                args.win_legality_dir.resolve(),
                 maximum_windows=None if args.max_windows == 0 else args.max_windows,
             )
         except (ImportError, OSError, ValueError, KeyError, json.JSONDecodeError) as error:
@@ -2521,6 +2525,7 @@ def main(argv: list[str] | None = None) -> int:
                     "outputDir": str(args.output_dir.resolve()),
                     "status": summary["status"],
                     "selectedLambda": summary["selectedLambda"],
+                    "eligibleForD33": summary["eligibleForD33"],
                     "holds": summary["holds"],
                 },
                 ensure_ascii=False,
@@ -2537,6 +2542,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.dataset_dir.resolve(),
                 args.feature_dir.resolve(),
                 args.model_dir.resolve(),
+                args.win_legality_dir.resolve(),
                 maximum_windows=None if args.max_windows == 0 else args.max_windows,
             )
         except (ImportError, OSError, ValueError, KeyError, json.JSONDecodeError) as error:
