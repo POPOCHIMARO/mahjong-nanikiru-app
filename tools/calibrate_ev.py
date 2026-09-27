@@ -64,10 +64,10 @@ DEFAULT_POLICY_VERIFICATION = DEFAULT_POLICY_DATASET_DIR / "verification.json"
 DEFAULT_POLICY_REPLAY_VERIFICATION = DEFAULT_POLICY_DATASET_DIR / "replay-verification.json"
 DEFAULT_SYNTHETIC_DEBUG_OUTPUT = APP_ROOT / "calibration" / "synthetic-debug.json"
 DEFAULT_POLICY_RUNTIME_AUDIT = APP_ROOT / "calibration" / "policy-runtime-audit.json"
-DEFAULT_OPPONENT_DATASET_DIR = APP_ROOT / "calibration" / "dataset-opponent"
-DEFAULT_OPPONENT_FEATURE_DIR = APP_ROOT / "calibration" / "features-opponent-v2"
-DEFAULT_OPPONENT_MODEL_DIR = APP_ROOT / "calibration" / "model-opponent-v2"
-DEFAULT_OPPONENT_FEATURE_PROBE_DIR = APP_ROOT / "calibration" / "probes" / "opponent-features-v2"
+DEFAULT_OPPONENT_DATASET_DIR = APP_ROOT / "calibration" / "dataset-opponent-v3"
+DEFAULT_OPPONENT_FEATURE_DIR = APP_ROOT / "calibration" / "features-opponent-v3"
+DEFAULT_OPPONENT_MODEL_DIR = APP_ROOT / "calibration" / "model-opponent-v3"
+DEFAULT_OPPONENT_FEATURE_PROBE_DIR = APP_ROOT / "calibration" / "probes" / "opponent-features-v3"
 
 REQUIRED_PAIFU_FIELDS = ("season", "date", "gameId", "roundIndex", "roundName", "paifu")
 REQUIRED_DECISION_FIELDS = (
@@ -2160,8 +2160,8 @@ def _parser() -> argparse.ArgumentParser:
         "fit-opponent", help="検証済みD.3.2a特徴cacheからv2相手行動モデルを学習する"
     )
     fit_opponent.add_argument("--dataset-dir", type=Path, default=DEFAULT_OPPONENT_DATASET_DIR, help="検証済みD.3.1出力先")
-    fit_opponent.add_argument("--feature-dir", type=Path, default=DEFAULT_OPPONENT_FEATURE_DIR, help="検証済みD.3.2a特徴cache")
-    fit_opponent.add_argument("--output-dir", type=Path, default=DEFAULT_OPPONENT_MODEL_DIR, help="D.3.2a v2モデル出力先")
+    fit_opponent.add_argument("--feature-dir", type=Path, default=DEFAULT_OPPONENT_FEATURE_DIR, help="検証済みD.3.2b特徴cache")
+    fit_opponent.add_argument("--output-dir", type=Path, default=DEFAULT_OPPONENT_MODEL_DIR, help="D.3.2b v3モデル出力先")
     fit_opponent.add_argument(
         "--max-windows", type=int, default=0,
         help="0は全件。正数は各splitの先頭件数だけを使うデバッグ実行",
@@ -2170,7 +2170,7 @@ def _parser() -> argparse.ArgumentParser:
         "evaluate-opponent", help="保存済み相手行動モデルを固定期間別に再評価する"
     )
     evaluate_opponent.add_argument("--dataset-dir", type=Path, default=DEFAULT_OPPONENT_DATASET_DIR, help="検証済みD.3.1出力先")
-    evaluate_opponent.add_argument("--feature-dir", type=Path, default=DEFAULT_OPPONENT_FEATURE_DIR, help="fitに使ったD.3.2a特徴cache")
+    evaluate_opponent.add_argument("--feature-dir", type=Path, default=DEFAULT_OPPONENT_FEATURE_DIR, help="fitに使ったD.3.2b特徴cache")
     evaluate_opponent.add_argument("--model-dir", type=Path, default=DEFAULT_OPPONENT_MODEL_DIR, help="fit-opponentの出力先")
     evaluate_opponent.add_argument(
         "--max-windows", type=int, default=0,

@@ -30,7 +30,13 @@ try:
     from .ev_policy_features import (
         CALCULATION_VERSION,
         FEATURE_CACHE_SCHEMA,
+        IMPLEMENTED_FEATURE_GROUPS,
+        MeldView,
+        RiichiOpponentView,
         clear_all_shape_caches,
+        danger_features,
+        melds_after_action,
+        yaku_shape_features,
         iter_feature_shard,
         make_action_view,
         project_action,
@@ -38,13 +44,20 @@ try:
         write_feature_shard,
         write_json_atomic,
     )
+    from .ev_calibration_model import DANGER_RATES
     from .ev_policy_observation import resolve_joint_response
 except ImportError:
     from ev_calibration_state import shanten
     from ev_policy_features import (
         CALCULATION_VERSION,
         FEATURE_CACHE_SCHEMA,
+        IMPLEMENTED_FEATURE_GROUPS,
+        MeldView,
+        RiichiOpponentView,
         clear_all_shape_caches,
+        danger_features,
+        melds_after_action,
+        yaku_shape_features,
         iter_feature_shard,
         make_action_view,
         project_action,
@@ -52,13 +65,14 @@ except ImportError:
         write_feature_shard,
         write_json_atomic,
     )
+    from ev_calibration_model import DANGER_RATES
     from ev_policy_observation import resolve_joint_response
 
 
-MODEL_SCHEMA = "ev-policy-opponent-model/v2"
-FIT_SCHEMA = "ev-policy-opponent-fit/v2"
-EVALUATION_SCHEMA = "ev-policy-opponent-evaluation/v2"
-FEATURE_SCHEMA = "ev-policy-opponent-features/v2"
+MODEL_SCHEMA = "ev-policy-opponent-model/v3"
+FIT_SCHEMA = "ev-policy-opponent-fit/v3"
+EVALUATION_SCHEMA = "ev-policy-opponent-evaluation/v3"
+FEATURE_SCHEMA = "ev-policy-opponent-features/v3"
 MODEL_VERSION = "shared-hierarchical-softmax-v2"
 LABEL_DEFINITION_VERSION = "joint-public-resolution-v1"
 
@@ -107,6 +121,9 @@ KIND_FEATURE_NAMES = (
     "best_ukeire_count",
     "best_ukeire_kinds",
     "best_ukeire_applicable",
+    # D.3.2b：安全に打てる候補の有無と、種別内で役の手掛かりが全くないか。
+    "min_danger_max_rate",
+    "min_open_no_listed_yaku_cue",
 )
 
 # 同じ種別内の具体行動スコア。tile34 one-hotは末尾に置く。
@@ -124,11 +141,37 @@ DETAIL_BASE_FEATURE_NAMES = (
     "terminal",
     "simple",
     "consumed_red_ratio",
-    "genbutsu",
     "turn_x_shanten",
-    "riichi_x_genbutsu",
     "late_x_dora",
+    # D.3.2b 危険度（設計5.3節）。旧genbutsuはリーチ前の本人の捨牌を数えていなかった。
+    "danger_applicable",
+    "danger_max_rate",
+    "danger_sum_rate",
+    "danger_dealer_rate",
+    "genbutsu_all",
+    "genbutsu_any",
+    "danger_group_safe",
+    "danger_group_semi_safe",
+    "danger_group_guarded",
+    "danger_group_moderate_risk",
+    "danger_group_high_risk",
+    "riichi_x_genbutsu_all",
+    # D.3.2b 役と形の手掛かり（設計6.3節）
+    "menzen_after",
+    "yakuhai_secured",
+    "yakuhai_pairs",
+    "tanyao_path",
+    "tanyao_distance",
+    "flush_path",
+    "flush_distance",
+    "toitoi_blocks",
+    "toitoi_path",
+    "pair_count",
+    "chiitoi_applicable",
+    "chiitoi_shanten",
+    "open_no_listed_yaku_cue",
 )
+YAKU_SHAPE_DETAIL_NAMES = DETAIL_BASE_FEATURE_NAMES[DETAIL_BASE_FEATURE_NAMES.index("menzen_after") :]
 DETAIL_FEATURE_NAMES = DETAIL_BASE_FEATURE_NAMES + tuple(f"tile34_{index}" for index in range(34))
 
 
@@ -443,6 +486,12 @@ class RoundFeatureState:
             if event["type"] == "draw_observation"
         }
         self.melds: dict[int, list[list[dict[str, Any]]]] = {seat: [] for seat in range(4)}
+        # 役の手掛かりに使う面子の種類。melds と同じ順に並べる。
+        self.meld_kinds: dict[int, list[str]] = {seat: [] for seat in range(4)}
+        # リーチ後に他家から出て、そのリーチ者が和了しなかった牌（見逃しでフリテンが確定する）。
+        self.passed_after_riichi: dict[int, set[int]] = {seat: set() for seat in range(4)}
+        # 捨牌・加槓の応答が解決するまで保留する（打った家、牌種、その時点のリーチ者）。
+        self.pending_pass: tuple[int, int, frozenset[int]] | None = None
         self.rivers: dict[int, list[dict[str, Any]]] = {seat: [] for seat in range(4)}
         self.riichi: set[int] = set()
         self.riichi_river_start: dict[int, int] = {}
@@ -483,6 +532,7 @@ class RoundFeatureState:
             elif kind == "discard":
                 seat = int(event["seat"])
                 tile = dict(event["tile"])
+                self.pending_pass = (seat, int(tile["tile34"]), frozenset(self.riichi - {seat}))
                 self._remove(seat, tile)
                 self.rivers[seat].append({**tile, "riichiDeclaration": bool(event.get("riichiDeclaration"))})
                 self.visible[int(tile["tile34"])] += 1
@@ -492,6 +542,8 @@ class RoundFeatureState:
                     self.riichi_river_start[seat] = len(self.rivers[seat]) - 1
                     self.current_scores[seat] -= 1000
             elif kind in {"chi", "pon", "daiminkan"}:
+                # 鳴きが成立したならロンはなかった。捨牌はリーチ者に見逃されている。
+                self._commit_pass()
                 seat = int(event["seat"])
                 tiles = [dict(tile) for tile in event["tiles"]]
                 previous = next(
@@ -507,6 +559,7 @@ class RoundFeatureState:
                     self.visible[int(tile["tile34"])] += 1
                     consumed.append(tile)
                 self.melds[seat].append(tiles)
+                self.meld_kinds[seat].append(kind)
                 self._add_dora(event)
             elif kind == "ankan":
                 seat = int(event["seat"])
@@ -515,6 +568,7 @@ class RoundFeatureState:
                     self._remove(seat, tile)
                     self.visible[int(tile["tile34"])] += 1
                 self.melds[seat].append(tiles)
+                self.meld_kinds[seat].append("ankan")
                 self._add_dora(event)
             elif kind == "kakan":
                 seat = int(event["seat"])
@@ -535,15 +589,34 @@ class RoundFeatureState:
                 self._remove(seat, added)
                 self.visible[tile34] += 1
                 self.melds[seat][meld_index] = tiles
+                self.meld_kinds[seat][meld_index] = "kakan"
+                self.pending_pass = (seat, tile34, frozenset(self.riichi - {seat}))
                 # 搶槓の応答時点では新ドラはまだ見えない。projected eventに
                 # 指示牌が同居していても、公開解決を通過するまで特徴へ入れない。
                 if "revealedDoraIndicator" in event:
                     self.pending_kakan_dora = int(event["revealedDoraIndicator"]["tile34"])
+            elif kind == "response_resolution" and event.get("resolution", {}).get("kind") == "pass":
+                self._commit_pass()
             elif kind == "chankan_resolution" and event.get("resolution", {}).get("kind") == "pass":
+                self._commit_pass()
                 if self.pending_kakan_dora is not None:
                     self.dora_indicators.append(self.pending_kakan_dora)
                     self.visible[self.pending_kakan_dora] += 1
                     self.pending_kakan_dora = None
+
+    def _commit_pass(self) -> None:
+        if self.pending_pass is None:
+            return
+        _, tile34, riichi_seats = self.pending_pass
+        for seat in riichi_seats:
+            self.passed_after_riichi[seat].add(tile34)
+        self.pending_pass = None
+
+    def safe_tiles(self, riichi_seat: int) -> frozenset[int]:
+        """リーチ者に対する安全牌集合G_r：本人の河の全牌とリーチ後に見逃された牌。"""
+
+        river = {int(tile["tile34"]) for tile in self.rivers[riichi_seat]}
+        return frozenset(river | self.passed_after_riichi[riichi_seat])
 
     def _add_dora(self, event: Mapping[str, Any]) -> None:
         if "revealedDoraIndicator" in event:
@@ -613,9 +686,20 @@ class RoundFeatureState:
             current = best_by_kind.get(key)
             if current is None or value < current[0]:
                 best_by_kind[key] = (value, metric)
+        details = [
+            self._detail_values(seat, action, context, metric) for action, metric in zip(actions, metrics)
+        ]
+        # 種別headへ渡す集約：安全に打てる候補があるか、種別内の全候補で役の手掛かりがないか。
+        min_danger: dict[str, float] = {}
+        min_no_cue: dict[str, float] = {}
+        for action, detail in zip(actions, details):
+            key = str(action["kind"])
+            min_danger[key] = min(min_danger.get(key, 1.0e9), detail["danger_max_rate"])
+            min_no_cue[key] = min(min_no_cue.get(key, 1.0), detail["open_no_listed_yaku_cue"])
         encoded = []
-        for action, metric in zip(actions, metrics):
-            best = best_by_kind[str(action["kind"])][1]
+        for action, metric, detail_values in zip(actions, metrics, details):
+            key = str(action["kind"])
+            best = best_by_kind[key][1]
             kind_values = {
                 **context,
                 "best_action_shanten": best["action_shanten"],
@@ -623,8 +707,9 @@ class RoundFeatureState:
                 "best_ukeire_count": best["ukeire_count"],
                 "best_ukeire_kinds": best["ukeire_kinds"],
                 "best_ukeire_applicable": best["ukeire_applicable"],
+                "min_danger_max_rate": min_danger[key],
+                "min_open_no_listed_yaku_cue": min_no_cue[key],
             }
-            detail_values = self._detail_values(seat, action, context, metric)
             encoded.append(
                 EncodedCandidate(
                     dict(action),
@@ -655,12 +740,23 @@ class RoundFeatureState:
         projected_counts = Counter(
             {index: amount for index, amount in enumerate(projected["counts34"]) if amount}
         )
+        melds = tuple(
+            MeldView(meld_kind, tuple(sorted(int(tile["tile34"]) for tile in tiles)))
+            for meld_kind, tiles in zip(self.meld_kinds[seat], self.melds[seat])
+        )
+        yaku = yaku_shape_features(
+            projected["counts34"],
+            melds_after_action(melds, action, called_tile34),
+            27 + (seat - int(self.initial["dealerSeat"])) % 4,
+            27 + int(self.initial["kyoku"]) // 4,
+        )
         return {
             "action_shanten": float(projected["shanten"]) / 6.0,
             "local_acceptance": self._local_acceptance(projected_counts),
             "ukeire_count": float(projected["ukeireCount"]) / 136.0,
             "ukeire_kinds": float(projected["ukeireKinds"]) / 34.0,
             "ukeire_applicable": float(projected["applicable"]),
+            **yaku,
         }
 
     def _local_acceptance(self, counts: Counter[int]) -> float:
@@ -692,17 +788,17 @@ class RoundFeatureState:
         consumed = action.get("consumed") or []
         red_ratio = sum(bool(tile["isRed"]) for tile in consumed) / max(1, len(consumed))
         dora_tiles = {_dora_from_indicator(value) for value in self.dora_indicators}
-        genbutsu = 0.0
-        if tile34 is not None and self.riichi - {seat}:
-            genbutsu = float(
-                all(
-                    any(
-                        int(item["tile34"]) == tile34
-                        for item in self.rivers[other][self.riichi_river_start.get(other, 0) :]
-                    )
-                    for other in self.riichi - {seat}
-                )
-            )
+        danger_tile = tile34 if action.get("kind") in {"discard", "riichi_discard"} else None
+        dealer = int(self.initial["dealerSeat"])
+        opponents = [
+            RiichiOpponentView(other, other == dealer, self.safe_tiles(other))
+            for other in sorted(self.riichi - {seat})
+        ]
+        # 見えている枚数は、公開済みの牌に行動する家自身の手牌を加えたもの。
+        seen = [self.visible[index] for index in range(34)]
+        for tile in self.hands[seat]:
+            seen[int(tile["tile34"])] += 1
+        danger = danger_features(danger_tile, opponents, seen)
         honor = float(tile34 is not None and tile34 >= 27)
         terminal = float(tile34 is not None and tile34 < 27 and tile34 % 9 in {0, 8})
         simple = float(tile34 is not None and tile34 < 27 and tile34 % 9 not in {0, 8})
@@ -720,11 +816,12 @@ class RoundFeatureState:
             "terminal": terminal,
             "simple": simple,
             "consumed_red_ratio": red_ratio,
-            "genbutsu": genbutsu,
             "turn_x_shanten": context["turn"] * float(metric["action_shanten"]),
-            "riichi_x_genbutsu": context["opponent_riichi_count"] * genbutsu,
             "late_x_dora": context["turn"] * float(tile34 in dora_tiles if tile34 is not None else False),
+            **danger,
+            "riichi_x_genbutsu_all": context["opponent_riichi_count"] * danger["genbutsu_all"],
         }
+        values.update({name: float(metric[name]) for name in YAKU_SHAPE_DETAIL_NAMES})
         values.update({f"tile34_{index}": float(tile34 == index) for index in range(34)})
         return values
 
@@ -833,6 +930,8 @@ def _feature_code_hash() -> str:
             "adapterHelpers": inspect.getsource(_tile34) + inspect.getsource(_dora_from_indicator),
             "kindFeatureNames": KIND_FEATURE_NAMES,
             "detailFeatureNames": DETAIL_FEATURE_NAMES,
+            # 危険率の表は別モジュールにあるため、値そのものを依存hashへ含める。
+            "dangerRates": DANGER_RATES,
         }
     )
 
@@ -970,6 +1069,7 @@ def _base_feature_manifest(dataset_dir: Path, maximum_windows: int | None, windo
         "status": "building",
         "featureSchemaVersion": FEATURE_SCHEMA,
         "calculationVersion": CALCULATION_VERSION,
+        "implementedGroups": list(IMPLEMENTED_FEATURE_GROUPS),
         "datasetManifestHash": _dataset_hash(dataset_dir),
         "codeDependencyHash": _feature_code_hash(),
         "labelDefinitionVersion": LABEL_DEFINITION_VERSION,

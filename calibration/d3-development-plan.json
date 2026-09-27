@@ -2,7 +2,7 @@
   "schemaVersion": "ev-policy-d3-development-plan/v1",
   "createdDate": "2026-09-07",
   "status": "D3_2b_in_progress_D3_3_held",
-  "implementationStatus": "D3_2b_step1_complete_step2_next",
+  "implementationStatus": "D3_2b_step2_complete_step3_next",
   "eligibleForAdoption": false,
   "designPath": "PHASE_D3_DESIGN.md",
   "reservationPath": "future-evaluation-reservation.json",
@@ -366,6 +366,25 @@
         },
         "evidencePath": "probes/win-legality-d32b",
         "acceptance": "D32B-01 pass"
+      },
+      "step2": {
+        "status": "complete",
+        "implementedGroups": [
+          "exact_candidate_ukeire",
+          "danger_multi_riichi_v3",
+          "yaku_shape_cues_v1"
+        ],
+        "acceptance": "D32B-02..05 pass",
+        "probe": {
+          "path": "probes/opponent-features-v3/probe.json",
+          "windows": 20000,
+          "coldSeconds": 227.1,
+          "warmSeconds": 201.4,
+          "persistentReadSeconds": 6.99,
+          "warmPeakWorkingSetBytes": 1802432512,
+          "projectedFullBuildSecondsNotAGate": 23677.0,
+          "status": "pass"
+        }
       }
     },
     {

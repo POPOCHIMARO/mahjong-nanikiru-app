@@ -1,0 +1,55 @@
+{
+  "budgetGate": {
+    "fullBuildRequiresActualMeasurement": true,
+    "withinBudget": true
+  },
+  "cold": {
+    "candidates": 139356,
+    "peakWorkingSetBytes": 984494080,
+    "phaseSeconds": {
+      "chankan_response": 0.7448737001977861,
+      "discard_response": 54.917902100249194,
+      "self_action_after_call": 3.3761140002170578,
+      "self_action_after_live": 166.1719287992455,
+      "self_action_after_rinshan": 1.8886394000728615
+    },
+    "seconds": 227.10105210001348,
+    "windows": 20000
+  },
+  "persistentRead": {
+    "bytes": 8802536,
+    "candidates": 139356,
+    "firstWindowId": "mleague:2018-19:L001_S001_0001_01A:0:0:e4:self_action_after_live",
+    "lastWindowId": "mleague:2022-23:L001_S015_0008_02A:11:0:e90:self_action_after_live",
+    "path": "debug-features.jsonl.gz",
+    "seconds": 6.994365199992899,
+    "sha256": "6f2b918992a5ed25967425e3f9050cb61a018c4b502afa7548b552d682662f56",
+    "windows": 20000
+  },
+  "projection": {
+    "datasetWindows": 2085155,
+    "fullBuildProjectionIsGate": false,
+    "fullBuildSecondsFromColdMean": 23677.04471458018
+  },
+  "runtimeEnvironment": {
+    "numpyVersion": "2.3.5",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 186 Stepping 2, GenuineIntel",
+    "pythonVersion": "3.12.14"
+  },
+  "schemaVersion": "ev-policy-opponent-feature-probe/v1",
+  "status": "pass",
+  "warm": {
+    "candidates": 139356,
+    "peakWorkingSetBytes": 1802432512,
+    "phaseSeconds": {
+      "chankan_response": 0.5439083995297551,
+      "discard_response": 55.67068010213552,
+      "self_action_after_call": 2.032317799923476,
+      "self_action_after_live": 141.6681241983315,
+      "self_action_after_rinshan": 1.4772199000581168
+    },
+    "seconds": 201.39595119998557,
+    "windows": 20000
+  }
+}

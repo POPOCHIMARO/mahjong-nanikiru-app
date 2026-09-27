@@ -15,6 +15,9 @@ calibration/dataset-opponent-v3/.*.tmp
 calibration/features-opponent-v2/*.jsonl.gz
 calibration/features-opponent-v2/*.tmp
 calibration/probes/opponent-features-v2/debug-features.jsonl.gz
+calibration/features-opponent-v3/*.jsonl.gz
+calibration/features-opponent-v3/*.tmp
+calibration/probes/opponent-features-v3/debug-features.jsonl.gz
 calibration/.dependency-cache/
 
 # Pythonの実行時キャッシュ
