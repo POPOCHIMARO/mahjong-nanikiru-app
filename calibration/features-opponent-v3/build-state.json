@@ -1,0 +1,2015 @@
+{
+  "calculationVersion": "exact-candidate-ukeire/v1",
+  "codeDependencyHash": "141e1be36e2665fe4ae5996e1777362776db6fffcb9782025cbb525f3505ae7a",
+  "countsBySplit": {
+    "calibration": 279665,
+    "developmentConfirmation": 367309,
+    "selection": 281522,
+    "train": 1156659
+  },
+  "datasetManifestHash": "e6ccde7d8f00534827d207f1f92643ae5cdc4a3875d97752d815c7cc02ba62e7",
+  "detailFeatureNames": [
+    "bias",
+    "action_shanten",
+    "local_acceptance",
+    "ukeire_count",
+    "ukeire_kinds",
+    "ukeire_applicable",
+    "is_red",
+    "is_dora",
+    "origin_drawn",
+    "honor",
+    "terminal",
+    "simple",
+    "consumed_red_ratio",
+    "turn_x_shanten",
+    "late_x_dora",
+    "danger_applicable",
+    "danger_max_rate",
+    "danger_sum_rate",
+    "danger_dealer_rate",
+    "genbutsu_all",
+    "genbutsu_any",
+    "danger_group_safe",
+    "danger_group_semi_safe",
+    "danger_group_guarded",
+    "danger_group_moderate_risk",
+    "danger_group_high_risk",
+    "riichi_x_genbutsu_all",
+    "menzen_after",
+    "yakuhai_secured",
+    "yakuhai_pairs",
+    "tanyao_path",
+    "tanyao_distance",
+    "flush_path",
+    "flush_distance",
+    "toitoi_blocks",
+    "toitoi_path",
+    "pair_count",
+    "chiitoi_applicable",
+    "chiitoi_shanten",
+    "open_no_listed_yaku_cue",
+    "tile34_0",
+    "tile34_1",
+    "tile34_2",
+    "tile34_3",
+    "tile34_4",
+    "tile34_5",
+    "tile34_6",
+    "tile34_7",
+    "tile34_8",
+    "tile34_9",
+    "tile34_10",
+    "tile34_11",
+    "tile34_12",
+    "tile34_13",
+    "tile34_14",
+    "tile34_15",
+    "tile34_16",
+    "tile34_17",
+    "tile34_18",
+    "tile34_19",
+    "tile34_20",
+    "tile34_21",
+    "tile34_22",
+    "tile34_23",
+    "tile34_24",
+    "tile34_25",
+    "tile34_26",
+    "tile34_27",
+    "tile34_28",
+    "tile34_29",
+    "tile34_30",
+    "tile34_31",
+    "tile34_32",
+    "tile34_33"
+  ],
+  "elapsedSeconds": 10573.3071948,
+  "featureSchemaVersion": "ev-policy-opponent-features/v3",
+  "implementedGroups": [
+    "exact_candidate_ukeire",
+    "danger_multi_riichi_v3",
+    "yaku_shape_cues_v1"
+  ],
+  "kindFeatureNames": [
+    "bias",
+    "turn",
+    "wall_remaining",
+    "dealer",
+    "score_delta",
+    "leader_delta",
+    "honba",
+    "riichi_sticks",
+    "kyoku",
+    "fixed_melds",
+    "own_riichi",
+    "opponent_riichi_count",
+    "hand_shanten",
+    "dora_count",
+    "honor_ratio",
+    "terminal_honor_ratio",
+    "suit_concentration",
+    "best_action_shanten",
+    "best_local_acceptance",
+    "best_ukeire_count",
+    "best_ukeire_kinds",
+    "best_ukeire_applicable",
+    "min_danger_max_rate",
+    "min_open_no_listed_yaku_cue"
+  ],
+  "labelDefinitionVersion": "joint-public-resolution-v1",
+  "maximumWindows": null,
+  "maximumWindowsPerShard": 10000,
+  "normalization": {
+    "shanten": 6.0,
+    "ukeireCount": 136.0,
+    "ukeireKinds": 34.0
+  },
+  "schemaVersion": "ev-policy-opponent-feature-cache/v3",
+  "shards": [
+    {
+      "bytes": 3834942,
+      "candidates": 70088,
+      "firstWindowId": "mleague:2018-19:L001_S001_0001_01A:0:0:e0:self_action_after_live",
+      "lastWindowId": "mleague:2018-19:L001_S001_0005_02A:5:0:e91:discard_response",
+      "path": "features-00000.jsonl.gz",
+      "sha256": "38398e5d69e803d301e49ce5474852f7af85b68384c8ec7de352329a1f49bac6",
+      "windows": 10000
+    },
+    {
+      "bytes": 3851133,
+      "candidates": 70599,
+      "firstWindowId": "mleague:2018-19:L001_S001_0005_02A:5:0:e92:self_action_after_live",
+      "lastWindowId": "mleague:2018-19:L001_S001_0009_02A:13:0:e8:self_action_after_live",
+      "path": "features-00001.jsonl.gz",
+      "sha256": "2adee3b11161169245795988ebfae71a674b54715332d5d879ec1ec595409aa0",
+      "windows": 10000
+    },
+    {
+      "bytes": 3829770,
+      "candidates": 70397,
+      "firstWindowId": "mleague:2018-19:L001_S001_0009_02A:13:0:e9:discard_response",
+      "lastWindowId": "mleague:2018-19:L001_S001_0014_02A:2:0:e28:self_action_after_live",
+      "path": "features-00002.jsonl.gz",
+      "sha256": "da4a3b94c3be4d8632a6357566e815352d75b9fe3c9c7e890c2cab3a86e7ea44",
+      "windows": 10000
+    },
+    {
+      "bytes": 3818935,
+      "candidates": 69209,
+      "firstWindowId": "mleague:2018-19:L001_S001_0014_02A:2:0:e29:discard_response",
+      "lastWindowId": "mleague:2018-19:L001_S001_0019_02A:0:0:e22:self_action_after_live",
+      "path": "features-00003.jsonl.gz",
+      "sha256": "0fee441f7fd769d4876a4778565decf953328a4e12c21978e8474d8f7273756f",
+      "windows": 10000
+    },
+    {
+      "bytes": 3815269,
+      "candidates": 69799,
+      "firstWindowId": "mleague:2018-19:L001_S001_0019_02A:0:0:e23:discard_response",
+      "lastWindowId": "mleague:2018-19:L001_S001_0024_01A:8:0:e29:discard_response",
+      "path": "features-00004.jsonl.gz",
+      "sha256": "acdac16329624ed866d51790ecfc302c0af35df0a5275adb2d393cc390d5349f",
+      "windows": 10000
+    },
+    {
+      "bytes": 3811017,
+      "candidates": 69811,
+      "firstWindowId": "mleague:2018-19:L001_S001_0024_01A:8:0:e30:self_action_after_live",
+      "lastWindowId": "mleague:2018-19:L001_S001_0028_02A:11:0:e29:discard_response",
+      "path": "features-00005.jsonl.gz",
+      "sha256": "ccbee4568de59bc87be29253ca4ed2dfccd1f0134a58b0abb053c655706da357",
+      "windows": 10000
+    },
+    {
+      "bytes": 3824930,
+      "candidates": 69596,
+      "firstWindowId": "mleague:2018-19:L001_S001_0028_02A:11:0:e30:self_action_after_live",
+      "lastWindowId": "mleague:2018-19:L001_S001_0034_02A:0:0:e109:discard_response",
+      "path": "features-00006.jsonl.gz",
+      "sha256": "2163b7d13d0a42729e7ff0f1b34bda549939e5c6bccf2024b1a7939b195b4e7d",
+      "windows": 10000
+    },
+    {
+      "bytes": 3826418,
+      "candidates": 70000,
+      "firstWindowId": "mleague:2018-19:L001_S001_0034_02A:0:0:e110:self_action_after_live",
+      "lastWindowId": "mleague:2018-19:L001_S001_0039_01A:2:0:e84:self_action_after_live",
+      "path": "features-00007.jsonl.gz",
+      "sha256": "2359ac5fbb7bf793d2403aeb0380d317e7efb710dd6ca5e699ccb662a2f8d78b",
+      "windows": 10000
+    },
+    {
+      "bytes": 3823046,
+      "candidates": 70136,
+      "firstWindowId": "mleague:2018-19:L001_S001_0039_01A:2:0:e85:discard_response",
+      "lastWindowId": "mleague:2018-19:L001_S001_0043_01A:7:0:e132:self_action_after_live",
+      "path": "features-00008.jsonl.gz",
+      "sha256": "49625f459d0424dc85813be0cc1d94bd4cc4cccaa042251ebf3993736831adf8",
+      "windows": 10000
+    },
+    {
+      "bytes": 3831558,
+      "candidates": 70138,
+      "firstWindowId": "mleague:2018-19:L001_S001_0043_01A:7:0:e133:discard_response",
+      "lastWindowId": "mleague:2018-19:L001_S001_0048_01A:5:0:e65:discard_response",
+      "path": "features-00009.jsonl.gz",
+      "sha256": "71a7af08dc1d54afcc0960cf4cce0cd08e76f646e7d85ea05ac6668e6aa7be63",
+      "windows": 10000
+    },
+    {
+      "bytes": 3833609,
+      "candidates": 69949,
+      "firstWindowId": "mleague:2018-19:L001_S001_0048_01A:5:0:e66:self_action_after_call",
+      "lastWindowId": "mleague:2018-19:L001_S001_0052_01A:5:0:e6:self_action_after_live",
+      "path": "features-00010.jsonl.gz",
+      "sha256": "30f316c68021a3832349ffc1489c306910991db472686def50fa55d0d209c13a",
+      "windows": 10000
+    },
+    {
+      "bytes": 3819891,
+      "candidates": 69876,
+      "firstWindowId": "mleague:2018-19:L001_S001_0052_01A:5:0:e7:discard_response",
+      "lastWindowId": "mleague:2018-19:L001_S001_0056_02A:4:0:e108:self_action_after_live",
+      "path": "features-00011.jsonl.gz",
+      "sha256": "eb2e8c5418e8dddbe647bfde9570e8b2a449eef21fe8826c43dd73723258da2b",
+      "windows": 10000
+    },
+    {
+      "bytes": 3829265,
+      "candidates": 70952,
+      "firstWindowId": "mleague:2018-19:L001_S001_0056_02A:4:0:e109:discard_response",
+      "lastWindowId": "mleague:2018-19:L001_S001_0060_02A:11:0:e19:discard_response",
+      "path": "features-00012.jsonl.gz",
+      "sha256": "140b0dfd68b8581877a4134c715d69db430c9b80f5fd0d966826d75f7bc6398a",
+      "windows": 10000
+    },
+    {
+      "bytes": 3832103,
+      "candidates": 69637,
+      "firstWindowId": "mleague:2018-19:L001_S001_0060_02A:11:0:e20:self_action_after_live",
+      "lastWindowId": "mleague:2018-19:L001_S001_0065_02A:3:0:e71:discard_response",
+      "path": "features-00013.jsonl.gz",
+      "sha256": "5be5faf0d032431198e6b73c913a0c5b73024015843fe5c410b2d0b5084a905f",
+      "windows": 10000
+    },
+    {
+      "bytes": 3825637,
+      "candidates": 69570,
+      "firstWindowId": "mleague:2018-19:L001_S001_0065_02A:3:0:e72:self_action_after_live",
+      "lastWindowId": "mleague:2018-19:L001_S001_0069_02A:9:0:e92:self_action_after_live",
+      "path": "features-00014.jsonl.gz",
+      "sha256": "4079ad18ca370829bd6f52b9890e527eced132040088988a0687f470d203d3d8",
+      "windows": 10000
+    },
+    {
+      "bytes": 3830761,
+      "candidates": 70259,
+      "firstWindowId": "mleague:2018-19:L001_S001_0069_02A:9:0:e93:discard_response",
+      "lastWindowId": "mleague:2018-19:L001_S002_0003_02A:7:0:e35:discard_response",
+      "path": "features-00015.jsonl.gz",
+      "sha256": "7394dfce42905efbe58724f94a9feb71754edd10a496628b20a67c6293a265c7",
+      "windows": 10000
+    },
+    {
+      "bytes": 3825239,
+      "candidates": 70434,
+      "firstWindowId": "mleague:2018-19:L001_S002_0003_02A:7:0:e36:self_action_after_live",
+      "lastWindowId": "mleague:2018-19:L001_S002_0006_01A:10:0:e87:discard_response",
+      "path": "features-00016.jsonl.gz",
+      "sha256": "1aa7a02453467c16c8e7917c8f661053591e18b3ebfa2fbcacde0ed1706960ea",
+      "windows": 10000
+    },
+    {
+      "bytes": 3819783,
+      "candidates": 69970,
+      "firstWindowId": "mleague:2018-19:L001_S002_0006_01A:10:0:e88:self_action_after_live",
+      "lastWindowId": "mleague:2018-19:L001_S002_0008_03A:7:0:e55:discard_response",
+      "path": "features-00017.jsonl.gz",
+      "sha256": "65ba73e5b1464511b88f368c71d7af096fe6596e4dfdbd07eb8c2efcf804030c",
+      "windows": 10000
+    },
+    {
+      "bytes": 3845041,
+      "candidates": 71096,
+      "firstWindowId": "mleague:2018-19:L001_S002_0008_03A:7:0:e56:self_action_after_live",
+      "lastWindowId": "mleague:2019-20:L001_S003_0005_02A:10:0:e139:discard_response",
+      "path": "features-00018.jsonl.gz",
+      "sha256": "d7872718248dbe024bc9d28b3e678e5e8ed2a51bea3206630952ecd6c871c75b",
+      "windows": 10000
+    },
+    {
+      "bytes": 3837588,
+      "candidates": 70450,
+      "firstWindowId": "mleague:2019-20:L001_S003_0005_02A:11:0:e0:self_action_after_live",
+      "lastWindowId": "mleague:2019-20:L001_S003_0010_02A:3:0:e43:discard_response",
+      "path": "features-00019.jsonl.gz",
+      "sha256": "239fa6fd8a1672e255caaee329eb4cc227eabbb4955a3c45889de3fd96ba7602",
+      "windows": 10000
+    },
+    {
+      "bytes": 3837916,
+      "candidates": 70502,
+      "firstWindowId": "mleague:2019-20:L001_S003_0010_02A:3:0:e44:self_action_after_live",
+      "lastWindowId": "mleague:2019-20:L001_S003_0015_01A:1:0:e113:discard_response",
+      "path": "features-00020.jsonl.gz",
+      "sha256": "891eb8f4ee3b4349ad95e6e6e96aa9f15cd85994bd74d8123c68247df28099b7",
+      "windows": 10000
+    },
+    {
+      "bytes": 3828552,
+      "candidates": 70082,
+      "firstWindowId": "mleague:2019-20:L001_S003_0015_01A:1:0:e114:self_action_after_live",
+      "lastWindowId": "mleague:2019-20:L001_S003_0019_02A:6:0:e94:self_action_after_live",
+      "path": "features-00021.jsonl.gz",
+      "sha256": "5638679ea1a844cf5536b425c89dbb5c76cc8c23b86efeff15b753adbd613c30",
+      "windows": 10000
+    },
+    {
+      "bytes": 3843160,
+      "candidates": 70390,
+      "firstWindowId": "mleague:2019-20:L001_S003_0019_02A:6:0:e95:discard_response",
+      "lastWindowId": "mleague:2019-20:L001_S003_0024_01A:15:0:e94:self_action_after_live",
+      "path": "features-00022.jsonl.gz",
+      "sha256": "1e9b035ed78bd5ff29bca1383b71472535bbc818492830003ae5b1c91833642c",
+      "windows": 10000
+    },
+    {
+      "bytes": 3822759,
+      "candidates": 69534,
+      "firstWindowId": "mleague:2019-20:L001_S003_0024_01A:15:0:e95:discard_response",
+      "lastWindowId": "mleague:2019-20:L001_S003_0029_01A:9:0:e31:discard_response",
+      "path": "features-00023.jsonl.gz",
+      "sha256": "92bf370a10c9fcbd3ee0ef70846d8bb3c2cd875945c89618e9ee8082f81564d7",
+      "windows": 10000
+    },
+    {
+      "bytes": 3830316,
+      "candidates": 70195,
+      "firstWindowId": "mleague:2019-20:L001_S003_0029_01A:9:0:e32:self_action_after_live",
+      "lastWindowId": "mleague:2019-20:L001_S003_0033_01A:8:0:e1:discard_response",
+      "path": "features-00024.jsonl.gz",
+      "sha256": "23b44de5d58a09914bfe6cc12c43d47f896c083607a139cb3460931a3a9079ba",
+      "windows": 10000
+    },
+    {
+      "bytes": 3843615,
+      "candidates": 70598,
+      "firstWindowId": "mleague:2019-20:L001_S003_0033_01A:8:0:e2:self_action_after_live",
+      "lastWindowId": "mleague:2019-20:L001_S003_0036_02A:7:0:e37:discard_response",
+      "path": "features-00025.jsonl.gz",
+      "sha256": "96ece5b19dfcc09c133f666adaf10e8ea8aade2241793cefb59de840649f4e1d",
+      "windows": 10000
+    },
+    {
+      "bytes": 3802817,
+      "candidates": 69347,
+      "firstWindowId": "mleague:2019-20:L001_S003_0036_02A:7:0:e38:self_action_after_live",
+      "lastWindowId": "mleague:2019-20:L001_S003_0040_02A:5:0:e71:discard_response",
+      "path": "features-00026.jsonl.gz",
+      "sha256": "30a8360d945d5ceab5edc096f5f27a30a70d0fcc83d1b4ee13b850b1a715a520",
+      "windows": 10000
+    },
+    {
+      "bytes": 3826661,
+      "candidates": 70230,
+      "firstWindowId": "mleague:2019-20:L001_S003_0040_02A:5:0:e72:self_action_after_live",
+      "lastWindowId": "mleague:2019-20:L001_S003_0045_01A:2:0:e18:self_action_after_live",
+      "path": "features-00027.jsonl.gz",
+      "sha256": "ef3a05fcac9dd167391ef7948563a0427cbe706beafe29db04e9b8c8fcb52be5",
+      "windows": 10000
+    },
+    {
+      "bytes": 3827766,
+      "candidates": 70364,
+      "firstWindowId": "mleague:2019-20:L001_S003_0045_01A:2:0:e19:discard_response",
+      "lastWindowId": "mleague:2019-20:L001_S003_0049_01A:3:0:e56:self_action_after_live",
+      "path": "features-00028.jsonl.gz",
+      "sha256": "eb70de25a1bf9bf548ccc79a9f28616d874eb55af69465042ec3289c7bd001a7",
+      "windows": 10000
+    },
+    {
+      "bytes": 3841830,
+      "candidates": 69946,
+      "firstWindowId": "mleague:2019-20:L001_S003_0049_01A:3:0:e57:discard_response",
+      "lastWindowId": "mleague:2019-20:L001_S003_0054_01A:10:0:e71:discard_response",
+      "path": "features-00029.jsonl.gz",
+      "sha256": "adfaf063d8c7c7e27295146c01f26218f2246c6cfad34ec8f083ff9358aa32cd",
+      "windows": 10000
+    },
+    {
+      "bytes": 3839771,
+      "candidates": 70558,
+      "firstWindowId": "mleague:2019-20:L001_S003_0054_01A:10:0:e72:self_action_after_live",
+      "lastWindowId": "mleague:2019-20:L001_S003_0058_02A:2:0:e78:self_action_after_live",
+      "path": "features-00030.jsonl.gz",
+      "sha256": "bac56d6fd1ded0c46893db5f132e2216bb587f6b4c336248ad88d3579f186c45",
+      "windows": 10000
+    },
+    {
+      "bytes": 3842690,
+      "candidates": 70673,
+      "firstWindowId": "mleague:2019-20:L001_S003_0058_02A:2:0:e79:discard_response",
+      "lastWindowId": "mleague:2019-20:L001_S003_0063_01A:6:0:e72:self_action_after_live",
+      "path": "features-00031.jsonl.gz",
+      "sha256": "96c3458fb9a3d2bc334ddd0b4bf1aa48d7a40c4800de5eeebdf94f53873f3357",
+      "windows": 10000
+    },
+    {
+      "bytes": 3828697,
+      "candidates": 69794,
+      "firstWindowId": "mleague:2019-20:L001_S003_0063_01A:6:0:e73:discard_response",
+      "lastWindowId": "mleague:2019-20:L001_S003_0068_01A:11:0:e30:self_action_after_live",
+      "path": "features-00032.jsonl.gz",
+      "sha256": "7c170ef48c8ed343f88828df70e3b792d97f5854a0ca1b527e684e1e2ca1a460",
+      "windows": 10000
+    },
+    {
+      "bytes": 3800088,
+      "candidates": 68841,
+      "firstWindowId": "mleague:2019-20:L001_S003_0068_01A:11:0:e31:discard_response",
+      "lastWindowId": "mleague:2019-20:L001_S003_0073_01A:2:0:e31:discard_response",
+      "path": "features-00033.jsonl.gz",
+      "sha256": "93f10e5bc979e21c78e50e7287e3821a0f0cdd8850ef26df9c77b446314d1c05",
+      "windows": 10000
+    },
+    {
+      "bytes": 3828307,
+      "candidates": 69810,
+      "firstWindowId": "mleague:2019-20:L001_S003_0073_01A:2:0:e32:self_action_after_live",
+      "lastWindowId": "mleague:2019-20:L001_S003_0077_02A:7:0:e8:self_action_after_live",
+      "path": "features-00034.jsonl.gz",
+      "sha256": "99725e118c89acd691eb786bc02f7c47fa2770df2d5b3fdeba1ae47d4300804d",
+      "windows": 10000
+    },
+    {
+      "bytes": 3849737,
+      "candidates": 71264,
+      "firstWindowId": "mleague:2019-20:L001_S003_0077_02A:7:0:e9:discard_response",
+      "lastWindowId": "mleague:2019-20:L001_S003_0081_02A:9:0:e19:discard_response",
+      "path": "features-00035.jsonl.gz",
+      "sha256": "648c4b08f1819f626f929258b596877d5c2200ee72fc23d78db4d5d3e4b998a5",
+      "windows": 10000
+    },
+    {
+      "bytes": 3840108,
+      "candidates": 71079,
+      "firstWindowId": "mleague:2019-20:L001_S003_0081_02A:9:0:e20:self_action_after_call",
+      "lastWindowId": "mleague:2019-20:L001_S003_0086_02A:3:0:e109:discard_response",
+      "path": "features-00036.jsonl.gz",
+      "sha256": "c85783970e16bf9ca3d58ca8f23d8384d097cf3fa1ae03f0815d2da5731fa097",
+      "windows": 10000
+    },
+    {
+      "bytes": 3838756,
+      "candidates": 70383,
+      "firstWindowId": "mleague:2019-20:L001_S003_0086_02A:3:0:e110:self_action_after_live",
+      "lastWindowId": "mleague:2019-20:L001_S004_0006_01A:7:0:e36:self_action_after_live",
+      "path": "features-00037.jsonl.gz",
+      "sha256": "1f1ca200c7f5cea1ef515b7cbd7551cdd37089f039dc608c021c194a3a00ad80",
+      "windows": 10000
+    },
+    {
+      "bytes": 3828768,
+      "candidates": 70553,
+      "firstWindowId": "mleague:2019-20:L001_S004_0006_01A:7:0:e37:discard_response",
+      "lastWindowId": "mleague:2019-20:L001_S004_0005_02A:0:0:e7:discard_response",
+      "path": "features-00038.jsonl.gz",
+      "sha256": "5ce98c21fc942a50e1a0a851db4a57384535fb5767a7c52f3bae9d5e7f9ebcf1",
+      "windows": 10000
+    },
+    {
+      "bytes": 3824743,
+      "candidates": 69923,
+      "firstWindowId": "mleague:2019-20:L001_S004_0005_02A:0:0:e8:self_action_after_live",
+      "lastWindowId": "mleague:2019-20:L001_S004_0010_02A:7:0:e16:self_action_after_live",
+      "path": "features-00039.jsonl.gz",
+      "sha256": "88f300830a976ff22fd46545a9667987b6d31c03aeb7197a98431ca2c0cef5e9",
+      "windows": 10000
+    },
+    {
+      "bytes": 3814192,
+      "candidates": 69602,
+      "firstWindowId": "mleague:2019-20:L001_S004_0010_02A:7:0:e17:discard_response",
+      "lastWindowId": "mleague:2019-20:L001_S005_0003_01A:5:0:e128:self_action_after_live",
+      "path": "features-00040.jsonl.gz",
+      "sha256": "4b969b93b3d2b5feedf3ee58ac1596bdd3347543d61fda0b08aca4114d4ba14e",
+      "windows": 10000
+    },
+    {
+      "bytes": 3839944,
+      "candidates": 70795,
+      "firstWindowId": "mleague:2019-20:L001_S005_0003_01A:5:0:e129:discard_response",
+      "lastWindowId": "mleague:2020-21:L001_S007_0001_02A:4:0:e15:discard_response",
+      "path": "features-00041.jsonl.gz",
+      "sha256": "57e21464fbedf2c2339093312023d597a1d4a570c7b962cd6e8dbe524b8450ce",
+      "windows": 10000
+    },
+    {
+      "bytes": 3821598,
+      "candidates": 69712,
+      "firstWindowId": "mleague:2020-21:L001_S007_0001_02A:4:0:e16:self_action_after_live",
+      "lastWindowId": "mleague:2020-21:L001_S007_0006_01A:5:0:e22:self_action_after_live",
+      "path": "features-00042.jsonl.gz",
+      "sha256": "6eff2cca3a4de4eaa3098e58cb0ed9da27020d674c73bff4e1d99717016394d3",
+      "windows": 10000
+    },
+    {
+      "bytes": 3800926,
+      "candidates": 69187,
+      "firstWindowId": "mleague:2020-21:L001_S007_0006_01A:5:0:e23:discard_response",
+      "lastWindowId": "mleague:2020-21:L001_S007_0010_01A:5:0:e41:discard_response",
+      "path": "features-00043.jsonl.gz",
+      "sha256": "4c7e70acf7af556591ccfdc8f6377293d37211de4a88ac53f0c5bd9d7669eed1",
+      "windows": 10000
+    },
+    {
+      "bytes": 3832286,
+      "candidates": 70058,
+      "firstWindowId": "mleague:2020-21:L001_S007_0010_01A:5:0:e42:self_action_after_live",
+      "lastWindowId": "mleague:2020-21:L001_S007_0015_01A:5:0:e38:self_action_after_live",
+      "path": "features-00044.jsonl.gz",
+      "sha256": "7f85d3ae3e006f4a355d0f9cd948615e60030c2b90153ca8041987c337b6b7e6",
+      "windows": 10000
+    },
+    {
+      "bytes": 3819644,
+      "candidates": 69932,
+      "firstWindowId": "mleague:2020-21:L001_S007_0015_01A:5:0:e39:discard_response",
+      "lastWindowId": "mleague:2020-21:L001_S007_0019_02A:7:0:e13:discard_response",
+      "path": "features-00045.jsonl.gz",
+      "sha256": "233ceaa4173bfcaf6016c261202ccf03f0b8dac9181ba462a3dbfa6bf7f7d604",
+      "windows": 10000
+    },
+    {
+      "bytes": 3815713,
+      "candidates": 69427,
+      "firstWindowId": "mleague:2020-21:L001_S007_0019_02A:7:0:e14:self_action_after_call",
+      "lastWindowId": "mleague:2020-21:L001_S007_0023_02A:19:0:e85:discard_response",
+      "path": "features-00046.jsonl.gz",
+      "sha256": "ee43c452143f7e05c54bbc526c49f81a8e158b820066783cfefe229371b73a6b",
+      "windows": 10000
+    },
+    {
+      "bytes": 3807078,
+      "candidates": 69421,
+      "firstWindowId": "mleague:2020-21:L001_S007_0023_02A:19:0:e86:self_action_after_live",
+      "lastWindowId": "mleague:2020-21:L001_S007_0028_02A:1:0:e5:discard_response",
+      "path": "features-00047.jsonl.gz",
+      "sha256": "5e52ef88dfd380d24c8fd2e684da117daa2fb8bdd465d43ed01cd61a71c70ad5",
+      "windows": 10000
+    },
+    {
+      "bytes": 3824135,
+      "candidates": 69710,
+      "firstWindowId": "mleague:2020-21:L001_S007_0028_02A:1:0:e6:self_action_after_live",
+      "lastWindowId": "mleague:2020-21:L001_S007_0033_02A:2:0:e93:discard_response",
+      "path": "features-00048.jsonl.gz",
+      "sha256": "de398a07858d7bb35b9adbaf78b19a5ed7410550def30e00937768d463be5ddd",
+      "windows": 10000
+    },
+    {
+      "bytes": 3822265,
+      "candidates": 69962,
+      "firstWindowId": "mleague:2020-21:L001_S007_0033_02A:2:0:e94:self_action_after_live",
+      "lastWindowId": "mleague:2020-21:L001_S007_0038_01A:6:0:e26:self_action_after_live",
+      "path": "features-00049.jsonl.gz",
+      "sha256": "0bcde8128bea435a12ea077eb912f5d06ee4d022174723456001d3442c2cc284",
+      "windows": 10000
+    },
+    {
+      "bytes": 3851217,
+      "candidates": 70952,
+      "firstWindowId": "mleague:2020-21:L001_S007_0038_01A:6:0:e27:discard_response",
+      "lastWindowId": "mleague:2020-21:L001_S007_0042_02A:6:0:e100:self_action_after_live",
+      "path": "features-00050.jsonl.gz",
+      "sha256": "ff17666f8c889ba940cf96542752c680dbfd63aea6b694615d9e97dd4b67dd2a",
+      "windows": 10000
+    },
+    {
+      "bytes": 3849271,
+      "candidates": 70584,
+      "firstWindowId": "mleague:2020-21:L001_S007_0042_02A:6:0:e101:discard_response",
+      "lastWindowId": "mleague:2020-21:L001_S007_0047_01A:9:0:e61:discard_response",
+      "path": "features-00051.jsonl.gz",
+      "sha256": "b1154011e170a9fa730bc10ca113e60705618d6688267de76fccd0137338d692",
+      "windows": 10000
+    },
+    {
+      "bytes": 3803376,
+      "candidates": 69582,
+      "firstWindowId": "mleague:2020-21:L001_S007_0047_01A:9:0:e62:self_action_after_live",
+      "lastWindowId": "mleague:2020-21:L001_S007_0052_01A:6:0:e47:discard_response",
+      "path": "features-00052.jsonl.gz",
+      "sha256": "3b909fef4af91bc12c1bf0496fe51271ac3eb3bf7a6bc58d3e4adaf85b64c95c",
+      "windows": 10000
+    },
+    {
+      "bytes": 3853397,
+      "candidates": 70324,
+      "firstWindowId": "mleague:2020-21:L001_S007_0052_01A:6:0:e48:self_action_after_live",
+      "lastWindowId": "mleague:2020-21:L001_S007_0056_01A:19:0:e52:self_action_after_live",
+      "path": "features-00053.jsonl.gz",
+      "sha256": "503709962741c28c0225de5db7f8e197c6861cd73622e0739bf9dbd309ee9781",
+      "windows": 10000
+    },
+    {
+      "bytes": 3815518,
+      "candidates": 70208,
+      "firstWindowId": "mleague:2020-21:L001_S007_0056_01A:19:0:e53:discard_response",
+      "lastWindowId": "mleague:2020-21:L001_S007_0060_02A:7:0:e75:discard_response",
+      "path": "features-00054.jsonl.gz",
+      "sha256": "6b69225136335d4494c324bc7bd1de86c2907869228b8ac5e53aa298f4122028",
+      "windows": 10000
+    },
+    {
+      "bytes": 3825650,
+      "candidates": 69703,
+      "firstWindowId": "mleague:2020-21:L001_S007_0060_02A:7:0:e76:self_action_after_live",
+      "lastWindowId": "mleague:2020-21:L001_S007_0065_02A:2:0:e131:discard_response",
+      "path": "features-00055.jsonl.gz",
+      "sha256": "e3d543d6c51a686399aa6e4a0dcfcfa675db748ac9c97109be5f52047076b249",
+      "windows": 10000
+    },
+    {
+      "bytes": 3827169,
+      "candidates": 69703,
+      "firstWindowId": "mleague:2020-21:L001_S007_0065_02A:2:0:e132:self_action_after_live",
+      "lastWindowId": "mleague:2020-21:L001_S007_0069_02A:5:0:e82:self_action_after_live",
+      "path": "features-00056.jsonl.gz",
+      "sha256": "45df7c204943e87359788b058ac32d110bb7a39fe8e0d81df0894c32270a95ed",
+      "windows": 10000
+    },
+    {
+      "bytes": 3840386,
+      "candidates": 70234,
+      "firstWindowId": "mleague:2020-21:L001_S007_0069_02A:5:0:e83:discard_response",
+      "lastWindowId": "mleague:2020-21:L001_S007_0074_02A:7:0:e10:self_action_after_live",
+      "path": "features-00057.jsonl.gz",
+      "sha256": "785af4f7931b3315d803477a0770fc7defb8738c27775438b2881e64924b7acd",
+      "windows": 10000
+    },
+    {
+      "bytes": 3829495,
+      "candidates": 69771,
+      "firstWindowId": "mleague:2020-21:L001_S007_0074_02A:7:0:e11:discard_response",
+      "lastWindowId": "mleague:2020-21:L001_S007_0079_02A:5:0:e89:discard_response",
+      "path": "features-00058.jsonl.gz",
+      "sha256": "ef2ec94cb3a127b438850e491aa5298083cb93228ad88b17cfd22e26bdd22bc2",
+      "windows": 10000
+    },
+    {
+      "bytes": 3819466,
+      "candidates": 69671,
+      "firstWindowId": "mleague:2020-21:L001_S007_0079_02A:5:0:e90:self_action_after_live",
+      "lastWindowId": "mleague:2020-21:L001_S007_0084_01A:8:0:e44:self_action_after_live",
+      "path": "features-00059.jsonl.gz",
+      "sha256": "26a1135dfa9a96ac152238750794c75058e825e7ad486145bb97b5acaae032a2",
+      "windows": 10000
+    },
+    {
+      "bytes": 3830779,
+      "candidates": 70169,
+      "firstWindowId": "mleague:2020-21:L001_S007_0084_01A:8:0:e45:discard_response",
+      "lastWindowId": "mleague:2020-21:L001_S007_0089_01A:0:0:e82:self_action_after_live",
+      "path": "features-00060.jsonl.gz",
+      "sha256": "4e8eb7639853e32226d5f969b6ce9b8dc46807bb609ea3d21b40249a91fd4524",
+      "windows": 10000
+    },
+    {
+      "bytes": 3832198,
+      "candidates": 69919,
+      "firstWindowId": "mleague:2020-21:L001_S007_0089_01A:0:0:e83:discard_response",
+      "lastWindowId": "mleague:2020-21:L001_S008_0004_01A:2:0:e50:self_action_after_live",
+      "path": "features-00061.jsonl.gz",
+      "sha256": "c1867c52ebbecd4646eb6a428aaf2941ca88d5bf2d29ae0d239df34607f0b578",
+      "windows": 10000
+    },
+    {
+      "bytes": 3839865,
+      "candidates": 70118,
+      "firstWindowId": "mleague:2020-21:L001_S008_0004_01A:2:0:e51:discard_response",
+      "lastWindowId": "mleague:2020-21:L001_S008_0008_01A:3:0:e123:discard_response",
+      "path": "features-00062.jsonl.gz",
+      "sha256": "981df9747a57d47e6dd494ec64d891631de35acba22b6bc44879d657df8ea915",
+      "windows": 10000
+    },
+    {
+      "bytes": 3822441,
+      "candidates": 69738,
+      "firstWindowId": "mleague:2020-21:L001_S008_0008_01A:3:0:e124:self_action_after_live",
+      "lastWindowId": "mleague:2020-21:L001_S008_0012_02A:6:0:e60:self_action_after_live",
+      "path": "features-00063.jsonl.gz",
+      "sha256": "c3049458251bb95442629417d71bbb21f6242a7dbc11e78494d9d9efe862f061",
+      "windows": 10000
+    },
+    {
+      "bytes": 3827180,
+      "candidates": 70025,
+      "firstWindowId": "mleague:2020-21:L001_S008_0012_02A:6:0:e61:discard_response",
+      "lastWindowId": "mleague:2020-21:L001_S009_0006_01A:4:0:e6:self_action_after_live",
+      "path": "features-00064.jsonl.gz",
+      "sha256": "bb0ae64903145ce6d6682458e9497ef0afa68960843a9748d634497f314063dd",
+      "windows": 10000
+    },
+    {
+      "bytes": 3814741,
+      "candidates": 69219,
+      "firstWindowId": "mleague:2020-21:L001_S009_0006_01A:4:0:e7:discard_response",
+      "lastWindowId": "mleague:2021-22:L001_S010_0005_01A:7:0:e52:self_action_after_live",
+      "path": "features-00065.jsonl.gz",
+      "sha256": "9d05655c65b85410e82b588354a9cc4766841cd8559860275a7ec00211fb629a",
+      "windows": 10000
+    },
+    {
+      "bytes": 3821427,
+      "candidates": 69796,
+      "firstWindowId": "mleague:2021-22:L001_S010_0005_01A:7:0:e53:discard_response",
+      "lastWindowId": "mleague:2021-22:L001_S010_0010_01A:0:0:e9:discard_response",
+      "path": "features-00066.jsonl.gz",
+      "sha256": "9bbc6e68570f06b0378462b48db44e0b0af36d4405a060ae836c17f8f224b7c2",
+      "windows": 10000
+    },
+    {
+      "bytes": 3830932,
+      "candidates": 70452,
+      "firstWindowId": "mleague:2021-22:L001_S010_0010_01A:0:0:e10:self_action_after_live",
+      "lastWindowId": "mleague:2021-22:L001_S010_0014_02A:11:0:e47:discard_response",
+      "path": "features-00067.jsonl.gz",
+      "sha256": "718088e5eb705595323da331371fafdd355c344465dabe2c99b1b2ad2b3d5876",
+      "windows": 10000
+    },
+    {
+      "bytes": 3820509,
+      "candidates": 70010,
+      "firstWindowId": "mleague:2021-22:L001_S010_0014_02A:11:0:e48:self_action_after_live",
+      "lastWindowId": "mleague:2021-22:L001_S010_0019_02A:1:0:e15:discard_response",
+      "path": "features-00068.jsonl.gz",
+      "sha256": "8a144d4753cd9e6cb3238a8af61747a6c067753a9736d5b4bfd115ac8f0647fc",
+      "windows": 10000
+    },
+    {
+      "bytes": 3836442,
+      "candidates": 70005,
+      "firstWindowId": "mleague:2021-22:L001_S010_0019_02A:1:0:e16:self_action_after_live",
+      "lastWindowId": "mleague:2021-22:L001_S010_0024_01A:15:0:e20:self_action_after_live",
+      "path": "features-00069.jsonl.gz",
+      "sha256": "99430853e8913f601a35aa3a4f664b1af4d9e97b92b2531b86554182ee557447",
+      "windows": 10000
+    },
+    {
+      "bytes": 3817661,
+      "candidates": 69607,
+      "firstWindowId": "mleague:2021-22:L001_S010_0024_01A:15:0:e21:discard_response",
+      "lastWindowId": "mleague:2021-22:L001_S010_0028_01A:6:0:e68:self_action_after_live",
+      "path": "features-00070.jsonl.gz",
+      "sha256": "a2004bbf07d43783911ea298bd63edce5d90d4387601877676c84a8e9e84d052",
+      "windows": 10000
+    },
+    {
+      "bytes": 3824447,
+      "candidates": 70441,
+      "firstWindowId": "mleague:2021-22:L001_S010_0028_01A:6:0:e69:discard_response",
+      "lastWindowId": "mleague:2021-22:L001_S010_0032_02A:3:0:e72:self_action_after_live",
+      "path": "features-00071.jsonl.gz",
+      "sha256": "0f7b4237d8535110b002628bbd28709043f19c814acb0610d875fa4f5233d561",
+      "windows": 10000
+    },
+    {
+      "bytes": 3811551,
+      "candidates": 69569,
+      "firstWindowId": "mleague:2021-22:L001_S010_0032_02A:3:0:e73:discard_response",
+      "lastWindowId": "mleague:2021-22:L001_S010_0037_01A:5:0:e35:discard_response",
+      "path": "features-00072.jsonl.gz",
+      "sha256": "bee9973db5d73f27d6560f910357329e619606c0444598dfaa91e2803b07d6cb",
+      "windows": 10000
+    },
+    {
+      "bytes": 3819666,
+      "candidates": 69206,
+      "firstWindowId": "mleague:2021-22:L001_S010_0037_01A:5:0:e36:self_action_after_live",
+      "lastWindowId": "mleague:2021-22:L001_S010_0041_02A:4:0:e43:discard_response",
+      "path": "features-00073.jsonl.gz",
+      "sha256": "f545d412ec70420ce7807580e713756ede676af970f7bc9bb0aa4d4284b87c24",
+      "windows": 10000
+    },
+    {
+      "bytes": 3842488,
+      "candidates": 71367,
+      "firstWindowId": "mleague:2021-22:L001_S010_0041_02A:4:0:e44:self_action_after_live",
+      "lastWindowId": "mleague:2021-22:L001_S010_0046_01A:0:0:e2:self_action_after_live",
+      "path": "features-00074.jsonl.gz",
+      "sha256": "dd8edc3473b9b1baa1d608d59894d8aea0886d997f5321180e314dfe6149a1cf",
+      "windows": 10000
+    },
+    {
+      "bytes": 3817689,
+      "candidates": 69763,
+      "firstWindowId": "mleague:2021-22:L001_S010_0046_01A:0:0:e3:discard_response",
+      "lastWindowId": "mleague:2021-22:L001_S010_0050_02A:8:0:e71:discard_response",
+      "path": "features-00075.jsonl.gz",
+      "sha256": "bad2283a1e5b6169a6a1b1f4f527bcac547266a553cc7e283815940220cb1d0d",
+      "windows": 10000
+    },
+    {
+      "bytes": 3816646,
+      "candidates": 70425,
+      "firstWindowId": "mleague:2021-22:L001_S010_0050_02A:8:0:e72:self_action_after_live",
+      "lastWindowId": "mleague:2021-22:L001_S010_0055_01A:6:0:e58:self_action_after_live",
+      "path": "features-00076.jsonl.gz",
+      "sha256": "dedd13944f020a43002e1cebb5fe8cd54d14977f8268bf155ff6d51ea0f09c33",
+      "windows": 10000
+    },
+    {
+      "bytes": 3829131,
+      "candidates": 70659,
+      "firstWindowId": "mleague:2021-22:L001_S010_0055_01A:6:0:e59:discard_response",
+      "lastWindowId": "mleague:2021-22:L001_S010_0059_02A:9:0:e1:discard_response",
+      "path": "features-00077.jsonl.gz",
+      "sha256": "01346e85701f8ee474e9f38a0483a3ddd502503e72201c2b62e4516235c61554",
+      "windows": 10000
+    },
+    {
+      "bytes": 3808077,
+      "candidates": 69632,
+      "firstWindowId": "mleague:2021-22:L001_S010_0059_02A:9:0:e2:self_action_after_live",
+      "lastWindowId": "mleague:2021-22:L001_S010_0063_02A:5:0:e88:self_action_after_live",
+      "path": "features-00078.jsonl.gz",
+      "sha256": "5028e54b8bbafe58f303cc35351bf80225fe3da75c41e45681703eedcc943555",
+      "windows": 10000
+    },
+    {
+      "bytes": 3814208,
+      "candidates": 70043,
+      "firstWindowId": "mleague:2021-22:L001_S010_0063_02A:5:0:e89:discard_response",
+      "lastWindowId": "mleague:2021-22:L001_S010_0068_01A:1:0:e21:discard_response",
+      "path": "features-00079.jsonl.gz",
+      "sha256": "d25730369b6f2978e22639b58833ea24080dadbde9f43fa1d8064ccdeb3cb3d1",
+      "windows": 10000
+    },
+    {
+      "bytes": 3838431,
+      "candidates": 70749,
+      "firstWindowId": "mleague:2021-22:L001_S010_0068_01A:1:0:e22:self_action_after_live",
+      "lastWindowId": "mleague:2021-22:L001_S010_0072_02A:4:0:e119:discard_response",
+      "path": "features-00080.jsonl.gz",
+      "sha256": "f39dc78bfe4eeaf29c89830b0552199f1398adc5cbc4dc951b16e78b82f9caf9",
+      "windows": 10000
+    },
+    {
+      "bytes": 3823225,
+      "candidates": 69507,
+      "firstWindowId": "mleague:2021-22:L001_S010_0072_02A:4:0:e120:self_action_after_live",
+      "lastWindowId": "mleague:2021-22:L001_S010_0076_02A:9:0:e136:self_action_after_live",
+      "path": "features-00081.jsonl.gz",
+      "sha256": "b3cf321dff77017a3956cd24c1f1fc2fe4be34ce85d518f2809c0343ab862233",
+      "windows": 10000
+    },
+    {
+      "bytes": 3840426,
+      "candidates": 70769,
+      "firstWindowId": "mleague:2021-22:L001_S010_0076_02A:9:0:e137:discard_response",
+      "lastWindowId": "mleague:2021-22:L001_S010_0081_01A:8:0:e42:self_action_after_live",
+      "path": "features-00082.jsonl.gz",
+      "sha256": "d766355d70aed6e963c7a1707cc9fbafe43c9ddac26e0c124d69042b072a7dcb",
+      "windows": 10000
+    },
+    {
+      "bytes": 3819304,
+      "candidates": 70014,
+      "firstWindowId": "mleague:2021-22:L001_S010_0081_01A:8:0:e43:discard_response",
+      "lastWindowId": "mleague:2021-22:L001_S010_0085_02A:10:0:e3:discard_response",
+      "path": "features-00083.jsonl.gz",
+      "sha256": "64315672f6a62bd1c2d52c7487980965931a61ef910d696dc30d5f20bf086f23",
+      "windows": 10000
+    },
+    {
+      "bytes": 3835184,
+      "candidates": 70343,
+      "firstWindowId": "mleague:2021-22:L001_S010_0085_02A:10:0:e4:self_action_after_live",
+      "lastWindowId": "mleague:2021-22:L001_S010_0090_02A:6:0:e33:discard_response",
+      "path": "features-00084.jsonl.gz",
+      "sha256": "3bd533fe5d783ca8cfa111333e0cc638efb8b598ad793b8f6f043947561c760b",
+      "windows": 10000
+    },
+    {
+      "bytes": 3827786,
+      "candidates": 69674,
+      "firstWindowId": "mleague:2021-22:L001_S010_0090_02A:6:0:e34:self_action_after_live",
+      "lastWindowId": "mleague:2021-22:L001_S011_0005_01A:7:0:e90:self_action_after_live",
+      "path": "features-00085.jsonl.gz",
+      "sha256": "47abe608d7ec7fcbebdd0a8f64ef08d4870c57048a1deca13971e6aa2cd3caf8",
+      "windows": 10000
+    },
+    {
+      "bytes": 3827998,
+      "candidates": 69691,
+      "firstWindowId": "mleague:2021-22:L001_S011_0005_01A:7:0:e91:discard_response",
+      "lastWindowId": "mleague:2021-22:L001_S011_0009_01A:9:0:e143:discard_response",
+      "path": "features-00086.jsonl.gz",
+      "sha256": "c01e21aaaaf50608740a30100eaed59e529b1eacebb06adc7c2f052125f08114",
+      "windows": 10000
+    },
+    {
+      "bytes": 3835277,
+      "candidates": 70070,
+      "firstWindowId": "mleague:2021-22:L001_S011_0009_01A:10:0:e0:self_action_after_live",
+      "lastWindowId": "mleague:2021-22:L001_S012_0001_01A:10:0:e69:discard_response",
+      "path": "features-00087.jsonl.gz",
+      "sha256": "ee2cda22ef8c1b429ff72ec1ed4b31e8fc66d2187a90da0a7404f70dd9f5f5e7",
+      "windows": 10000
+    },
+    {
+      "bytes": 3816597,
+      "candidates": 69443,
+      "firstWindowId": "mleague:2021-22:L001_S012_0001_01A:10:0:e70:self_action_after_live",
+      "lastWindowId": "mleague:2021-22:L001_S012_0005_02A:8:0:e0:self_action_after_live",
+      "path": "features-00088.jsonl.gz",
+      "sha256": "93b6bae12e0380192082d61de89f01803cd39c24655db036b8e47e5743676427",
+      "windows": 10000
+    },
+    {
+      "bytes": 3844635,
+      "candidates": 70494,
+      "firstWindowId": "mleague:2021-22:L001_S012_0005_02A:8:0:e1:discard_response",
+      "lastWindowId": "mleague:2022-23:L001_S013_0004_02A:9:0:e1:discard_response",
+      "path": "features-00089.jsonl.gz",
+      "sha256": "33997beb38f72b4cb64feeb288963708d527ad4c190050ffaf60eabebe069699",
+      "windows": 10000
+    },
+    {
+      "bytes": 3821066,
+      "candidates": 68952,
+      "firstWindowId": "mleague:2022-23:L001_S013_0004_02A:9:0:e2:self_action_after_live",
+      "lastWindowId": "mleague:2022-23:L001_S013_0008_02A:9:0:e101:discard_response",
+      "path": "features-00090.jsonl.gz",
+      "sha256": "122619bcaa75aa4e781f3d5020b790e07539330b8ca56ac8125f39f8211737f4",
+      "windows": 10000
+    },
+    {
+      "bytes": 3826201,
+      "candidates": 70247,
+      "firstWindowId": "mleague:2022-23:L001_S013_0008_02A:9:0:e102:self_action_after_live",
+      "lastWindowId": "mleague:2022-23:L001_S013_0013_01A:1:0:e32:self_action_after_live",
+      "path": "features-00091.jsonl.gz",
+      "sha256": "d464ecf776e98e8f78812109e4251362b8d3960dac7163372c218e79b49cef06",
+      "windows": 10000
+    },
+    {
+      "bytes": 3808366,
+      "candidates": 69328,
+      "firstWindowId": "mleague:2022-23:L001_S013_0013_01A:1:0:e33:discard_response",
+      "lastWindowId": "mleague:2022-23:L001_S013_0018_01A:3:0:e14:self_action_after_live",
+      "path": "features-00092.jsonl.gz",
+      "sha256": "a10d7c99e5a22b8c3404a000fe01ce611a0644702cbfa52f37799f327462c4b7",
+      "windows": 10000
+    },
+    {
+      "bytes": 3820597,
+      "candidates": 69251,
+      "firstWindowId": "mleague:2022-23:L001_S013_0018_01A:3:0:e15:discard_response",
+      "lastWindowId": "mleague:2022-23:L001_S013_0022_01A:10:0:e11:discard_response",
+      "path": "features-00093.jsonl.gz",
+      "sha256": "5b66e2cc7276960102a936cf0038581eea43066b0242eb70385fa9a2510ea68f",
+      "windows": 10000
+    },
+    {
+      "bytes": 3822857,
+      "candidates": 70675,
+      "firstWindowId": "mleague:2022-23:L001_S013_0022_01A:10:0:e12:self_action_after_live",
+      "lastWindowId": "mleague:2022-23:L001_S013_0026_02A:10:0:e145:discard_response",
+      "path": "features-00094.jsonl.gz",
+      "sha256": "8e6e9f7fcec061d48f4fc08cdab3c9adaafa3b6ea646ef82561c93d39bc7dcc1",
+      "windows": 10000
+    },
+    {
+      "bytes": 3820258,
+      "candidates": 70337,
+      "firstWindowId": "mleague:2022-23:L001_S013_0026_02A:11:0:e0:self_action_after_live",
+      "lastWindowId": "mleague:2022-23:L001_S013_0032_01A:1:0:e87:discard_response",
+      "path": "features-00095.jsonl.gz",
+      "sha256": "bb26c0c74344d580f66933cbf70dcb00cebc1c38b9dd9c6d84d5a70470e5f987",
+      "windows": 10000
+    },
+    {
+      "bytes": 3852023,
+      "candidates": 70716,
+      "firstWindowId": "mleague:2022-23:L001_S013_0032_01A:1:0:e88:self_action_after_live",
+      "lastWindowId": "mleague:2022-23:L001_S013_0036_01A:4:0:e83:discard_response",
+      "path": "features-00096.jsonl.gz",
+      "sha256": "3937370d65434678f14534d3ad9016ee509a4c144ac0466b636f90bc2c264fbc",
+      "windows": 10000
+    },
+    {
+      "bytes": 3818887,
+      "candidates": 69268,
+      "firstWindowId": "mleague:2022-23:L001_S013_0036_01A:4:0:e84:self_action_after_live",
+      "lastWindowId": "mleague:2022-23:L001_S013_0040_02A:4:0:e83:discard_response",
+      "path": "features-00097.jsonl.gz",
+      "sha256": "20c8147ca2c958472f335aeb7180deb32c2423d5fc0042a2f15031f27e5c7a0d",
+      "windows": 10000
+    },
+    {
+      "bytes": 3834835,
+      "candidates": 70382,
+      "firstWindowId": "mleague:2022-23:L001_S013_0040_02A:4:0:e84:self_action_after_live",
+      "lastWindowId": "mleague:2022-23:L001_S013_0045_01A:1:0:e69:discard_response",
+      "path": "features-00098.jsonl.gz",
+      "sha256": "7f31678e74274daa6baa1e7dae1a81b197279cb8bda13d8bc6da08d4d7bca72c",
+      "windows": 10000
+    },
+    {
+      "bytes": 3846345,
+      "candidates": 70807,
+      "firstWindowId": "mleague:2022-23:L001_S013_0045_01A:1:0:e70:self_action_after_live",
+      "lastWindowId": "mleague:2022-23:L001_S013_0049_01A:9:0:e3:discard_response",
+      "path": "features-00099.jsonl.gz",
+      "sha256": "b9a88c20df3667351aff18496c5a226d97cc63bdf1e88aaf83b5717b569cade4",
+      "windows": 10000
+    },
+    {
+      "bytes": 3846647,
+      "candidates": 70640,
+      "firstWindowId": "mleague:2022-23:L001_S013_0049_01A:9:0:e4:self_action_after_live",
+      "lastWindowId": "mleague:2022-23:L001_S013_0054_01A:0:0:e122:self_action_after_live",
+      "path": "features-00100.jsonl.gz",
+      "sha256": "6227e1573e76ffc39cef140b95cef06f83faf736b812723f3ecfb6322a6287b6",
+      "windows": 10000
+    },
+    {
+      "bytes": 3825170,
+      "candidates": 69793,
+      "firstWindowId": "mleague:2022-23:L001_S013_0054_01A:0:0:e123:discard_response",
+      "lastWindowId": "mleague:2022-23:L001_S013_0058_02A:0:0:e53:discard_response",
+      "path": "features-00101.jsonl.gz",
+      "sha256": "91332228c49625b281e9ae2bae9c4b6e86a041ca8847fbd74a23f7ae90632394",
+      "windows": 10000
+    },
+    {
+      "bytes": 3834105,
+      "candidates": 69885,
+      "firstWindowId": "mleague:2022-23:L001_S013_0058_02A:0:0:e54:self_action_after_live",
+      "lastWindowId": "mleague:2022-23:L001_S013_0063_01A:5:0:e35:discard_response",
+      "path": "features-00102.jsonl.gz",
+      "sha256": "70c9e2861296d3a9162a929e6beb435a68c9224fb4c9b890ab815a6f22449dca",
+      "windows": 10000
+    },
+    {
+      "bytes": 3822632,
+      "candidates": 70368,
+      "firstWindowId": "mleague:2022-23:L001_S013_0063_01A:5:0:e36:self_action_after_live",
+      "lastWindowId": "mleague:2022-23:L001_S013_0067_01A:4:0:e42:self_action_after_live",
+      "path": "features-00103.jsonl.gz",
+      "sha256": "53cb42b87765035f623761060b114f28c48999185fb3e11424751959308f84dc",
+      "windows": 10000
+    },
+    {
+      "bytes": 3815728,
+      "candidates": 69391,
+      "firstWindowId": "mleague:2022-23:L001_S013_0067_01A:4:0:e43:discard_response",
+      "lastWindowId": "mleague:2022-23:L001_S013_0072_01A:4:0:e76:self_action_after_live",
+      "path": "features-00104.jsonl.gz",
+      "sha256": "4804e8092468b66a4119b50bbdf7156ffbaef1d16ec8e4aa6dd3c63aaf97cfe0",
+      "windows": 10000
+    },
+    {
+      "bytes": 3810148,
+      "candidates": 69535,
+      "firstWindowId": "mleague:2022-23:L001_S013_0072_01A:4:0:e77:discard_response",
+      "lastWindowId": "mleague:2022-23:L001_S013_0076_02A:4:0:e119:discard_response",
+      "path": "features-00105.jsonl.gz",
+      "sha256": "dbe591a9b5da737d17bd3f3bf99148b3bf852b4445a75d7f38dd3036d974623e",
+      "windows": 10000
+    },
+    {
+      "bytes": 3794145,
+      "candidates": 68680,
+      "firstWindowId": "mleague:2022-23:L001_S013_0076_02A:4:0:e120:self_action_after_live",
+      "lastWindowId": "mleague:2022-23:L001_S013_0080_02A:9:0:e28:self_action_after_live",
+      "path": "features-00106.jsonl.gz",
+      "sha256": "377cea3086cbdabd8ab6898f8df195e5b647d9b12d595667ce23c6b8109d5141",
+      "windows": 10000
+    },
+    {
+      "bytes": 3804142,
+      "candidates": 68850,
+      "firstWindowId": "mleague:2022-23:L001_S013_0080_02A:9:0:e29:discard_response",
+      "lastWindowId": "mleague:2022-23:L001_S013_0085_01A:3:0:e106:self_action_after_live",
+      "path": "features-00107.jsonl.gz",
+      "sha256": "21693c92a4221bffb8d8251b4d0a1adc799f1d1a43356d4d569bccaf0d9ae4f4",
+      "windows": 10000
+    },
+    {
+      "bytes": 3831612,
+      "candidates": 70264,
+      "firstWindowId": "mleague:2022-23:L001_S013_0085_01A:3:0:e107:discard_response",
+      "lastWindowId": "mleague:2022-23:L001_S013_0089_02A:3:0:e34:self_action_after_live",
+      "path": "features-00108.jsonl.gz",
+      "sha256": "2a1d55950a049d44c0ff4022cc7dd4570b6d8778c36ea87c3d94fed4d7e4d24f",
+      "windows": 10000
+    },
+    {
+      "bytes": 3811554,
+      "candidates": 69319,
+      "firstWindowId": "mleague:2022-23:L001_S013_0089_02A:3:0:e35:discard_response",
+      "lastWindowId": "mleague:2022-23:L001_S013_0094_01A:5:0:e23:discard_response",
+      "path": "features-00109.jsonl.gz",
+      "sha256": "a0a50daca463b0c90c4f62e850637912d173ac315fd027f1f3203fd315333da1",
+      "windows": 10000
+    },
+    {
+      "bytes": 3807825,
+      "candidates": 69394,
+      "firstWindowId": "mleague:2022-23:L001_S013_0094_01A:5:0:e24:self_action_after_live",
+      "lastWindowId": "mleague:2022-23:L001_S014_0004_01A:7:0:e9:discard_response",
+      "path": "features-00110.jsonl.gz",
+      "sha256": "a2f326dc7d3a3f8566323e14fc9ab8a37873911dff0615900dc8a8629851f7f4",
+      "windows": 10000
+    },
+    {
+      "bytes": 3817201,
+      "candidates": 69843,
+      "firstWindowId": "mleague:2022-23:L001_S014_0004_01A:7:0:e10:self_action_after_live",
+      "lastWindowId": "mleague:2022-23:L001_S014_0008_01A:6:0:e21:discard_response",
+      "path": "features-00111.jsonl.gz",
+      "sha256": "4a3207edaf88ea95999d006df2398d8271709518fb6c400238be381d8e18a55e",
+      "windows": 10000
+    },
+    {
+      "bytes": 3814347,
+      "candidates": 69565,
+      "firstWindowId": "mleague:2022-23:L001_S014_0008_01A:6:0:e22:self_action_after_live",
+      "lastWindowId": "mleague:2022-23:L001_S014_0012_02A:6:0:e35:discard_response",
+      "path": "features-00112.jsonl.gz",
+      "sha256": "362ea1ca964112136c9b30b387a4fa16e360193207ae3e2751e4f56ca343c140",
+      "windows": 10000
+    },
+    {
+      "bytes": 3818277,
+      "candidates": 69770,
+      "firstWindowId": "mleague:2022-23:L001_S014_0012_02A:6:0:e36:self_action_after_live",
+      "lastWindowId": "mleague:2022-23:L001_S015_0001_02A:11:0:e3:discard_response",
+      "path": "features-00113.jsonl.gz",
+      "sha256": "287a07fe68420651cdbc1434adadfe74dd0e3f1313e976aa4b7c1f9d2e54f0a7",
+      "windows": 10000
+    },
+    {
+      "bytes": 3818470,
+      "candidates": 69328,
+      "firstWindowId": "mleague:2022-23:L001_S015_0001_02A:11:0:e4:self_action_after_live",
+      "lastWindowId": "mleague:2022-23:L001_S015_0006_01A:1:0:e136:self_action_after_live",
+      "path": "features-00114.jsonl.gz",
+      "sha256": "6a3788feaf9fe9a021babab02405abf819852acd48170f78c35771dbec4a1394",
+      "windows": 10000
+    },
+    {
+      "bytes": 3832078,
+      "candidates": 70327,
+      "firstWindowId": "mleague:2022-23:L001_S015_0006_01A:1:0:e137:discard_response",
+      "lastWindowId": "mleague:2023-24:L001_S016_0002_02A:2:0:e35:discard_response",
+      "path": "features-00115.jsonl.gz",
+      "sha256": "3b26dfb8df547d9adbe2754d9025a27f7ad11d1c0488579acdfdf3a20993ffed",
+      "windows": 10000
+    },
+    {
+      "bytes": 3802288,
+      "candidates": 69136,
+      "firstWindowId": "mleague:2023-24:L001_S016_0002_02A:2:0:e36:self_action_after_live",
+      "lastWindowId": "mleague:2023-24:L001_S016_0006_02A:8:0:e22:self_action_after_live",
+      "path": "features-00116.jsonl.gz",
+      "sha256": "b7134954cfa3898b569eaca092f12dd3ad4d157c639a3e42e46803298a07c9b1",
+      "windows": 10000
+    },
+    {
+      "bytes": 3812857,
+      "candidates": 69096,
+      "firstWindowId": "mleague:2023-24:L001_S016_0006_02A:8:0:e23:discard_response",
+      "lastWindowId": "mleague:2023-24:L001_S016_0010_02A:6:0:e74:self_action_after_call",
+      "path": "features-00117.jsonl.gz",
+      "sha256": "804705dca744d6c0f343183c2525b4c9e5a31fe6b9ea5f3036905feb41ed0ebf",
+      "windows": 10000
+    },
+    {
+      "bytes": 3813196,
+      "candidates": 69841,
+      "firstWindowId": "mleague:2023-24:L001_S016_0010_02A:6:0:e75:discard_response",
+      "lastWindowId": "mleague:2023-24:L001_S016_0015_01A:7:0:e26:self_action_after_live",
+      "path": "features-00118.jsonl.gz",
+      "sha256": "094f487eba1fed2c2e69bae0649272399ed782ba236c0476cebb234e73cbebf9",
+      "windows": 10000
+    },
+    {
+      "bytes": 3789990,
+      "candidates": 68858,
+      "firstWindowId": "mleague:2023-24:L001_S016_0015_01A:7:0:e27:discard_response",
+      "lastWindowId": "mleague:2023-24:L001_S016_0019_02A:14:0:e19:discard_response",
+      "path": "features-00119.jsonl.gz",
+      "sha256": "e78ba758ba9c9e47b89c0050b2355686bcc3b12d0f7f38264eb0748ea89df674",
+      "windows": 10000
+    },
+    {
+      "bytes": 3816629,
+      "candidates": 70332,
+      "firstWindowId": "mleague:2023-24:L001_S016_0019_02A:14:0:e20:self_action_after_live",
+      "lastWindowId": "mleague:2023-24:L001_S016_0024_02A:7:0:e57:discard_response",
+      "path": "features-00120.jsonl.gz",
+      "sha256": "bffcf763c5f90ffa4fd20762fad96cfd433c29cb253ec43eb07c6b6ec0647495",
+      "windows": 10000
+    },
+    {
+      "bytes": 3806659,
+      "candidates": 69226,
+      "firstWindowId": "mleague:2023-24:L001_S016_0024_02A:7:0:e58:self_action_after_live",
+      "lastWindowId": "mleague:2023-24:L001_S016_0028_02A:9:0:e20:self_action_after_live",
+      "path": "features-00121.jsonl.gz",
+      "sha256": "b50a38ce8eadedabfc27d8f18109bed130d25c731678dbda0d7c7369e59729bc",
+      "windows": 10000
+    },
+    {
+      "bytes": 3807392,
+      "candidates": 69792,
+      "firstWindowId": "mleague:2023-24:L001_S016_0028_02A:9:0:e21:discard_response",
+      "lastWindowId": "mleague:2023-24:L001_S016_0033_01A:8:0:e35:discard_response",
+      "path": "features-00122.jsonl.gz",
+      "sha256": "1f19f2f219c447b919b608b75b26a47a2920353419aaf0315e724ca87804eb2f",
+      "windows": 10000
+    },
+    {
+      "bytes": 3853343,
+      "candidates": 70640,
+      "firstWindowId": "mleague:2023-24:L001_S016_0033_01A:8:0:e36:self_action_after_live",
+      "lastWindowId": "mleague:2023-24:L001_S016_0038_01A:4:0:e56:self_action_after_live",
+      "path": "features-00123.jsonl.gz",
+      "sha256": "0c67c5dad028cf964680f2b421060905814910ff338922dbca5456f7d156c15d",
+      "windows": 10000
+    },
+    {
+      "bytes": 3805550,
+      "candidates": 69305,
+      "firstWindowId": "mleague:2023-24:L001_S016_0038_01A:4:0:e57:discard_response",
+      "lastWindowId": "mleague:2023-24:L001_S016_0043_02A:0:0:e52:self_action_after_live",
+      "path": "features-00124.jsonl.gz",
+      "sha256": "83862ab5c11e3291cbd4a6b20183d439a448debfbd6d13e3b7f05bdec065c9c4",
+      "windows": 10000
+    },
+    {
+      "bytes": 3792413,
+      "candidates": 68640,
+      "firstWindowId": "mleague:2023-24:L001_S016_0043_02A:0:0:e53:discard_response",
+      "lastWindowId": "mleague:2023-24:L001_S016_0048_01A:2:0:e16:self_action_after_live",
+      "path": "features-00125.jsonl.gz",
+      "sha256": "014444bdc46e1cd2cf777906c9c4385f866376e1c5b13d334ed85ea762b13f7d",
+      "windows": 10000
+    },
+    {
+      "bytes": 3814152,
+      "candidates": 69821,
+      "firstWindowId": "mleague:2023-24:L001_S016_0048_01A:2:0:e17:discard_response",
+      "lastWindowId": "mleague:2023-24:L001_S016_0053_01A:1:0:e59:discard_response",
+      "path": "features-00126.jsonl.gz",
+      "sha256": "dd5872f07b7c1ea9542e1010ed4ed01d87d3e80f8d93338fc40ce3a054fe870d",
+      "windows": 10000
+    },
+    {
+      "bytes": 3813637,
+      "candidates": 68913,
+      "firstWindowId": "mleague:2023-24:L001_S016_0053_01A:1:0:e60:self_action_after_live",
+      "lastWindowId": "mleague:2023-24:L001_S016_0058_01A:7:0:e20:self_action_after_live",
+      "path": "features-00127.jsonl.gz",
+      "sha256": "c233cc43d74def571751a6cbc75afda2746f12c9922359cf569abab165438638",
+      "windows": 10000
+    },
+    {
+      "bytes": 3811375,
+      "candidates": 69673,
+      "firstWindowId": "mleague:2023-24:L001_S016_0058_01A:7:0:e21:discard_response",
+      "lastWindowId": "mleague:2023-24:L001_S016_0062_02A:4:0:e11:discard_response",
+      "path": "features-00128.jsonl.gz",
+      "sha256": "2707583044954c4d1a6b29762fe6681abc25b4fafb5fef0ad48ad51b601953a9",
+      "windows": 10000
+    },
+    {
+      "bytes": 3778135,
+      "candidates": 68704,
+      "firstWindowId": "mleague:2023-24:L001_S016_0062_02A:4:0:e12:self_action_after_live",
+      "lastWindowId": "mleague:2023-24:L001_S016_0066_02A:6:0:e97:discard_response",
+      "path": "features-00129.jsonl.gz",
+      "sha256": "6e23a5b978981c87bdcf11405de3462f5097dfdd85df906f5e754c0cec00f6a9",
+      "windows": 10000
+    },
+    {
+      "bytes": 3802028,
+      "candidates": 69347,
+      "firstWindowId": "mleague:2023-24:L001_S016_0066_02A:6:0:e98:self_action_after_live",
+      "lastWindowId": "mleague:2023-24:L001_S016_0072_01A:2:0:e30:self_action_after_live",
+      "path": "features-00130.jsonl.gz",
+      "sha256": "40d663fd8d84149398ec7e401bf3374ec8a5a01f80671d3a0ab5ad57194b5459",
+      "windows": 10000
+    },
+    {
+      "bytes": 3810965,
+      "candidates": 69415,
+      "firstWindowId": "mleague:2023-24:L001_S016_0072_01A:2:0:e31:discard_response",
+      "lastWindowId": "mleague:2023-24:L001_S016_0077_01A:5:0:e1:discard_response",
+      "path": "features-00131.jsonl.gz",
+      "sha256": "932584f4a0998e94a1fad375bc145e83841b60b7338c5fe26faa07d396d784ef",
+      "windows": 10000
+    },
+    {
+      "bytes": 3825376,
+      "candidates": 70631,
+      "firstWindowId": "mleague:2023-24:L001_S016_0077_01A:5:0:e2:self_action_after_live",
+      "lastWindowId": "mleague:2023-24:L001_S016_0081_02A:6:0:e51:discard_response",
+      "path": "features-00132.jsonl.gz",
+      "sha256": "8c43f980c43cb3c31d566939c3b37ec98a8e78af4141440c42622cd0b6d1cd18",
+      "windows": 10000
+    },
+    {
+      "bytes": 3810815,
+      "candidates": 69622,
+      "firstWindowId": "mleague:2023-24:L001_S016_0081_02A:6:0:e52:self_action_after_live",
+      "lastWindowId": "mleague:2023-24:L001_S016_0086_01A:1:0:e2:self_action_after_live",
+      "path": "features-00133.jsonl.gz",
+      "sha256": "071a38a4d9458ac2ab4e1e2199e84d429e30d42dbb226def371d456069a850f5",
+      "windows": 10000
+    },
+    {
+      "bytes": 3806978,
+      "candidates": 69089,
+      "firstWindowId": "mleague:2023-24:L001_S016_0086_01A:1:0:e3:discard_response",
+      "lastWindowId": "mleague:2023-24:L001_S016_0090_02A:4:0:e37:discard_response",
+      "path": "features-00134.jsonl.gz",
+      "sha256": "48376ae6f40772360408125f051b565ca24fbf7473ff172ac150078245bd1a42",
+      "windows": 10000
+    },
+    {
+      "bytes": 3825340,
+      "candidates": 70011,
+      "firstWindowId": "mleague:2023-24:L001_S016_0090_02A:4:0:e38:self_action_after_live",
+      "lastWindowId": "mleague:2023-24:L001_S016_0095_01A:9:0:e56:self_action_after_live",
+      "path": "features-00135.jsonl.gz",
+      "sha256": "059aa593d2d2d227ad83a6c3610ac90ee876e36b72caaaba6ecf9fcc2885117a",
+      "windows": 10000
+    },
+    {
+      "bytes": 3806044,
+      "candidates": 69180,
+      "firstWindowId": "mleague:2023-24:L001_S016_0095_01A:9:0:e57:discard_response",
+      "lastWindowId": "mleague:2023-24:L001_S016_0100_01A:5:0:e83:discard_response",
+      "path": "features-00136.jsonl.gz",
+      "sha256": "1caa4fc858e19e81d49e53fdf94731334764e4bc1f2c41650ce4d77cfb0e6355",
+      "windows": 10000
+    },
+    {
+      "bytes": 3808929,
+      "candidates": 69737,
+      "firstWindowId": "mleague:2023-24:L001_S016_0100_01A:5:0:e84:self_action_after_live",
+      "lastWindowId": "mleague:2023-24:L001_S016_0105_01A:5:0:e57:discard_response",
+      "path": "features-00137.jsonl.gz",
+      "sha256": "b2d54bbb9dcee72e4b709fb9150411dd9a412ae7c6279dfb784224b9a91c43fb",
+      "windows": 10000
+    },
+    {
+      "bytes": 3819007,
+      "candidates": 69847,
+      "firstWindowId": "mleague:2023-24:L001_S016_0105_01A:5:0:e58:self_action_after_live",
+      "lastWindowId": "mleague:2023-24:L001_S017_0001_01A:4:0:e74:self_action_after_live",
+      "path": "features-00138.jsonl.gz",
+      "sha256": "b11f7dc87d6ba4b79b45748045d8f02eb12050aaeed89d64addd344963ad09d8",
+      "windows": 10000
+    },
+    {
+      "bytes": 3816905,
+      "candidates": 69641,
+      "firstWindowId": "mleague:2023-24:L001_S017_0001_01A:4:0:e75:discard_response",
+      "lastWindowId": "mleague:2023-24:L001_S017_0005_02A:6:0:e43:discard_response",
+      "path": "features-00139.jsonl.gz",
+      "sha256": "5444e0443e4412456787f162da39e91c535d732a34f70fa1957bca02c88620e7",
+      "windows": 10000
+    },
+    {
+      "bytes": 3824124,
+      "candidates": 70127,
+      "firstWindowId": "mleague:2023-24:L001_S017_0005_02A:6:0:e44:self_action_after_live",
+      "lastWindowId": "mleague:2023-24:L001_S017_0010_01A:7:0:e11:discard_response",
+      "path": "features-00140.jsonl.gz",
+      "sha256": "a26d2536218b4e97d2ffa958e118bcc5dd27c2efdf9c83c3bdffaac601f6d0a0",
+      "windows": 10000
+    },
+    {
+      "bytes": 3790933,
+      "candidates": 68664,
+      "firstWindowId": "mleague:2023-24:L001_S017_0010_01A:7:0:e12:self_action_after_live",
+      "lastWindowId": "mleague:2023-24:L001_S017_0014_02A:11:0:e1:discard_response",
+      "path": "features-00141.jsonl.gz",
+      "sha256": "a15382f4132e26d6d9a5a432f34b1fa7fc9e9c7dad288afc43ad417cd45c7653",
+      "windows": 10000
+    },
+    {
+      "bytes": 3792517,
+      "candidates": 68856,
+      "firstWindowId": "mleague:2023-24:L001_S017_0014_02A:11:0:e2:self_action_after_live",
+      "lastWindowId": "mleague:2023-24:L001_S018_0004_02A:5:0:e116:self_action_after_live",
+      "path": "features-00142.jsonl.gz",
+      "sha256": "ba2ad707a1b2335d392d38b596e95453f566e3e73e63e43ecc82b36db5782dbc",
+      "windows": 10000
+    },
+    {
+      "bytes": 3822192,
+      "candidates": 70148,
+      "firstWindowId": "mleague:2023-24:L001_S018_0004_02A:5:0:e117:discard_response",
+      "lastWindowId": "mleague:2024-25:L001_S019_0001_02A:8:0:e69:discard_response",
+      "path": "features-00143.jsonl.gz",
+      "sha256": "5fc8093937e07a29e75376fda7fd765a1caaba536b4fa3fb531f79868a2dbf09",
+      "windows": 10000
+    },
+    {
+      "bytes": 3790745,
+      "candidates": 68546,
+      "firstWindowId": "mleague:2024-25:L001_S019_0001_02A:8:0:e70:self_action_after_live",
+      "lastWindowId": "mleague:2024-25:L001_S019_0006_02A:5:0:e42:self_action_after_live",
+      "path": "features-00144.jsonl.gz",
+      "sha256": "c6a4fd17fe2ce0eec26bb5645b23e40f1d0609f3982ab557e2f95db20a60debe",
+      "windows": 10000
+    },
+    {
+      "bytes": 3810576,
+      "candidates": 68734,
+      "firstWindowId": "mleague:2024-25:L001_S019_0006_02A:5:0:e43:discard_response",
+      "lastWindowId": "mleague:2024-25:L001_S019_0011_02A:5:0:e102:self_action_after_live",
+      "path": "features-00145.jsonl.gz",
+      "sha256": "e01b68b59b40f074bb6948b808d6acab029c925cbd2ad35c260e9e03897edeee",
+      "windows": 10000
+    },
+    {
+      "bytes": 3769571,
+      "candidates": 68053,
+      "firstWindowId": "mleague:2024-25:L001_S019_0011_02A:5:0:e103:discard_response",
+      "lastWindowId": "mleague:2024-25:L001_S019_0016_02A:1:0:e73:discard_response",
+      "path": "features-00146.jsonl.gz",
+      "sha256": "ff00218b071d1d98a7359160c64e30db08c171f3e70e730f4108947add5dbc47",
+      "windows": 10000
+    },
+    {
+      "bytes": 3808905,
+      "candidates": 69742,
+      "firstWindowId": "mleague:2024-25:L001_S019_0016_02A:1:0:e74:self_action_after_live",
+      "lastWindowId": "mleague:2024-25:L001_S019_0020_02A:8:0:e78:self_action_after_live",
+      "path": "features-00147.jsonl.gz",
+      "sha256": "8e6fc682b7b5cb937aa1b7210e3d3b29dbe4b41cb2ca85c12cd0d3af6ca2e341",
+      "windows": 10000
+    },
+    {
+      "bytes": 3786789,
+      "candidates": 69737,
+      "firstWindowId": "mleague:2024-25:L001_S019_0020_02A:8:0:e79:discard_response",
+      "lastWindowId": "mleague:2024-25:L001_S019_0025_01A:4:0:e57:discard_response",
+      "path": "features-00148.jsonl.gz",
+      "sha256": "33e0c8864ba7ea71bb5c1bda8f5670f218ccd8909c4486ad688440e49adf1a7b",
+      "windows": 10000
+    },
+    {
+      "bytes": 3814379,
+      "candidates": 69256,
+      "firstWindowId": "mleague:2024-25:L001_S019_0025_01A:4:0:e58:self_action_after_live",
+      "lastWindowId": "mleague:2024-25:L001_S019_0030_02A:1:0:e50:self_action_after_live",
+      "path": "features-00149.jsonl.gz",
+      "sha256": "5140966376e1af7c6d93900cd3592eacae22b0328f6c70e1a6e8099e62ee8e4e",
+      "windows": 10000
+    },
+    {
+      "bytes": 3802996,
+      "candidates": 69530,
+      "firstWindowId": "mleague:2024-25:L001_S019_0030_02A:1:0:e51:discard_response",
+      "lastWindowId": "mleague:2024-25:L001_S019_0035_01A:3:0:e26:self_action_after_live",
+      "path": "features-00150.jsonl.gz",
+      "sha256": "ab980da748f40c2c88d115aa3675092c66f383ccbbfb5b17f3989ba1fcc4f6f5",
+      "windows": 10000
+    },
+    {
+      "bytes": 3814761,
+      "candidates": 70195,
+      "firstWindowId": "mleague:2024-25:L001_S019_0035_01A:3:0:e27:discard_response",
+      "lastWindowId": "mleague:2024-25:L001_S019_0039_02A:4:0:e104:self_action_after_live",
+      "path": "features-00151.jsonl.gz",
+      "sha256": "cf57be4c85469a57229bb8b093657d69961851b6c257f80a0e212c9ed58b34c5",
+      "windows": 10000
+    },
+    {
+      "bytes": 3828447,
+      "candidates": 70026,
+      "firstWindowId": "mleague:2024-25:L001_S019_0039_02A:4:0:e105:discard_response",
+      "lastWindowId": "mleague:2024-25:L001_S019_0044_01A:13:0:e126:self_action_after_live",
+      "path": "features-00152.jsonl.gz",
+      "sha256": "f9d58c7d32442baa165d311cb18044695f4f7c2f597d3d54c2b5df2870c104c6",
+      "windows": 10000
+    },
+    {
+      "bytes": 3806259,
+      "candidates": 69861,
+      "firstWindowId": "mleague:2024-25:L001_S019_0044_01A:13:0:e127:discard_response",
+      "lastWindowId": "mleague:2024-25:L001_S019_0049_01A:5:0:e138:self_action_after_live",
+      "path": "features-00153.jsonl.gz",
+      "sha256": "a7b118d7364b56ff60ff4b3f9ebb4ebef4d5df56cc35e0ce4fb5d49d5eb216be",
+      "windows": 10000
+    },
+    {
+      "bytes": 3794145,
+      "candidates": 68777,
+      "firstWindowId": "mleague:2024-25:L001_S019_0049_01A:5:0:e139:discard_response",
+      "lastWindowId": "mleague:2024-25:L001_S019_0053_02A:4:0:e91:discard_response",
+      "path": "features-00154.jsonl.gz",
+      "sha256": "ec630748ffd342bdb5651a549a1c873721c505a797166930b0fe28821fb346d9",
+      "windows": 10000
+    },
+    {
+      "bytes": 3823345,
+      "candidates": 69260,
+      "firstWindowId": "mleague:2024-25:L001_S019_0053_02A:4:0:e92:self_action_after_live",
+      "lastWindowId": "mleague:2024-25:L001_S019_0058_01A:10:0:e32:self_action_after_live",
+      "path": "features-00155.jsonl.gz",
+      "sha256": "4149730222edc57582ca40ef2efb39f8471859defe2ed4dd4745db295af6a11d",
+      "windows": 10000
+    },
+    {
+      "bytes": 3816768,
+      "candidates": 69340,
+      "firstWindowId": "mleague:2024-25:L001_S019_0058_01A:10:0:e33:discard_response",
+      "lastWindowId": "mleague:2024-25:L001_S019_0063_02A:7:0:e7:discard_response",
+      "path": "features-00156.jsonl.gz",
+      "sha256": "20ebf3d572baae4bf19a635708849a6aa07065f8225c7c82daeda45b4ff20388",
+      "windows": 10000
+    },
+    {
+      "bytes": 3811078,
+      "candidates": 69835,
+      "firstWindowId": "mleague:2024-25:L001_S019_0063_02A:7:0:e8:self_action_after_live",
+      "lastWindowId": "mleague:2024-25:L001_S019_0068_02A:0:0:e37:discard_response",
+      "path": "features-00157.jsonl.gz",
+      "sha256": "bbf0467100746f572a8d8ffc25722bd164c4211e8ff834dd89c0bb8afa58d4f2",
+      "windows": 10000
+    },
+    {
+      "bytes": 3819849,
+      "candidates": 69235,
+      "firstWindowId": "mleague:2024-25:L001_S019_0068_02A:0:0:e38:self_action_after_live",
+      "lastWindowId": "mleague:2024-25:L001_S019_0073_01A:4:0:e43:discard_response",
+      "path": "features-00158.jsonl.gz",
+      "sha256": "1414da5f86a852584dbe12a104e65bcebf23ca73751f9db0562114acde7a9c0b",
+      "windows": 10000
+    },
+    {
+      "bytes": 3812827,
+      "candidates": 69414,
+      "firstWindowId": "mleague:2024-25:L001_S019_0073_01A:4:0:e44:self_action_after_live",
+      "lastWindowId": "mleague:2024-25:L001_S019_0077_02A:7:0:e23:discard_response",
+      "path": "features-00159.jsonl.gz",
+      "sha256": "c25a674a9d43d5730dc614fdea915b80047300d3d30f9c71927c9d29eaca48f2",
+      "windows": 10000
+    },
+    {
+      "bytes": 3791817,
+      "candidates": 68744,
+      "firstWindowId": "mleague:2024-25:L001_S019_0077_02A:7:0:e24:self_action_after_live",
+      "lastWindowId": "mleague:2024-25:L001_S019_0082_02A:8:0:e0:self_action_after_live",
+      "path": "features-00160.jsonl.gz",
+      "sha256": "888b0677d725287bb1312cb303adf8813e363fb1caac579e9017ef3bc230799a",
+      "windows": 10000
+    },
+    {
+      "bytes": 3793688,
+      "candidates": 68954,
+      "firstWindowId": "mleague:2024-25:L001_S019_0082_02A:8:0:e1:discard_response",
+      "lastWindowId": "mleague:2024-25:L001_S019_0087_02A:2:0:e81:discard_response",
+      "path": "features-00161.jsonl.gz",
+      "sha256": "ff2e9c0f823a4bab4ff5874ae46578b29e9ca53f6e6cd98377ddc8d59f879115",
+      "windows": 10000
+    },
+    {
+      "bytes": 3783879,
+      "candidates": 68778,
+      "firstWindowId": "mleague:2024-25:L001_S019_0087_02A:2:0:e82:self_action_after_live",
+      "lastWindowId": "mleague:2024-25:L001_S019_0091_02A:8:0:e17:discard_response",
+      "path": "features-00162.jsonl.gz",
+      "sha256": "1d0d346b4f7fa9a6225443ddaab97a9ca171bdb29043d58490f29c14a1411eb7",
+      "windows": 10000
+    },
+    {
+      "bytes": 3822118,
+      "candidates": 69616,
+      "firstWindowId": "mleague:2024-25:L001_S019_0091_02A:8:0:e18:self_action_after_live",
+      "lastWindowId": "mleague:2024-25:L001_S019_0096_02A:5:0:e107:discard_response",
+      "path": "features-00163.jsonl.gz",
+      "sha256": "fa92fa5e7402a326b82be7f8e10803d8b49e0f62b309f0d824f4b6bc2c616c62",
+      "windows": 10000
+    },
+    {
+      "bytes": 3808768,
+      "candidates": 68842,
+      "firstWindowId": "mleague:2024-25:L001_S019_0096_02A:5:0:e108:self_action_after_live",
+      "lastWindowId": "mleague:2024-25:L001_S019_0100_02A:7:0:e4:self_action_after_live",
+      "path": "features-00164.jsonl.gz",
+      "sha256": "4895cf8b03a1535ad61c593633289380a712ef3ad132fc238e192cd65b2b8f46",
+      "windows": 10000
+    },
+    {
+      "bytes": 3815757,
+      "candidates": 69750,
+      "firstWindowId": "mleague:2024-25:L001_S019_0100_02A:7:0:e5:discard_response",
+      "lastWindowId": "mleague:2024-25:L001_S019_0105_01A:4:0:e139:discard_response",
+      "path": "features-00165.jsonl.gz",
+      "sha256": "bf843c669f2648fba51082e6b67cce2a51da7cb20bc0cb219e545049ce6e5e22",
+      "windows": 10000
+    },
+    {
+      "bytes": 3807225,
+      "candidates": 69700,
+      "firstWindowId": "mleague:2024-25:L001_S019_0105_01A:4:0:e140:self_action_after_live",
+      "lastWindowId": "mleague:2024-25:L001_S020_0001_02A:5:0:e30:self_action_after_call",
+      "path": "features-00166.jsonl.gz",
+      "sha256": "66e8f0dc41a09b8bd8ac4ca3ac1209fb371c889c24fb311e75d947afff26f7dc",
+      "windows": 10000
+    },
+    {
+      "bytes": 3801949,
+      "candidates": 68764,
+      "firstWindowId": "mleague:2024-25:L001_S020_0001_02A:5:0:e31:discard_response",
+      "lastWindowId": "mleague:2024-25:L001_S020_0006_01A:7:0:e20:self_action_after_live",
+      "path": "features-00167.jsonl.gz",
+      "sha256": "3f0d17566790d5d73f2aeedb3b1cafb3fbaaf6557caec4f0c8b65528e732ee16",
+      "windows": 10000
+    },
+    {
+      "bytes": 3786023,
+      "candidates": 68388,
+      "firstWindowId": "mleague:2024-25:L001_S020_0006_01A:7:0:e21:discard_response",
+      "lastWindowId": "mleague:2024-25:L001_S020_0010_02A:4:0:e11:discard_response",
+      "path": "features-00168.jsonl.gz",
+      "sha256": "15f97be2b2c85599348c1c7c5dd2f40b96914989f01a57c8c2b9eef4d8815cb9",
+      "windows": 10000
+    },
+    {
+      "bytes": 3788283,
+      "candidates": 68831,
+      "firstWindowId": "mleague:2024-25:L001_S020_0010_02A:4:0:e12:self_action_after_live",
+      "lastWindowId": "mleague:2024-25:L001_S020_0015_02A:3:0:e34:self_action_after_live",
+      "path": "features-00169.jsonl.gz",
+      "sha256": "f2954a0a108e2ab5e39823303dc7f07197cce067ad73c4a2dd384caec34e49b0",
+      "windows": 10000
+    },
+    {
+      "bytes": 3793611,
+      "candidates": 68902,
+      "firstWindowId": "mleague:2024-25:L001_S020_0015_02A:3:0:e35:discard_response",
+      "lastWindowId": "mleague:2024-25:L001_S021_0005_02A:6:0:e46:self_action_after_live",
+      "path": "features-00170.jsonl.gz",
+      "sha256": "60efc81f5f13058bf07179429c7296c41034b8972db2dd0073990eacad0e7177",
+      "windows": 10000
+    },
+    {
+      "bytes": 3803178,
+      "candidates": 69218,
+      "firstWindowId": "mleague:2024-25:L001_S021_0005_02A:6:0:e47:discard_response",
+      "lastWindowId": "mleague:2025-26:L001_S022_0002_01A:4:0:e30:self_action_after_live",
+      "path": "features-00171.jsonl.gz",
+      "sha256": "196a3a09c10b37033f257415ed3313e2cc785c04573bf43864de09bc4bf0ce62",
+      "windows": 10000
+    },
+    {
+      "bytes": 3788021,
+      "candidates": 68472,
+      "firstWindowId": "mleague:2025-26:L001_S022_0002_01A:4:0:e31:discard_response",
+      "lastWindowId": "mleague:2025-26:L001_S022_0006_01A:6:0:e22:self_action_after_live",
+      "path": "features-00172.jsonl.gz",
+      "sha256": "c7bf1aa764c9c23f6e78df994131a2670ec24d9aaff06fe494b1fe8566f5e45d",
+      "windows": 10000
+    },
+    {
+      "bytes": 3833375,
+      "candidates": 70384,
+      "firstWindowId": "mleague:2025-26:L001_S022_0006_01A:6:0:e23:discard_response",
+      "lastWindowId": "mleague:2025-26:L001_S022_0009_01A:7:0:e78:self_action_after_live",
+      "path": "features-00173.jsonl.gz",
+      "sha256": "25f001053c2f45a3e0f110ca9ac1c16b77d675a249b9f0f5b1c368185172ad0a",
+      "windows": 10000
+    },
+    {
+      "bytes": 3801992,
+      "candidates": 69185,
+      "firstWindowId": "mleague:2025-26:L001_S022_0009_01A:7:0:e79:discard_response",
+      "lastWindowId": "mleague:2025-26:L001_S022_0012_01B:3:0:e57:discard_response",
+      "path": "features-00174.jsonl.gz",
+      "sha256": "45144939a63d47664e2fd554044f750e27c64d21159e54e6035b39f66f3a1046",
+      "windows": 10000
+    },
+    {
+      "bytes": 3769859,
+      "candidates": 68003,
+      "firstWindowId": "mleague:2025-26:L001_S022_0012_01B:3:0:e58:self_action_after_live",
+      "lastWindowId": "mleague:2025-26:L001_S022_0015_02B:7:0:e23:discard_response",
+      "path": "features-00175.jsonl.gz",
+      "sha256": "577bd7f7811f4b7d6e54d44e9ab6b42cf09ebf8b6461fa4b77b2c0575af9db1c",
+      "windows": 10000
+    },
+    {
+      "bytes": 3792480,
+      "candidates": 68911,
+      "firstWindowId": "mleague:2025-26:L001_S022_0015_02B:7:0:e24:self_action_after_live",
+      "lastWindowId": "mleague:2025-26:L001_S022_0019_01A:11:0:e26:self_action_after_live",
+      "path": "features-00176.jsonl.gz",
+      "sha256": "5db51ec5f2c536545db023e4fb72f24d39fb96bb2fe708e91606fa9e457f1500",
+      "windows": 10000
+    },
+    {
+      "bytes": 3812853,
+      "candidates": 69546,
+      "firstWindowId": "mleague:2025-26:L001_S022_0019_01A:11:0:e27:discard_response",
+      "lastWindowId": "mleague:2025-26:L001_S022_0022_01A:15:0:e67:discard_response",
+      "path": "features-00177.jsonl.gz",
+      "sha256": "e3d76ff2baaa419e3d0f18812c5fe8f811b1762e77b35723d459f22030b8b9e1",
+      "windows": 10000
+    },
+    {
+      "bytes": 3813753,
+      "candidates": 70235,
+      "firstWindowId": "mleague:2025-26:L001_S022_0022_01A:15:0:e68:self_action_after_live",
+      "lastWindowId": "mleague:2025-26:L001_S022_0024_02B:5:0:e62:self_action_after_live",
+      "path": "features-00178.jsonl.gz",
+      "sha256": "0b7712a97ab1e2503e831abfaa7150a9dcd50ee97dce99f37ebf8a998b44c049",
+      "windows": 10000
+    },
+    {
+      "bytes": 3798836,
+      "candidates": 68964,
+      "firstWindowId": "mleague:2025-26:L001_S022_0024_02B:5:0:e63:discard_response",
+      "lastWindowId": "mleague:2025-26:L001_S022_0028_02A:6:0:e77:discard_response",
+      "path": "features-00179.jsonl.gz",
+      "sha256": "fb30fe128c9d24a0fa93126b69735e7f8e41924c79bde070c6b7a2bf9802fba6",
+      "windows": 10000
+    },
+    {
+      "bytes": 3781320,
+      "candidates": 68638,
+      "firstWindowId": "mleague:2025-26:L001_S022_0028_02A:6:0:e78:self_action_after_call",
+      "lastWindowId": "mleague:2025-26:L001_S022_0031_01B:9:0:e55:discard_response",
+      "path": "features-00180.jsonl.gz",
+      "sha256": "7973b44ac32ca7e09bcf3bb94a812d0ce29f59a0f61032656a53a405bd0b9a54",
+      "windows": 10000
+    },
+    {
+      "bytes": 3820597,
+      "candidates": 69782,
+      "firstWindowId": "mleague:2025-26:L001_S022_0031_01B:9:0:e56:self_action_after_live",
+      "lastWindowId": "mleague:2025-26:L001_S022_0034_02A:10:0:e10:self_action_after_live",
+      "path": "features-00181.jsonl.gz",
+      "sha256": "9a2f095b8d79190458b261ca5e86a519cdb846e7f497d6061930f70dc6cb5fd2",
+      "windows": 10000
+    },
+    {
+      "bytes": 3830900,
+      "candidates": 70211,
+      "firstWindowId": "mleague:2025-26:L001_S022_0034_02A:10:0:e11:discard_response",
+      "lastWindowId": "mleague:2025-26:L001_S022_0037_02A:2:0:e43:discard_response",
+      "path": "features-00182.jsonl.gz",
+      "sha256": "0e39d09aec7824dd2c82ef0b06d5f0f439885920f8ed4fb634620f57523503b3",
+      "windows": 10000
+    },
+    {
+      "bytes": 3811758,
+      "candidates": 69376,
+      "firstWindowId": "mleague:2025-26:L001_S022_0037_02A:2:0:e44:self_action_after_live",
+      "lastWindowId": "mleague:2025-26:L001_S022_0041_01A:8:0:e82:self_action_after_live",
+      "path": "features-00183.jsonl.gz",
+      "sha256": "d654c47946fa1d405fa145e3699a3ae19a11d643cfae67cf5924a9eec9911225",
+      "windows": 10000
+    },
+    {
+      "bytes": 3797207,
+      "candidates": 69130,
+      "firstWindowId": "mleague:2025-26:L001_S022_0041_01A:8:0:e83:discard_response",
+      "lastWindowId": "mleague:2025-26:L001_S022_0044_02B:3:0:e24:self_action_after_live",
+      "path": "features-00184.jsonl.gz",
+      "sha256": "641dff2bf8cd25678b2b05d49faa28030455e743a336a531af5f1e085f696ec1",
+      "windows": 10000
+    },
+    {
+      "bytes": 3804668,
+      "candidates": 69597,
+      "firstWindowId": "mleague:2025-26:L001_S022_0044_02B:3:0:e25:discard_response",
+      "lastWindowId": "mleague:2025-26:L001_S022_0048_02A:2:0:e67:discard_response",
+      "path": "features-00185.jsonl.gz",
+      "sha256": "5c2cdefddfa595c907089f6ee5c95840869e60f7cd4ce6fdbbbe4bbc70f7c5e8",
+      "windows": 10000
+    },
+    {
+      "bytes": 3818235,
+      "candidates": 69847,
+      "firstWindowId": "mleague:2025-26:L001_S022_0048_02A:2:0:e68:self_action_after_live",
+      "lastWindowId": "mleague:2025-26:L001_S022_0051_01B:3:0:e41:discard_response",
+      "path": "features-00186.jsonl.gz",
+      "sha256": "1a3c07e2d3cb9c9227772e09c3b7575a035b50295ca961abafcfc5f5736e58e3",
+      "windows": 10000
+    },
+    {
+      "bytes": 3793477,
+      "candidates": 68813,
+      "firstWindowId": "mleague:2025-26:L001_S022_0051_01B:3:0:e42:self_action_after_live",
+      "lastWindowId": "mleague:2025-26:L001_S022_0054_02A:5:0:e125:discard_response",
+      "path": "features-00187.jsonl.gz",
+      "sha256": "a467c49f5bda2dbc1bd4507e1e75d17df206b6611a91234934bfd664bc3a27be",
+      "windows": 10000
+    },
+    {
+      "bytes": 3835185,
+      "candidates": 69790,
+      "firstWindowId": "mleague:2025-26:L001_S022_0054_02A:5:0:e126:self_action_after_live",
+      "lastWindowId": "mleague:2025-26:L001_S022_0057_02A:4:0:e37:discard_response",
+      "path": "features-00188.jsonl.gz",
+      "sha256": "90015ae0baf59921be15982d1af0ea9edfea7c51b7ee7707441577696b80c13a",
+      "windows": 10000
+    },
+    {
+      "bytes": 3808066,
+      "candidates": 69107,
+      "firstWindowId": "mleague:2025-26:L001_S022_0057_02A:4:0:e38:self_action_after_live",
+      "lastWindowId": "mleague:2025-26:L001_S022_0060_01B:9:0:e40:self_action_after_live",
+      "path": "features-00189.jsonl.gz",
+      "sha256": "9b0b4b1b23ff83a8593cb3fb0db301fe149997b793d5cd2f1987be4c51e24a1c",
+      "windows": 10000
+    },
+    {
+      "bytes": 3814117,
+      "candidates": 69637,
+      "firstWindowId": "mleague:2025-26:L001_S022_0060_01B:9:0:e41:discard_response",
+      "lastWindowId": "mleague:2025-26:L001_S022_0063_02B:4:0:e25:discard_response",
+      "path": "features-00190.jsonl.gz",
+      "sha256": "60d3f0338e66c9a16782fdace82d42feaaec05e7aef354e1e521a2cc819421a9",
+      "windows": 10000
+    },
+    {
+      "bytes": 3805583,
+      "candidates": 69374,
+      "firstWindowId": "mleague:2025-26:L001_S022_0063_02B:4:0:e26:self_action_after_live",
+      "lastWindowId": "mleague:2025-26:L001_S022_0067_01A:8:0:e9:discard_response",
+      "path": "features-00191.jsonl.gz",
+      "sha256": "a3af03a27c331d1ef6df3a28ce760d4b3761f29f99ed4e5afeab847179371dda",
+      "windows": 10000
+    },
+    {
+      "bytes": 3805309,
+      "candidates": 69144,
+      "firstWindowId": "mleague:2025-26:L001_S022_0067_01A:8:0:e10:self_action_after_live",
+      "lastWindowId": "mleague:2025-26:L001_S022_0070_01A:4:0:e10:self_action_after_live",
+      "path": "features-00192.jsonl.gz",
+      "sha256": "6bb68bd17f4cd4a0ddd4310d91fea854044e147686e9153c051ffaf1eb3c330f",
+      "windows": 10000
+    },
+    {
+      "bytes": 3799622,
+      "candidates": 68771,
+      "firstWindowId": "mleague:2025-26:L001_S022_0070_01A:4:0:e11:discard_response",
+      "lastWindowId": "mleague:2025-26:L001_S022_0072_01B:8:0:e25:discard_response",
+      "path": "features-00193.jsonl.gz",
+      "sha256": "4c096b03fdd905a0a0565e2ae10a364c9963dea73f87501b930116bf905b67ad",
+      "windows": 10000
+    },
+    {
+      "bytes": 3825348,
+      "candidates": 69888,
+      "firstWindowId": "mleague:2025-26:L001_S022_0072_01B:8:0:e26:self_action_after_live",
+      "lastWindowId": "mleague:2025-26:L001_S022_0076_02A:3:0:e96:self_action_after_live",
+      "path": "features-00194.jsonl.gz",
+      "sha256": "cb65231940516d8571df21552e7ac3417496b5b67a1b84aee686873e62a84b80",
+      "windows": 10000
+    },
+    {
+      "bytes": 3804256,
+      "candidates": 69576,
+      "firstWindowId": "mleague:2025-26:L001_S022_0076_02A:4:0:e0:self_action_after_live",
+      "lastWindowId": "mleague:2025-26:L001_S022_0079_01B:7:0:e20:self_action_after_live",
+      "path": "features-00195.jsonl.gz",
+      "sha256": "6a23d4a8c95536c2587957815944d67bb2f3b19641cc4a2fa9e98eab0320a853",
+      "windows": 10000
+    },
+    {
+      "bytes": 3817025,
+      "candidates": 69617,
+      "firstWindowId": "mleague:2025-26:L001_S022_0079_01B:7:0:e21:discard_response",
+      "lastWindowId": "mleague:2025-26:L001_S022_0082_02A:11:0:e90:self_action_after_live",
+      "path": "features-00196.jsonl.gz",
+      "sha256": "cb6deeec0a4a4e02c57ce04d5892209a128d049d37a5a48fc1dc8dada9c059d8",
+      "windows": 10000
+    },
+    {
+      "bytes": 3807835,
+      "candidates": 69246,
+      "firstWindowId": "mleague:2025-26:L001_S022_0082_02A:11:0:e91:discard_response",
+      "lastWindowId": "mleague:2025-26:L001_S022_0086_01A:3:0:e20:self_action_after_live",
+      "path": "features-00197.jsonl.gz",
+      "sha256": "b8c8210e78218e64dcad9c3196928aa10d3288c4ca9281553d26864852eff3bc",
+      "windows": 10000
+    },
+    {
+      "bytes": 3816635,
+      "candidates": 69495,
+      "firstWindowId": "mleague:2025-26:L001_S022_0086_01A:3:0:e21:discard_response",
+      "lastWindowId": "mleague:2025-26:L001_S022_0088_02B:4:0:e54:self_action_after_live",
+      "path": "features-00198.jsonl.gz",
+      "sha256": "b8d5cde51a20a59575c39369152867b10b2e275dc87fec8a1ef01b95707b9e35",
+      "windows": 10000
+    },
+    {
+      "bytes": 3790149,
+      "candidates": 68990,
+      "firstWindowId": "mleague:2025-26:L001_S022_0088_02B:4:0:e55:discard_response",
+      "lastWindowId": "mleague:2025-26:L001_S022_0093_02A:2:0:e34:self_action_after_live",
+      "path": "features-00199.jsonl.gz",
+      "sha256": "bb179e95d0469643e7fb257c13cb3ab06a71ed0c0028daea0dbd78a8789589e6",
+      "windows": 10000
+    },
+    {
+      "bytes": 3800813,
+      "candidates": 69067,
+      "firstWindowId": "mleague:2025-26:L001_S022_0093_02A:2:0:e35:discard_response",
+      "lastWindowId": "mleague:2025-26:L001_S022_0097_02A:6:0:e61:discard_response",
+      "path": "features-00200.jsonl.gz",
+      "sha256": "73500f5ab1bb6a1f0b69ed4376097d2113848e1d45997cc4a2f93ea34e2ca409",
+      "windows": 10000
+    },
+    {
+      "bytes": 3790360,
+      "candidates": 68747,
+      "firstWindowId": "mleague:2025-26:L001_S022_0097_02A:6:0:e62:self_action_after_live",
+      "lastWindowId": "mleague:2025-26:L001_S022_0102_02A:0:0:e63:discard_response",
+      "path": "features-00201.jsonl.gz",
+      "sha256": "90fd22181127bb98f236fbe7504c58fd3ac8d637c53642d0913824426fe850cf",
+      "windows": 10000
+    },
+    {
+      "bytes": 3814852,
+      "candidates": 69605,
+      "firstWindowId": "mleague:2025-26:L001_S022_0102_02A:0:0:e64:self_action_after_live",
+      "lastWindowId": "mleague:2025-26:L001_S022_0106_02A:2:0:e26:self_action_after_live",
+      "path": "features-00202.jsonl.gz",
+      "sha256": "b4ae1b0a9a6bc060527e0acb63c2f75123fe663d8443271948bf3e2f345dd57a",
+      "windows": 10000
+    },
+    {
+      "bytes": 3808459,
+      "candidates": 69433,
+      "firstWindowId": "mleague:2025-26:L001_S022_0106_02A:2:0:e27:discard_response",
+      "lastWindowId": "mleague:2025-26:L001_S023_0003_02A:3:0:e37:discard_response",
+      "path": "features-00203.jsonl.gz",
+      "sha256": "5d97fb0d9a05f5008483f2b7788b2ada3c503c9988428bfdd7e340af15093e00",
+      "windows": 10000
+    },
+    {
+      "bytes": 3788839,
+      "candidates": 68635,
+      "firstWindowId": "mleague:2025-26:L001_S023_0003_02A:3:0:e38:self_action_after_live",
+      "lastWindowId": "mleague:2025-26:L001_S023_0008_01A:12:0:e92:self_action_after_live",
+      "path": "features-00204.jsonl.gz",
+      "sha256": "fa39e1a110b3b2743f3bf01cefc683f6556d065f1a2202d1d480b00539a9433b",
+      "windows": 10000
+    },
+    {
+      "bytes": 3803743,
+      "candidates": 69135,
+      "firstWindowId": "mleague:2025-26:L001_S023_0008_01A:12:0:e93:discard_response",
+      "lastWindowId": "mleague:2025-26:L001_S023_0012_02A:13:0:e63:discard_response",
+      "path": "features-00205.jsonl.gz",
+      "sha256": "e11a05e29c72d48984e11f814299fecb4e9da8d1ed89c8bc461fb5e6f83fbb3b",
+      "windows": 10000
+    },
+    {
+      "bytes": 3805077,
+      "candidates": 69018,
+      "firstWindowId": "mleague:2025-26:L001_S023_0012_02A:13:0:e64:self_action_after_live",
+      "lastWindowId": "mleague:2025-26:L001_S024_0002_01A:4:0:e111:discard_response",
+      "path": "features-00206.jsonl.gz",
+      "sha256": "f20c35cb3921e71fbbd5ae4b901ac3c4e1b5d7295823d0396a26051f123dcc85",
+      "windows": 10000
+    },
+    {
+      "bytes": 3804851,
+      "candidates": 68619,
+      "firstWindowId": "mleague:2025-26:L001_S024_0002_01A:4:0:e112:self_action_after_live",
+      "lastWindowId": "mleague:2025-26:L001_S024_0006_01A:10:0:e47:discard_response",
+      "path": "features-00207.jsonl.gz",
+      "sha256": "65872c05bcaec85a7fd4eba3eafda4210d6d233a84f8bf4b99789f9fbef2c7e6",
+      "windows": 10000
+    },
+    {
+      "bytes": 1963011,
+      "candidates": 36001,
+      "firstWindowId": "mleague:2025-26:L001_S024_0006_01A:10:0:e48:self_action_after_live",
+      "lastWindowId": "mleague:2025-26:L001_S024_0008_02A:9:0:e117:discard_response",
+      "path": "features-00208.jsonl.gz",
+      "sha256": "6927b8f394a36267749777343c194f37c522fb00e38b98197029984ae0ebf9b0",
+      "windows": 5155
+    }
+  ],
+  "status": "building",
+  "totalCandidates": 14534711,
+  "totalWindows": 2085155
+}

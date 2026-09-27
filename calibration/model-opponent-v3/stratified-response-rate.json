@@ -1,0 +1,203 @@
+{
+  "bySplit": {
+    "calibration": [
+      {
+        "differences": {
+          "chi": {
+            "absoluteError": 0.0026236510859116765,
+            "observed": 0.010514750882988371,
+            "predicted": 0.013138401968900048
+          },
+          "daiminkan": {
+            "absoluteError": 3.9279594441669256e-05,
+            "observed": 7.373598094662253e-05,
+            "predicted": 3.445638650495327e-05
+          },
+          "pass": {
+            "absoluteError": 0.0026961349176987115,
+            "observed": 0.9655800440941166,
+            "predicted": 0.9628839091764179
+          },
+          "pon": {
+            "absoluteError": 9.822721954146074e-05,
+            "observed": 0.016376761368244862,
+            "predicted": 0.016474988587786323
+          },
+          "ron": {
+            "absoluteError": 1.3536206682987321e-05,
+            "observed": 0.007454707673703537,
+            "predicted": 0.007468243880386524
+          }
+        },
+        "maximumAbsoluteError": 0.0026961349176987115,
+        "riichiCount": "0",
+        "windows": 135619
+      },
+      {
+        "differences": {
+          "chi": {
+            "absoluteError": 0.009141420418067744,
+            "observed": 0.06474135195176134,
+            "predicted": 0.07388277236982908
+          },
+          "daiminkan": {
+            "absoluteError": 8.264945610768096e-05,
+            "observed": 0.0,
+            "predicted": 8.264945610768096e-05
+          },
+          "pass": {
+            "absoluteError": 0.02911663503870776,
+            "observed": 0.8429070136464615,
+            "predicted": 0.8137903786077537
+          },
+          "pon": {
+            "absoluteError": 0.02003867096198862,
+            "observed": 0.02411932719771501,
+            "predicted": 0.04415799815970363
+          },
+          "ron": {
+            "absoluteError": 0.0001461057974564417,
+            "observed": 0.0682323072040622,
+            "predicted": 0.06808620140660576
+          }
+        },
+        "maximumAbsoluteError": 0.02911663503870776,
+        "riichiCount": "1",
+        "windows": 3151
+      },
+      {
+        "differences": {
+          "chi": {
+            "absoluteError": 0.003439941668960743,
+            "observed": 0.06108597285067873,
+            "predicted": 0.06452591451963947
+          },
+          "daiminkan": {
+            "absoluteError": 0.0002070159833520979,
+            "observed": 0.0,
+            "predicted": 0.0002070159833520979
+          },
+          "pass": {
+            "absoluteError": 0.043595738174445064,
+            "observed": 0.8167420814479638,
+            "predicted": 0.7731463432735187
+          },
+          "pon": {
+            "absoluteError": 0.04016784451414262,
+            "observed": 0.011312217194570135,
+            "predicted": 0.051480061708712756
+          },
+          "ron": {
+            "absoluteError": 0.00021906399200996574,
+            "observed": 0.11085972850678733,
+            "predicted": 0.11064066451477736
+          }
+        },
+        "maximumAbsoluteError": 0.043595738174445064,
+        "riichiCount": "2+",
+        "windows": 442
+      }
+    ],
+    "developmentConfirmation": [
+      {
+        "differences": {
+          "chi": {
+            "absoluteError": 0.003244950362227562,
+            "observed": 0.009852825525221886,
+            "predicted": 0.013097775887449448
+          },
+          "daiminkan": {
+            "absoluteError": 2.2248823702245197e-05,
+            "observed": 1.1234692731153803e-05,
+            "predicted": 3.3483516433399e-05
+          },
+          "pass": {
+            "absoluteError": 0.003041956775793442,
+            "observed": 0.9664419728120436,
+            "predicted": 0.9634000160362501
+          },
+          "pon": {
+            "absoluteError": 0.00022085155010858823,
+            "observed": 0.016380182002022244,
+            "predicted": 0.016159330451913655
+          },
+          "ron": {
+            "absoluteError": 4.390860023116908e-06,
+            "observed": 0.007313784967981126,
+            "predicted": 0.007309394107958009
+          }
+        },
+        "maximumAbsoluteError": 0.003244950362227562,
+        "riichiCount": "0",
+        "windows": 178020
+      },
+      {
+        "differences": {
+          "chi": {
+            "absoluteError": 0.004054762189898295,
+            "observed": 0.0694980694980695,
+            "predicted": 0.07355283168796779
+          },
+          "daiminkan": {
+            "absoluteError": 0.00011380558873948828,
+            "observed": 0.0,
+            "predicted": 0.00011380558873948828
+          },
+          "pass": {
+            "absoluteError": 0.029116541772598592,
+            "observed": 0.8472490347490348,
+            "predicted": 0.8181324929764362
+          },
+          "pon": {
+            "absoluteError": 0.0248447537678568,
+            "observed": 0.018581081081081082,
+            "predicted": 0.04342583484893788
+          },
+          "ron": {
+            "absoluteError": 0.00010322022610424753,
+            "observed": 0.06467181467181467,
+            "predicted": 0.06477503489791892
+          }
+        },
+        "maximumAbsoluteError": 0.029116541772598592,
+        "riichiCount": "1",
+        "windows": 4144
+      },
+      {
+        "differences": {
+          "chi": {
+            "absoluteError": 0.0040687276135165235,
+            "observed": 0.07177033492822966,
+            "predicted": 0.06770160731471314
+          },
+          "daiminkan": {
+            "absoluteError": 0.00010103915340106662,
+            "observed": 0.0,
+            "predicted": 0.00010103915340106662
+          },
+          "pass": {
+            "absoluteError": 0.024157905526414614,
+            "observed": 0.8054226475279107,
+            "predicted": 0.7812647420014961
+          },
+          "pon": {
+            "absoluteError": 0.02834863598503004,
+            "observed": 0.014354066985645933,
+            "predicted": 0.04270270297067597
+          },
+          "ron": {
+            "absoluteError": 0.00022304199850015083,
+            "observed": 0.10845295055821372,
+            "predicted": 0.10822990855971357
+          }
+        },
+        "maximumAbsoluteError": 0.02834863598503004,
+        "riichiCount": "2+",
+        "windows": 627
+      }
+    ]
+  },
+  "design": "calibration/PHASE_D32B_DESIGN.md#8.3",
+  "limitation": "危険度特徴はdiscard系候補にしか付かないため、親リーチの有無での層別はできない。リーチ人数だけで層別する。",
+  "schemaVersion": "ev-policy-opponent-stratified-response-rate/v1"
+}

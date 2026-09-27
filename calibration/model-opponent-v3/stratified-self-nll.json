@@ -1,0 +1,211 @@
+{
+  "bySplit": {
+    "calibration": [
+      {
+        "meanSelfNll": 1.4700445440108192,
+        "observedActionRates": {
+          "ankan": 0.0011121949440711805,
+          "discard": 0.974000164094336,
+          "kakan": 0.00040111948802567165,
+          "riichi_discard": 0.018332983873173312,
+          "tsumo": 0.006153537600393826
+        },
+        "predictedActionRates": {
+          "ankan": 0.0010542115259684042,
+          "discard": 0.9785049662508357,
+          "kakan": 0.0004592522843029427,
+          "riichi_discard": 0.013841686637897175,
+          "tsumo": 0.0061398833009845945
+        },
+        "riichiCount": "0",
+        "riichiIncludesDealer": false,
+        "windows": 109693
+      },
+      {
+        "meanSelfNll": 1.159665974942438,
+        "observedActionRates": {
+          "ankan": 0.0009042499748819451,
+          "discard": 0.9654877926253391,
+          "kakan": 0.00015070832914699085,
+          "riichi_discard": 0.022405304933185974,
+          "tsumo": 0.011051944137445997
+        },
+        "predictedActionRates": {
+          "ankan": 0.0016702084317017044,
+          "discard": 0.9658101392102929,
+          "kakan": 0.0005981984544116426,
+          "riichi_discard": 0.020894033310824074,
+          "tsumo": 0.011027420592762332
+        },
+        "riichiCount": "1",
+        "riichiIncludesDealer": false,
+        "windows": 19906
+      },
+      {
+        "meanSelfNll": 1.1616089914397134,
+        "observedActionRates": {
+          "ankan": 0.0007984031936127744,
+          "discard": 0.9705921490352628,
+          "kakan": 0.0001330671989354624,
+          "riichi_discard": 0.017964071856287425,
+          "tsumo": 0.01051230871590153
+        },
+        "predictedActionRates": {
+          "ankan": 0.0016206137818099357,
+          "discard": 0.9665363395605038,
+          "kakan": 0.0012005499910042715,
+          "riichi_discard": 0.020153514079583035,
+          "tsumo": 0.01048898258709407
+        },
+        "riichiCount": "1",
+        "riichiIncludesDealer": true,
+        "windows": 7515
+      },
+      {
+        "meanSelfNll": 1.0940077495096625,
+        "observedActionRates": {
+          "discard": 0.978021978021978,
+          "kakan": 0.0005494505494505495,
+          "riichi_discard": 0.015934065934065933,
+          "tsumo": 0.005494505494505495
+        },
+        "predictedActionRates": {
+          "ankan": 0.00132347979444633,
+          "discard": 0.9744240324418025,
+          "kakan": 0.0011624381134021542,
+          "riichi_discard": 0.017607736105906224,
+          "tsumo": 0.005482313544443723
+        },
+        "riichiCount": "2+",
+        "riichiIncludesDealer": false,
+        "windows": 1820
+      },
+      {
+        "meanSelfNll": 1.0588938085594326,
+        "observedActionRates": {
+          "ankan": 0.0013568521031207597,
+          "discard": 0.9782903663500678,
+          "riichi_discard": 0.0101763907734057,
+          "tsumo": 0.0101763907734057
+        },
+        "predictedActionRates": {
+          "ankan": 0.003294455831352047,
+          "discard": 0.971170145678376,
+          "kakan": 0.000525286980160402,
+          "riichi_discard": 0.014856301485463835,
+          "tsumo": 0.010153810024648142
+        },
+        "riichiCount": "2+",
+        "riichiIncludesDealer": true,
+        "windows": 1474
+      }
+    ],
+    "developmentConfirmation": [
+      {
+        "meanSelfNll": 1.4862721413847733,
+        "observedActionRates": {
+          "ankan": 0.0009508540334950479,
+          "discard": 0.97354266003151,
+          "kakan": 0.0005066594485046606,
+          "riichi_discard": 0.0184826590598344,
+          "tsumo": 0.006517167426655839
+        },
+        "predictedActionRates": {
+          "ankan": 0.0008253342636552543,
+          "discard": 0.978112221267199,
+          "kakan": 0.0005098217742381437,
+          "riichi_discard": 0.014042991298808646,
+          "tsumo": 0.006509631396113361
+        },
+        "riichiCount": "0",
+        "riichiIncludesDealer": false,
+        "windows": 144081
+      },
+      {
+        "meanSelfNll": 1.166789620041211,
+        "observedActionRates": {
+          "ankan": 0.001218769043266301,
+          "discard": 0.9648461304082876,
+          "kakan": 0.00026660572821450335,
+          "riichi_discard": 0.02174741011578306,
+          "tsumo": 0.011921084704448507
+        },
+        "predictedActionRates": {
+          "ankan": 0.0013579834787646613,
+          "discard": 0.9657545576584097,
+          "kakan": 0.0009335699756358336,
+          "riichi_discard": 0.020059256293776178,
+          "tsumo": 0.011894632593417944
+        },
+        "riichiCount": "1",
+        "riichiIncludesDealer": false,
+        "windows": 26256
+      },
+      {
+        "meanSelfNll": 1.1342536144368762,
+        "observedActionRates": {
+          "ankan": 0.0013296512222563158,
+          "discard": 0.9704408305206096,
+          "kakan": 0.00010228086325048584,
+          "riichi_discard": 0.019024240564590365,
+          "tsumo": 0.009102996829293239
+        },
+        "predictedActionRates": {
+          "ankan": 0.0021782378509879003,
+          "discard": 0.9699484501201602,
+          "kakan": 0.000590355273013544,
+          "riichi_discard": 0.018200158884012538,
+          "tsumo": 0.009082797871831801
+        },
+        "riichiCount": "1",
+        "riichiIncludesDealer": true,
+        "windows": 9777
+      },
+      {
+        "meanSelfNll": 1.1010550371066095,
+        "observedActionRates": {
+          "ankan": 0.001256281407035176,
+          "discard": 0.9719430485762144,
+          "riichi_discard": 0.016331658291457288,
+          "tsumo": 0.010469011725293133
+        },
+        "predictedActionRates": {
+          "ankan": 0.0020881192176570775,
+          "discard": 0.968192695742015,
+          "kakan": 0.00033253230602783477,
+          "riichi_discard": 0.018940871064608424,
+          "tsumo": 0.010445781669689676
+        },
+        "riichiCount": "2+",
+        "riichiIncludesDealer": false,
+        "windows": 2388
+      },
+      {
+        "meanSelfNll": 1.077084490562587,
+        "observedActionRates": {
+          "ankan": 0.0010346611484738748,
+          "discard": 0.9767201241593378,
+          "riichi_discard": 0.017071908949818936,
+          "tsumo": 0.005173305742369374
+        },
+        "predictedActionRates": {
+          "ankan": 0.002247577696512881,
+          "discard": 0.9738161319944224,
+          "kakan": 0.0003954920316541108,
+          "riichi_discard": 0.0183789717637615,
+          "tsumo": 0.0051618265136510995
+        },
+        "riichiCount": "2+",
+        "riichiIncludesDealer": true,
+        "windows": 1933
+      }
+    ]
+  },
+  "design": "calibration/PHASE_D32B_DESIGN.md#5.3",
+  "featureSource": [
+    "opponent_riichi_count(kind)",
+    "danger_dealer_rate(detail, discard candidate)"
+  ],
+  "schemaVersion": "ev-policy-opponent-stratified-self-nll/v1",
+  "skippedWindowsWithoutDiscardCandidate": 0
+}

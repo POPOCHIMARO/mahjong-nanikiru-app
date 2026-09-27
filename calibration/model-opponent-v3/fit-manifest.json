@@ -1,0 +1,46 @@
+{
+  "batchSize": 256,
+  "calibrationSplit": "calibration",
+  "confirmationSplit": "developmentConfirmation",
+  "datasetManifestHash": "e6ccde7d8f00534827d207f1f92643ae5cdc4a3875d97752d815c7cc02ba62e7",
+  "epochs": 2,
+  "exactCalculationVersion": "exact-candidate-ukeire/v1",
+  "featureCacheManifestHash": "22433203ba701e3ee5618773432ece4ba85823aa9ec463440677fb9ddacbbbd8",
+  "featureSchemaVersion": "ev-policy-opponent-features/v3",
+  "fixedComponents": {
+    "chankanRule": "chankan_uses_discard_ron_constant",
+    "estimationSplits": [
+      "calibration",
+      "selection",
+      "train"
+    ],
+    "gridMaxCells": 3200,
+    "gridRelativeTolerance": 0.01,
+    "gridStartCells": 400,
+    "prior": "jeffreys_beta_0.5_0.5",
+    "thetaConstantRoundTrips": 1
+  },
+  "labelDefinitionVersion": "joint-public-resolution-v1",
+  "learningRate": 0.03,
+  "maximumWindows": null,
+  "optimizer": "deterministic_minibatch_sgd",
+  "regularizationGrid": [
+    0.01,
+    0.1,
+    1.0,
+    10.0,
+    100.0
+  ],
+  "schemaVersion": "ev-policy-opponent-fit-manifest/v3",
+  "seed": 20260909,
+  "selectionSplit": "selection",
+  "temperatureGrid": [
+    0.5,
+    0.75,
+    1.0,
+    1.25,
+    1.5,
+    2.0
+  ],
+  "trainSplit": "train"
+}

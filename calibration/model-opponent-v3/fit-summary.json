@@ -1,0 +1,1936 @@
+{
+  "d33Conditions": [
+    "fixed_component_sensitivity"
+  ],
+  "eligibleForAdoption": false,
+  "eligibleForD33": true,
+  "fixedComponentsPath": "fixed-components.json",
+  "fixedConstants": {
+    "epsChankan": 0.0021512838306655176,
+    "epsRon": 0.0021512838306655176,
+    "epsTsumo": 0.0022189349112426036,
+    "rho": 0.007037378864789632
+  },
+  "holds": [],
+  "manifestPath": "fit-manifest.json",
+  "metrics": {
+    "calibration": {
+      "meanNll": 0.746807237762764,
+      "observedKinds": {
+        "ankan": 148,
+        "discard": 136576,
+        "kakan": 49,
+        "riichi_discard": 2636,
+        "tsumo": 999
+      },
+      "phases": {
+        "chankan_response": {
+          "meanNll": 0.0,
+          "nll": 0.0,
+          "windows": 45
+        },
+        "discard_response": {
+          "meanNll": 0.08789862897554708,
+          "nll": 12236.54393694386,
+          "windows": 139212
+        },
+        "self_action_after_call": {
+          "meanNll": 1.5031214314241979,
+          "nll": 5950.857747008399,
+          "windows": 3959
+        },
+        "self_action_after_live": {
+          "meanNll": 1.3981945242332596,
+          "nll": 190498.41114868468,
+          "windows": 136246
+        },
+        "self_action_after_rinshan": {
+          "meanNll": 0.8376025432615504,
+          "nll": 170.03331628209472,
+          "windows": 203
+        }
+      },
+      "rates": {
+        "publicResponseResolution": {
+          "observed": {
+            "chi": 0.011898863252834686,
+            "daiminkan": 7.180967563569515e-05,
+            "pass": 0.9623430060966415,
+            "pon": 0.016530587331337023,
+            "ron": 0.009155733643551132
+          },
+          "predicted": {
+            "chi": 0.014671736476983287,
+            "daiminkan": 3.608342978990062e-05,
+            "pass": 0.9589201048803034,
+            "pon": 0.017207160263135603,
+            "ron": 0.009164914949782619
+          },
+          "windows": 139257
+        },
+        "selfAction": {
+          "observed": {
+            "ankan": 0.001054070993105806,
+            "discard": 0.9727081078001254,
+            "kakan": 0.000348982963933679,
+            "riichi_discard": 0.018773859039370976,
+            "tsumo": 0.00711497920346419
+          },
+          "predicted": {
+            "ankan": 0.0011988666432903644,
+            "discard": 0.9759346975930543,
+            "kakan": 0.0005284352943785702,
+            "riichi_discard": 0.015238808941559642,
+            "tsumo": 0.007099191527716673
+          },
+          "windows": 140408
+        }
+      },
+      "responseMeanNll": 0.08787022510138708,
+      "selfKindBrier": 0.020475692312571236,
+      "selfMeanNll": 1.4003425888266698,
+      "selfTopKindCalibration": {
+        "bins": [
+          {
+            "accuracy": null,
+            "lower": 0.0,
+            "meanConfidence": null,
+            "upper": 0.1,
+            "windows": 0
+          },
+          {
+            "accuracy": null,
+            "lower": 0.1,
+            "meanConfidence": null,
+            "upper": 0.2,
+            "windows": 0
+          },
+          {
+            "accuracy": null,
+            "lower": 0.2,
+            "meanConfidence": null,
+            "upper": 0.3,
+            "windows": 0
+          },
+          {
+            "accuracy": null,
+            "lower": 0.3,
+            "meanConfidence": null,
+            "upper": 0.4,
+            "windows": 0
+          },
+          {
+            "accuracy": 0.47368421052631576,
+            "lower": 0.4,
+            "meanConfidence": 0.4735995220829143,
+            "upper": 0.5,
+            "windows": 19
+          },
+          {
+            "accuracy": 0.5072463768115942,
+            "lower": 0.5,
+            "meanConfidence": 0.5514888111220011,
+            "upper": 0.6,
+            "windows": 2346
+          },
+          {
+            "accuracy": 0.5757271815446339,
+            "lower": 0.6,
+            "meanConfidence": 0.6450169461178556,
+            "upper": 0.7,
+            "windows": 1994
+          },
+          {
+            "accuracy": 0.7663174858984689,
+            "lower": 0.7,
+            "meanConfidence": 0.7469186686565621,
+            "upper": 0.8,
+            "windows": 1241
+          },
+          {
+            "accuracy": 0.8365937859608745,
+            "lower": 0.8,
+            "meanConfidence": 0.8392541387229111,
+            "upper": 0.9,
+            "windows": 869
+          },
+          {
+            "accuracy": 0.999925339146925,
+            "lower": 0.9,
+            "meanConfidence": 0.999954202007814,
+            "upper": 1.0,
+            "windows": 133939
+          }
+        ],
+        "ece": 0.0019387057148002244
+      },
+      "skipped": {
+        "structural_probability_one": 104626
+      },
+      "windows": 279665
+    },
+    "developmentConfirmation": {
+      "meanNll": 0.7522310375820025,
+      "observedKinds": {
+        "ankan": 187,
+        "discard": 179299,
+        "kakan": 81,
+        "riichi_discard": 3492,
+        "tsumo": 1376
+      },
+      "phases": {
+        "chankan_response": {
+          "meanNll": 0.0,
+          "nll": 0.0,
+          "windows": 81
+        },
+        "discard_response": {
+          "meanNll": 0.08599985621422045,
+          "nll": 15719.99971725357,
+          "windows": 182791
+        },
+        "self_action_after_call": {
+          "meanNll": 1.524856680314075,
+          "nll": 7759.995646118328,
+          "windows": 5089
+        },
+        "self_action_after_live": {
+          "meanNll": 1.4104258150373625,
+          "nll": 252573.41325363074,
+          "windows": 179076
+        },
+        "self_action_after_rinshan": {
+          "meanNll": 0.9122855708340404,
+          "nll": 246.3171041251909,
+          "windows": 270
+        }
+      },
+      "rates": {
+        "publicResponseResolution": {
+          "observed": {
+            "chi": 0.011412353996237806,
+            "daiminkan": 1.0936611400323724e-05,
+            "pass": 0.9632037709436109,
+            "pon": 0.01641585371188591,
+            "ron": 0.00895708473686513
+          },
+          "predicted": {
+            "chi": 0.01464914205446981,
+            "daiminkan": 3.552045968979726e-05,
+            "pass": 0.9594998955493604,
+            "pon": 0.016861057250023452,
+            "ron": 0.008954384686461517
+          },
+          "windows": 182872
+        },
+        "selfAction": {
+          "observed": {
+            "ankan": 0.0010139073386287853,
+            "discard": 0.9721527909561635,
+            "kakan": 0.0004391791145932171,
+            "riichi_discard": 0.018933499606907583,
+            "tsumo": 0.007460622983706997
+          },
+          "predicted": {
+            "ankan": 0.0010041360268300003,
+            "discard": 0.9757467690822138,
+            "kakan": 0.0005709215771547466,
+            "riichi_discard": 0.01522869503350054,
+            "tsumo": 0.007449478280300226
+          },
+          "windows": 184435
+        }
+      },
+      "responseMeanNll": 0.08596176406040056,
+      "selfKindBrier": 0.020690089451460874,
+      "selfMeanNll": 1.4128539919422753,
+      "selfTopKindCalibration": {
+        "bins": [
+          {
+            "accuracy": null,
+            "lower": 0.0,
+            "meanConfidence": null,
+            "upper": 0.1,
+            "windows": 0
+          },
+          {
+            "accuracy": null,
+            "lower": 0.1,
+            "meanConfidence": null,
+            "upper": 0.2,
+            "windows": 0
+          },
+          {
+            "accuracy": null,
+            "lower": 0.2,
+            "meanConfidence": null,
+            "upper": 0.3,
+            "windows": 0
+          },
+          {
+            "accuracy": null,
+            "lower": 0.3,
+            "meanConfidence": null,
+            "upper": 0.4,
+            "windows": 0
+          },
+          {
+            "accuracy": 0.23076923076923078,
+            "lower": 0.4,
+            "meanConfidence": 0.46886032465726557,
+            "upper": 0.5,
+            "windows": 13
+          },
+          {
+            "accuracy": 0.5016880486158002,
+            "lower": 0.5,
+            "meanConfidence": 0.5517860771130318,
+            "upper": 0.6,
+            "windows": 2962
+          },
+          {
+            "accuracy": 0.5713163064833006,
+            "lower": 0.6,
+            "meanConfidence": 0.6465469695577143,
+            "upper": 0.7,
+            "windows": 2545
+          },
+          {
+            "accuracy": 0.7171411265899454,
+            "lower": 0.7,
+            "meanConfidence": 0.7467518136116923,
+            "upper": 0.8,
+            "windows": 1651
+          },
+          {
+            "accuracy": 0.8386831275720165,
+            "lower": 0.8,
+            "meanConfidence": 0.8416169728456169,
+            "upper": 0.9,
+            "windows": 1215
+          },
+          {
+            "accuracy": 0.9998750347914501,
+            "lower": 0.9,
+            "meanConfidence": 0.9999280125792755,
+            "upper": 1.0,
+            "windows": 176049
+          }
+        ],
+        "ece": 0.0021944106867076993
+      },
+      "skipped": {
+        "masked": 2,
+        "structural_probability_one": 137535
+      },
+      "windows": 367307
+    },
+    "selection": {
+      "meanNll": 0.7527817763820714,
+      "observedKinds": {
+        "ankan": 144,
+        "discard": 137522,
+        "kakan": 56,
+        "riichi_discard": 2610,
+        "tsumo": 1001
+      },
+      "phases": {
+        "chankan_response": {
+          "meanNll": 0.0,
+          "nll": 0.0,
+          "windows": 56
+        },
+        "discard_response": {
+          "meanNll": 0.0826763524012246,
+          "nll": 11585.602614688407,
+          "windows": 140132
+        },
+        "self_action_after_call": {
+          "meanNll": 1.5352232978504694,
+          "nll": 5583.607134282157,
+          "windows": 3637
+        },
+        "self_action_after_live": {
+          "meanNll": 1.4153582832279747,
+          "nll": 194597.61036101426,
+          "windows": 137490
+        },
+        "self_action_after_rinshan": {
+          "meanNll": 0.7624192178160433,
+          "nll": 157.0583588701049,
+          "windows": 206
+        }
+      },
+      "rates": {
+        "publicResponseResolution": {
+          "observed": {
+            "chi": 0.010578651525094872,
+            "daiminkan": 4.2799669015892945e-05,
+            "pass": 0.9651753359774018,
+            "pon": 0.015365081176705566,
+            "ron": 0.008838131651781893
+          },
+          "predicted": {
+            "chi": 0.014810460527652426,
+            "daiminkan": 3.594430393030168e-05,
+            "pass": 0.9593881559868526,
+            "pon": 0.01693909573818805,
+            "ron": 0.008826343443380427
+          },
+          "windows": 140188
+        },
+        "selfAction": {
+          "observed": {
+            "ankan": 0.0010188703275243573,
+            "discard": 0.9730353137625325,
+            "kakan": 0.00039622734959280563,
+            "riichi_discard": 0.018467024686378977,
+            "tsumo": 0.0070825638739714005
+          },
+          "predicted": {
+            "ankan": 0.0009482465446954533,
+            "discard": 0.9751054421688292,
+            "kakan": 0.0006036910729896691,
+            "riichi_discard": 0.01626165251107839,
+            "tsumo": 0.00708096770240494
+          },
+          "windows": 141333
+        }
+      },
+      "responseMeanNll": 0.08264332620972129,
+      "selfKindBrier": 0.02141851757845022,
+      "selfMeanNll": 1.4174911439944422,
+      "selfTopKindCalibration": {
+        "bins": [
+          {
+            "accuracy": null,
+            "lower": 0.0,
+            "meanConfidence": null,
+            "upper": 0.1,
+            "windows": 0
+          },
+          {
+            "accuracy": null,
+            "lower": 0.1,
+            "meanConfidence": null,
+            "upper": 0.2,
+            "windows": 0
+          },
+          {
+            "accuracy": null,
+            "lower": 0.2,
+            "meanConfidence": null,
+            "upper": 0.3,
+            "windows": 0
+          },
+          {
+            "accuracy": null,
+            "lower": 0.3,
+            "meanConfidence": null,
+            "upper": 0.4,
+            "windows": 0
+          },
+          {
+            "accuracy": 0.5625,
+            "lower": 0.4,
+            "meanConfidence": 0.47892278548912837,
+            "upper": 0.5,
+            "windows": 16
+          },
+          {
+            "accuracy": 0.5182451824518245,
+            "lower": 0.5,
+            "meanConfidence": 0.550248275785085,
+            "upper": 0.6,
+            "windows": 2439
+          },
+          {
+            "accuracy": 0.5824931255728689,
+            "lower": 0.6,
+            "meanConfidence": 0.6457989312508194,
+            "upper": 0.7,
+            "windows": 2182
+          },
+          {
+            "accuracy": 0.748371335504886,
+            "lower": 0.7,
+            "meanConfidence": 0.7457693782110597,
+            "upper": 0.8,
+            "windows": 1228
+          },
+          {
+            "accuracy": 0.847682119205298,
+            "lower": 0.8,
+            "meanConfidence": 0.8444505606783963,
+            "upper": 0.9,
+            "windows": 906
+          },
+          {
+            "accuracy": 0.9999331163329915,
+            "lower": 0.9,
+            "meanConfidence": 0.9999601008522397,
+            "upper": 1.0,
+            "windows": 134562
+          }
+        ],
+        "ece": 0.001608117952088707
+      },
+      "skipped": {
+        "masked": 1,
+        "structural_probability_one": 105335
+      },
+      "windows": 281521
+    },
+    "train": {
+      "meanNll": 0.7685460179139011,
+      "observedKinds": {
+        "ankan": 537,
+        "discard": 565621,
+        "kakan": 183,
+        "riichi_discard": 10222,
+        "tsumo": 4070
+      },
+      "phases": {
+        "chankan_response": {
+          "meanNll": 0.0,
+          "nll": 0.0,
+          "windows": 182
+        },
+        "discard_response": {
+          "meanNll": 0.07463236947089061,
+          "nll": 42976.527533226064,
+          "windows": 575843
+        },
+        "self_action_after_call": {
+          "meanNll": 1.5225402284432896,
+          "nll": 18958.670924575843,
+          "windows": 12452
+        },
+        "self_action_after_live": {
+          "meanNll": 1.4563617807861295,
+          "nll": 826411.0361453084,
+          "windows": 567449
+        },
+        "self_action_after_rinshan": {
+          "meanNll": 0.8178488868776953,
+          "nll": 598.665385194473,
+          "windows": 732
+        }
+      },
+      "rates": {
+        "publicResponseResolution": {
+          "observed": {
+            "chi": 0.008605529273903043,
+            "daiminkan": 2.430450067271386e-05,
+            "pass": 0.9702426109977865,
+            "pon": 0.013011588038713598,
+            "ron": 0.008115967188924092
+          },
+          "predicted": {
+            "chi": 0.014974924806632437,
+            "daiminkan": 3.5467596768930636e-05,
+            "pass": 0.9595487176074589,
+            "pon": 0.017324925378484325,
+            "ron": 0.0081159646106724
+          },
+          "windows": 576025
+        },
+        "selfAction": {
+          "observed": {
+            "ankan": 0.0009248527038594086,
+            "discard": 0.9741454584909918,
+            "kakan": 0.0003151732677956644,
+            "riichi_discard": 0.017604924280914105,
+            "tsumo": 0.007009591256439093
+          },
+          "predicted": {
+            "ankan": 0.0010779143482806171,
+            "discard": 0.9742413952026799,
+            "kakan": 0.0004203240062780324,
+            "riichi_discard": 0.017247426209304518,
+            "tsumo": 0.007012940233551115
+          },
+          "windows": 580633
+        }
+      },
+      "responseMeanNll": 0.07460878873872846,
+      "selfKindBrier": 0.021595750397461134,
+      "selfMeanNll": 1.4569760458931467,
+      "selfTopKindCalibration": {
+        "bins": [
+          {
+            "accuracy": null,
+            "lower": 0.0,
+            "meanConfidence": null,
+            "upper": 0.1,
+            "windows": 0
+          },
+          {
+            "accuracy": null,
+            "lower": 0.1,
+            "meanConfidence": null,
+            "upper": 0.2,
+            "windows": 0
+          },
+          {
+            "accuracy": null,
+            "lower": 0.2,
+            "meanConfidence": null,
+            "upper": 0.3,
+            "windows": 0
+          },
+          {
+            "accuracy": null,
+            "lower": 0.3,
+            "meanConfidence": null,
+            "upper": 0.4,
+            "windows": 0
+          },
+          {
+            "accuracy": 0.36619718309859156,
+            "lower": 0.4,
+            "meanConfidence": 0.47429696655493114,
+            "upper": 0.5,
+            "windows": 71
+          },
+          {
+            "accuracy": 0.5271894676588438,
+            "lower": 0.5,
+            "meanConfidence": 0.5510356079973615,
+            "upper": 0.6,
+            "windows": 10482
+          },
+          {
+            "accuracy": 0.6454704730495723,
+            "lower": 0.6,
+            "meanConfidence": 0.6455746683985791,
+            "upper": 0.7,
+            "windows": 9703
+          },
+          {
+            "accuracy": 0.7695035460992907,
+            "lower": 0.7,
+            "meanConfidence": 0.7473365822762623,
+            "upper": 0.8,
+            "windows": 5076
+          },
+          {
+            "accuracy": 0.8702213279678068,
+            "lower": 0.8,
+            "meanConfidence": 0.8410436766702972,
+            "upper": 0.9,
+            "windows": 3976
+          },
+          {
+            "accuracy": 0.9998458259647214,
+            "lower": 0.9,
+            "meanConfidence": 0.9999212099267288,
+            "upper": 1.0,
+            "windows": 551325
+          }
+        ],
+        "ece": 0.0009106134992387768
+      },
+      "skipped": {
+        "masked": 1,
+        "structural_probability_one": 431053
+      },
+      "windows": 1156658
+    }
+  },
+  "modelPath": "model.json",
+  "rateDiagnostics": {
+    "calibration": {
+      "developmentConfirmationReuse": null,
+      "diagnosticThresholdsNotAdoptionThresholds": {
+        "maximumAbsoluteRateError": 0.005,
+        "maximumRareRateRatio": 5.0,
+        "rareObservedRateMaximum": 0.001
+      },
+      "differences": {
+        "chi": {
+          "absoluteError": 0.002772873224148601,
+          "observed": 0.011898863252834686,
+          "predicted": 0.014671736476983287
+        },
+        "daiminkan": {
+          "absoluteError": 3.572624584579453e-05,
+          "observed": 7.180967563569515e-05,
+          "predicted": 3.608342978990062e-05
+        },
+        "pass": {
+          "absoluteError": 0.003422901216338037,
+          "observed": 0.9623430060966415,
+          "predicted": 0.9589201048803034
+        },
+        "pon": {
+          "absoluteError": 0.0006765729317985796,
+          "observed": 0.016530587331337023,
+          "predicted": 0.017207160263135603
+        },
+        "ron": {
+          "absoluteError": 9.181306231486816e-06,
+          "observed": 0.009155733643551132,
+          "predicted": 0.009164914949782619
+        }
+      },
+      "period": "calibration",
+      "reasons": [],
+      "status": "pass"
+    },
+    "developmentConfirmation": {
+      "developmentConfirmationReuse": "reused_non_independent",
+      "diagnosticThresholdsNotAdoptionThresholds": {
+        "maximumAbsoluteRateError": 0.005,
+        "maximumRareRateRatio": 5.0,
+        "rareObservedRateMaximum": 0.001
+      },
+      "differences": {
+        "chi": {
+          "absoluteError": 0.0032367880582320034,
+          "observed": 0.011412353996237806,
+          "predicted": 0.01464914205446981
+        },
+        "daiminkan": {
+          "absoluteError": 2.4583848289473535e-05,
+          "observed": 1.0936611400323724e-05,
+          "predicted": 3.552045968979726e-05
+        },
+        "pass": {
+          "absoluteError": 0.0037038753942504332,
+          "observed": 0.9632037709436109,
+          "predicted": 0.9594998955493604
+        },
+        "pon": {
+          "absoluteError": 0.0004452035381375431,
+          "observed": 0.01641585371188591,
+          "predicted": 0.016861057250023452
+        },
+        "ron": {
+          "absoluteError": 2.7000504036131523e-06,
+          "observed": 0.00895708473686513,
+          "predicted": 0.008954384686461517
+        }
+      },
+      "period": "developmentConfirmation",
+      "reasons": [],
+      "status": "pass"
+    }
+  },
+  "schemaVersion": "ev-policy-opponent-fit/v3",
+  "selectedLambda": 0.01,
+  "selection": [
+    {
+      "lambda": 0.01,
+      "metrics": {
+        "meanNll": 0.7536926960656842,
+        "observedKinds": {
+          "ankan": 144,
+          "discard": 137522,
+          "kakan": 56,
+          "riichi_discard": 2610,
+          "tsumo": 1001
+        },
+        "phases": {
+          "chankan_response": {
+            "meanNll": 0.0,
+            "nll": 0.0,
+            "windows": 56
+          },
+          "discard_response": {
+            "meanNll": 0.08201179917243012,
+            "nll": 11492.477441630977,
+            "windows": 140132
+          },
+          "self_action_after_call": {
+            "meanNll": 1.5290261049664482,
+            "nll": 5561.067943762972,
+            "windows": 3637
+          },
+          "self_action_after_live": {
+            "meanNll": 1.4180194759974094,
+            "nll": 194963.4977548838,
+            "windows": 137490
+          },
+          "self_action_after_rinshan": {
+            "meanNll": 0.7926133438421976,
+            "nll": 163.2783488314927,
+            "windows": 206
+          }
+        },
+        "rates": {
+          "publicResponseResolution": {
+            "observed": {
+              "chi": 0.010578651525094872,
+              "daiminkan": 4.2799669015892945e-05,
+              "pass": 0.9651753359774018,
+              "pon": 0.015365081176705566,
+              "ron": 0.008838131651781893
+            },
+            "predicted": {
+              "chi": 0.00879016814096981,
+              "daiminkan": 3.547760783506534e-05,
+              "pass": 0.9698676991288753,
+              "pon": 0.012478951987923795,
+              "ron": 0.008827703134383488
+            },
+            "windows": 140188
+          },
+          "selfAction": {
+            "observed": {
+              "ankan": 0.0010188703275243573,
+              "discard": 0.9730353137625325,
+              "kakan": 0.00039622734959280563,
+              "riichi_discard": 0.018467024686378977,
+              "tsumo": 0.0070825638739714005
+            },
+            "predicted": {
+              "ankan": 0.00130604658541926,
+              "discard": 0.9737515385646558,
+              "kakan": 0.0007102491035038684,
+              "riichi_discard": 0.01715119804401403,
+              "tsumo": 0.00708096770240494
+            },
+            "windows": 141333
+          }
+        },
+        "responseMeanNll": 0.08197903844573699,
+        "selfKindBrier": 0.02139373580040946,
+        "selfMeanNll": 1.4199645096861837,
+        "selfTopKindCalibration": {
+          "bins": [
+            {
+              "accuracy": null,
+              "lower": 0.0,
+              "meanConfidence": null,
+              "upper": 0.1,
+              "windows": 0
+            },
+            {
+              "accuracy": null,
+              "lower": 0.1,
+              "meanConfidence": null,
+              "upper": 0.2,
+              "windows": 0
+            },
+            {
+              "accuracy": null,
+              "lower": 0.2,
+              "meanConfidence": null,
+              "upper": 0.3,
+              "windows": 0
+            },
+            {
+              "accuracy": null,
+              "lower": 0.3,
+              "meanConfidence": null,
+              "upper": 0.4,
+              "windows": 0
+            },
+            {
+              "accuracy": 0.4883720930232558,
+              "lower": 0.4,
+              "meanConfidence": 0.47153519279452777,
+              "upper": 0.5,
+              "windows": 43
+            },
+            {
+              "accuracy": 0.5229528535980149,
+              "lower": 0.5,
+              "meanConfidence": 0.5502779593137681,
+              "upper": 0.6,
+              "windows": 3224
+            },
+            {
+              "accuracy": 0.6506591337099812,
+              "lower": 0.6,
+              "meanConfidence": 0.6425110497820119,
+              "upper": 0.7,
+              "windows": 2124
+            },
+            {
+              "accuracy": 0.8129938542581212,
+              "lower": 0.7,
+              "meanConfidence": 0.7479873870633449,
+              "upper": 0.8,
+              "windows": 1139
+            },
+            {
+              "accuracy": 0.8941605839416058,
+              "lower": 0.8,
+              "meanConfidence": 0.8199940571876344,
+              "upper": 0.9,
+              "windows": 274
+            },
+            {
+              "accuracy": 0.99996283329245,
+              "lower": 0.9,
+              "meanConfidence": 0.9999794815635598,
+              "upper": 1.0,
+              "windows": 134529
+            }
+          ],
+          "ece": 0.001434416077844525
+        },
+        "skipped": {
+          "masked": 1,
+          "structural_probability_one": 105335
+        },
+        "windows": 281521
+      }
+    },
+    {
+      "lambda": 0.1,
+      "metrics": {
+        "meanNll": 0.7553383950509054,
+        "observedKinds": {
+          "ankan": 144,
+          "discard": 137522,
+          "kakan": 56,
+          "riichi_discard": 2610,
+          "tsumo": 1001
+        },
+        "phases": {
+          "chankan_response": {
+            "meanNll": 0.0,
+            "nll": 0.0,
+            "windows": 56
+          },
+          "discard_response": {
+            "meanNll": 0.08204650838671239,
+            "nll": 11497.341313246781,
+            "windows": 140132
+          },
+          "self_action_after_call": {
+            "meanNll": 1.534751757291985,
+            "nll": 5581.89214127095,
+            "windows": 3637
+          },
+          "self_action_after_live": {
+            "meanNll": 1.4211974592940486,
+            "nll": 195400.43867833875,
+            "windows": 137490
+          },
+          "self_action_after_rinshan": {
+            "meanNll": 0.7958649527649406,
+            "nll": 163.94818026957776,
+            "windows": 206
+          }
+        },
+        "rates": {
+          "publicResponseResolution": {
+            "observed": {
+              "chi": 0.010578651525094872,
+              "daiminkan": 4.2799669015892945e-05,
+              "pass": 0.9651753359774018,
+              "pon": 0.015365081176705566,
+              "ron": 0.008838131651781893
+            },
+            "predicted": {
+              "chi": 0.008921998236892657,
+              "daiminkan": 3.547760783506534e-05,
+              "pass": 0.9696998369159726,
+              "pon": 0.012514984104911258,
+              "ron": 0.008827703134383488
+            },
+            "windows": 140188
+          },
+          "selfAction": {
+            "observed": {
+              "ankan": 0.0010188703275243573,
+              "discard": 0.9730353137625325,
+              "kakan": 0.00039622734959280563,
+              "riichi_discard": 0.018467024686378977,
+              "tsumo": 0.0070825638739714005
+            },
+            "predicted": {
+              "ankan": 0.0013313147777113529,
+              "discard": 0.9737084816338436,
+              "kakan": 0.0007164261767445626,
+              "riichi_discard": 0.017162809709290197,
+              "tsumo": 0.00708096770240494
+            },
+            "windows": 141333
+          }
+        },
+        "responseMeanNll": 0.08201373379495236,
+        "selfKindBrier": 0.021416152436470146,
+        "selfMeanNll": 1.4232081608674485,
+        "selfTopKindCalibration": {
+          "bins": [
+            {
+              "accuracy": null,
+              "lower": 0.0,
+              "meanConfidence": null,
+              "upper": 0.1,
+              "windows": 0
+            },
+            {
+              "accuracy": null,
+              "lower": 0.1,
+              "meanConfidence": null,
+              "upper": 0.2,
+              "windows": 0
+            },
+            {
+              "accuracy": null,
+              "lower": 0.2,
+              "meanConfidence": null,
+              "upper": 0.3,
+              "windows": 0
+            },
+            {
+              "accuracy": null,
+              "lower": 0.3,
+              "meanConfidence": null,
+              "upper": 0.4,
+              "windows": 0
+            },
+            {
+              "accuracy": 0.5,
+              "lower": 0.4,
+              "meanConfidence": 0.47030090990473633,
+              "upper": 0.5,
+              "windows": 44
+            },
+            {
+              "accuracy": 0.5245549416820136,
+              "lower": 0.5,
+              "meanConfidence": 0.5504350731606589,
+              "upper": 0.6,
+              "windows": 3258
+            },
+            {
+              "accuracy": 0.6523584905660378,
+              "lower": 0.6,
+              "meanConfidence": 0.6424518064873201,
+              "upper": 0.7,
+              "windows": 2120
+            },
+            {
+              "accuracy": 0.8153980752405949,
+              "lower": 0.7,
+              "meanConfidence": 0.747471859392742,
+              "upper": 0.8,
+              "windows": 1143
+            },
+            {
+              "accuracy": 0.895397489539749,
+              "lower": 0.8,
+              "meanConfidence": 0.818536628856502,
+              "upper": 0.9,
+              "windows": 239
+            },
+            {
+              "accuracy": 0.99996283329245,
+              "lower": 0.9,
+              "meanConfidence": 0.999979336865036,
+              "upper": 1.0,
+              "windows": 134529
+            }
+          ],
+          "ece": 0.0014494563768003624
+        },
+        "skipped": {
+          "masked": 1,
+          "structural_probability_one": 105335
+        },
+        "windows": 281521
+      }
+    },
+    {
+      "lambda": 1.0,
+      "metrics": {
+        "meanNll": 0.7711510175207049,
+        "observedKinds": {
+          "ankan": 144,
+          "discard": 137522,
+          "kakan": 56,
+          "riichi_discard": 2610,
+          "tsumo": 1001
+        },
+        "phases": {
+          "chankan_response": {
+            "meanNll": 0.0,
+            "nll": 0.0,
+            "windows": 56
+          },
+          "discard_response": {
+            "meanNll": 0.08244473874365639,
+            "nll": 11553.146129626057,
+            "windows": 140132
+          },
+          "self_action_after_call": {
+            "meanNll": 1.586991430066645,
+            "nll": 5771.887831152388,
+            "windows": 3637
+          },
+          "self_action_after_live": {
+            "meanNll": 1.4517419847704494,
+            "nll": 199600.00548608907,
+            "windows": 137490
+          },
+          "self_action_after_rinshan": {
+            "meanNll": 0.8260493037796146,
+            "nll": 170.1661565786006,
+            "windows": 206
+          }
+        },
+        "rates": {
+          "publicResponseResolution": {
+            "observed": {
+              "chi": 0.010578651525094872,
+              "daiminkan": 4.2799669015892945e-05,
+              "pass": 0.9651753359774018,
+              "pon": 0.015365081176705566,
+              "ron": 0.008838131651781893
+            },
+            "predicted": {
+              "chi": 0.010148193723302334,
+              "daiminkan": 3.547760783506534e-05,
+              "pass": 0.9681133948092716,
+              "pon": 0.01287523072519886,
+              "ron": 0.008827703134383488
+            },
+            "windows": 140188
+          },
+          "selfAction": {
+            "observed": {
+              "ankan": 0.0010188703275243573,
+              "discard": 0.9730353137625325,
+              "kakan": 0.00039622734959280563,
+              "riichi_discard": 0.018467024686378977,
+              "tsumo": 0.0070825638739714005
+            },
+            "predicted": {
+              "ankan": 0.0015536278917843616,
+              "discard": 0.9733174237316137,
+              "kakan": 0.0007690416848602932,
+              "riichi_discard": 0.017278938989335444,
+              "tsumo": 0.00708096770240494
+            },
+            "windows": 141333
+          }
+        },
+        "responseMeanNll": 0.0824118050733733,
+        "selfKindBrier": 0.021636741282658023,
+        "selfMeanNll": 1.4543104545563972,
+        "selfTopKindCalibration": {
+          "bins": [
+            {
+              "accuracy": null,
+              "lower": 0.0,
+              "meanConfidence": null,
+              "upper": 0.1,
+              "windows": 0
+            },
+            {
+              "accuracy": null,
+              "lower": 0.1,
+              "meanConfidence": null,
+              "upper": 0.2,
+              "windows": 0
+            },
+            {
+              "accuracy": null,
+              "lower": 0.2,
+              "meanConfidence": null,
+              "upper": 0.3,
+              "windows": 0
+            },
+            {
+              "accuracy": 0.0,
+              "lower": 0.3,
+              "meanConfidence": 0.399823090230531,
+              "upper": 0.4,
+              "windows": 1
+            },
+            {
+              "accuracy": 0.52,
+              "lower": 0.4,
+              "meanConfidence": 0.46045100201808076,
+              "upper": 0.5,
+              "windows": 50
+            },
+            {
+              "accuracy": 0.5190369540873461,
+              "lower": 0.5,
+              "meanConfidence": 0.5516817747449778,
+              "upper": 0.6,
+              "windows": 3572
+            },
+            {
+              "accuracy": 0.6749182624941616,
+              "lower": 0.6,
+              "meanConfidence": 0.6431111941216864,
+              "upper": 0.7,
+              "windows": 2141
+            },
+            {
+              "accuracy": 0.8448616600790514,
+              "lower": 0.7,
+              "meanConfidence": 0.7394896900770658,
+              "upper": 0.8,
+              "windows": 1012
+            },
+            {
+              "accuracy": 0.8181818181818182,
+              "lower": 0.8,
+              "meanConfidence": 0.8279016513413303,
+              "upper": 0.9,
+              "windows": 33
+            },
+            {
+              "accuracy": 0.9999702655288276,
+              "lower": 0.9,
+              "meanConfidence": 0.9999824818209945,
+              "upper": 1.0,
+              "windows": 134524
+            }
+          ],
+          "ece": 0.0020991847508195823
+        },
+        "skipped": {
+          "masked": 1,
+          "structural_probability_one": 105335
+        },
+        "windows": 281521
+      }
+    },
+    {
+      "lambda": 10.0,
+      "metrics": {
+        "meanNll": 0.8509920449269173,
+        "observedKinds": {
+          "ankan": 144,
+          "discard": 137522,
+          "kakan": 56,
+          "riichi_discard": 2610,
+          "tsumo": 1001
+        },
+        "phases": {
+          "chankan_response": {
+            "meanNll": 0.0,
+            "nll": 0.0,
+            "windows": 56
+          },
+          "discard_response": {
+            "meanNll": 0.08630729991882567,
+            "nll": 12094.414552224878,
+            "windows": 140132
+          },
+          "self_action_after_call": {
+            "meanNll": 1.7842577597883782,
+            "nll": 6489.345472350332,
+            "windows": 3637
+          },
+          "self_action_after_live": {
+            "meanNll": 1.605844446803904,
+            "nll": 220787.55299106875,
+            "windows": 137490
+          },
+          "self_action_after_rinshan": {
+            "meanNll": 0.974846913721301,
+            "nll": 200.818464226588,
+            "windows": 206
+          }
+        },
+        "rates": {
+          "publicResponseResolution": {
+            "observed": {
+              "chi": 0.010578651525094872,
+              "daiminkan": 4.2799669015892945e-05,
+              "pass": 0.9651753359774018,
+              "pon": 0.015365081176705566,
+              "ron": 0.008838131651781893
+            },
+            "predicted": {
+              "chi": 0.018165421572860576,
+              "daiminkan": 3.547760783506534e-05,
+              "pass": 0.9569203919310134,
+              "pon": 0.016051005753901452,
+              "ron": 0.008827703134383488
+            },
+            "windows": 140188
+          },
+          "selfAction": {
+            "observed": {
+              "ankan": 0.0010188703275243573,
+              "discard": 0.9730353137625325,
+              "kakan": 0.00039622734959280563,
+              "riichi_discard": 0.018467024686378977,
+              "tsumo": 0.0070825638739714005
+            },
+            "predicted": {
+              "ankan": 0.00237009167784954,
+              "discard": 0.9713890224385128,
+              "kakan": 0.0009490791469775702,
+              "riichi_discard": 0.018210839034252073,
+              "tsumo": 0.00708096770240494
+            },
+            "windows": 141333
+          }
+        },
+        "responseMeanNll": 0.0862728232960373,
+        "selfKindBrier": 0.02279562344350946,
+        "selfMeanNll": 1.6095159441011362,
+        "selfTopKindCalibration": {
+          "bins": [
+            {
+              "accuracy": null,
+              "lower": 0.0,
+              "meanConfidence": null,
+              "upper": 0.1,
+              "windows": 0
+            },
+            {
+              "accuracy": null,
+              "lower": 0.1,
+              "meanConfidence": null,
+              "upper": 0.2,
+              "windows": 0
+            },
+            {
+              "accuracy": null,
+              "lower": 0.2,
+              "meanConfidence": null,
+              "upper": 0.3,
+              "windows": 0
+            },
+            {
+              "accuracy": 0.5416666666666666,
+              "lower": 0.3,
+              "meanConfidence": 0.3886024718832162,
+              "upper": 0.4,
+              "windows": 48
+            },
+            {
+              "accuracy": 0.38095238095238093,
+              "lower": 0.4,
+              "meanConfidence": 0.4246734858047556,
+              "upper": 0.5,
+              "windows": 21
+            },
+            {
+              "accuracy": 0.5743209043360891,
+              "lower": 0.5,
+              "meanConfidence": 0.5504481599018628,
+              "upper": 0.6,
+              "windows": 5927
+            },
+            {
+              "accuracy": 0.7878411910669976,
+              "lower": 0.6,
+              "meanConfidence": 0.621769370782998,
+              "upper": 0.7,
+              "windows": 806
+            },
+            {
+              "accuracy": 0.625,
+              "lower": 0.7,
+              "meanConfidence": 0.7307723547312193,
+              "upper": 0.8,
+              "windows": 8
+            },
+            {
+              "accuracy": 0.0,
+              "lower": 0.8,
+              "meanConfidence": 0.824240626300164,
+              "upper": 0.9,
+              "windows": 1
+            },
+            {
+              "accuracy": 0.9999851325433758,
+              "lower": 0.9,
+              "meanConfidence": 0.9999834555558511,
+              "upper": 1.0,
+              "windows": 134522
+            }
+          ],
+          "ece": 0.0020201147583509904
+        },
+        "skipped": {
+          "masked": 1,
+          "structural_probability_one": 105335
+        },
+        "windows": 281521
+      }
+    },
+    {
+      "lambda": 100.0,
+      "metrics": {
+        "meanNll": 1.0246468354698373,
+        "observedKinds": {
+          "ankan": 144,
+          "discard": 137522,
+          "kakan": 56,
+          "riichi_discard": 2610,
+          "tsumo": 1001
+        },
+        "phases": {
+          "chankan_response": {
+            "meanNll": 0.0,
+            "nll": 0.0,
+            "windows": 56
+          },
+          "discard_response": {
+            "meanNll": 0.11459750120459344,
+            "nll": 16058.777038802089,
+            "windows": 140132
+          },
+          "self_action_after_call": {
+            "meanNll": 1.9302720957521975,
+            "nll": 7020.399612250742,
+            "windows": 3637
+          },
+          "self_action_after_live": {
+            "meanNll": 1.9282391108348835,
+            "nll": 265113.59534868813,
+            "windows": 137490
+          },
+          "self_action_after_rinshan": {
+            "meanNll": 1.2952901386541154,
+            "nll": 266.82976856274774,
+            "windows": 206
+          }
+        },
+        "rates": {
+          "publicResponseResolution": {
+            "observed": {
+              "chi": 0.010578651525094872,
+              "daiminkan": 4.2799669015892945e-05,
+              "pass": 0.9651753359774018,
+              "pon": 0.015365081176705566,
+              "ron": 0.008838131651781893
+            },
+            "predicted": {
+              "chi": 0.045156133472986575,
+              "daiminkan": 3.547760783506534e-05,
+              "pass": 0.9169583388459767,
+              "pon": 0.029022346938800854,
+              "ron": 0.008827703134383488
+            },
+            "windows": 140188
+          },
+          "selfAction": {
+            "observed": {
+              "ankan": 0.0010188703275243573,
+              "discard": 0.9730353137625325,
+              "kakan": 0.00039622734959280563,
+              "riichi_discard": 0.018467024686378977,
+              "tsumo": 0.0070825638739714005
+            },
+            "predicted": {
+              "ankan": 0.0028232485208855894,
+              "discard": 0.969268985584352,
+              "kakan": 0.0010627147192324871,
+              "riichi_discard": 0.019764083473127844,
+              "tsumo": 0.00708096770240494
+            },
+            "windows": 141333
+          }
+        },
+        "responseMeanNll": 0.1145517236767918,
+        "selfKindBrier": 0.02392329063929956,
+        "selfMeanNll": 1.927368871597579,
+        "selfTopKindCalibration": {
+          "bins": [
+            {
+              "accuracy": null,
+              "lower": 0.0,
+              "meanConfidence": null,
+              "upper": 0.1,
+              "windows": 0
+            },
+            {
+              "accuracy": null,
+              "lower": 0.1,
+              "meanConfidence": null,
+              "upper": 0.2,
+              "windows": 0
+            },
+            {
+              "accuracy": null,
+              "lower": 0.2,
+              "meanConfidence": null,
+              "upper": 0.3,
+              "windows": 0
+            },
+            {
+              "accuracy": 0.463768115942029,
+              "lower": 0.3,
+              "meanConfidence": 0.3431981083713449,
+              "upper": 0.4,
+              "windows": 69
+            },
+            {
+              "accuracy": null,
+              "lower": 0.4,
+              "meanConfidence": null,
+              "upper": 0.5,
+              "windows": 0
+            },
+            {
+              "accuracy": 0.5935924058142984,
+              "lower": 0.5,
+              "meanConfidence": 0.5114608364277279,
+              "upper": 0.6,
+              "windows": 6742
+            },
+            {
+              "accuracy": null,
+              "lower": 0.6,
+              "meanConfidence": null,
+              "upper": 0.7,
+              "windows": 0
+            },
+            {
+              "accuracy": null,
+              "lower": 0.7,
+              "meanConfidence": null,
+              "upper": 0.8,
+              "windows": 0
+            },
+            {
+              "accuracy": null,
+              "lower": 0.8,
+              "meanConfidence": null,
+              "upper": 0.9,
+              "windows": 0
+            },
+            {
+              "accuracy": 0.9999851325433758,
+              "lower": 0.9,
+              "meanConfidence": 0.9999834555558511,
+              "upper": 1.0,
+              "windows": 134522
+            }
+          ],
+          "ece": 0.003978377046000849
+        },
+        "skipped": {
+          "masked": 1,
+          "structural_probability_one": 105335
+        },
+        "windows": 281521
+      }
+    }
+  ],
+  "status": "complete_with_fixed_components",
+  "support": {
+    "bySplit": {
+      "calibration": {
+        "confirmedRonSkips": 1,
+        "heldOrCensored": {
+          "censoredResponseLabels": 10488,
+          "heldSelfWindows": 0
+        },
+        "informativeResponseWindows": {
+          "chankan_response": 0,
+          "discard_response": 34631
+        },
+        "legalWinSkips": {
+          "ron": 3,
+          "tsumo": 0
+        },
+        "observed": {
+          "ankan": 148,
+          "chi": 1657,
+          "daiminkan": 10,
+          "discard": 136576,
+          "kakan": 49,
+          "pass": 402039,
+          "pon": 2302,
+          "riichi_discard": 2636,
+          "ron": 1275,
+          "tsumo": 999
+        },
+        "opportunities": {
+          "ankan": 995,
+          "chi": 23188,
+          "daiminkan": 726,
+          "discard": 140408,
+          "kakan": 274,
+          "pass": 417771,
+          "pon": 13218,
+          "riichi_discard": 5406,
+          "ron": 1293,
+          "tsumo": 999
+        },
+        "responseWindows": {
+          "chankan_response": 45,
+          "discard_response": 139212
+        }
+      },
+      "developmentConfirmation": {
+        "confirmedRonSkips": 0,
+        "heldOrCensored": {
+          "censoredResponseLabels": 13458,
+          "heldSelfWindows": 2
+        },
+        "informativeResponseWindows": {
+          "chankan_response": 0,
+          "discard_response": 45337
+        },
+        "legalWinSkips": {
+          "ron": 3,
+          "tsumo": 1
+        },
+        "observed": {
+          "ankan": 187,
+          "chi": 2087,
+          "daiminkan": 2,
+          "discard": 179299,
+          "kakan": 81,
+          "pass": 528429,
+          "pon": 3002,
+          "riichi_discard": 3492,
+          "ron": 1638,
+          "tsumo": 1376
+        },
+        "opportunities": {
+          "ankan": 1138,
+          "chi": 30620,
+          "daiminkan": 936,
+          "discard": 184437,
+          "kakan": 388,
+          "pass": 548616,
+          "pon": 17011,
+          "riichi_discard": 7149,
+          "ron": 1658,
+          "tsumo": 1377
+        },
+        "responseWindows": {
+          "chankan_response": 81,
+          "discard_response": 182791
+        }
+      },
+      "selection": {
+        "confirmedRonSkips": 0,
+        "heldOrCensored": {
+          "censoredResponseLabels": 9764,
+          "heldSelfWindows": 1
+        },
+        "informativeResponseWindows": {
+          "chankan_response": 0,
+          "discard_response": 34853
+        },
+        "legalWinSkips": {
+          "ron": 1,
+          "tsumo": 2
+        },
+        "observed": {
+          "ankan": 144,
+          "chi": 1483,
+          "daiminkan": 6,
+          "discard": 137522,
+          "kakan": 56,
+          "pass": 405918,
+          "pon": 2154,
+          "riichi_discard": 2610,
+          "ron": 1239,
+          "tsumo": 1001
+        },
+        "opportunities": {
+          "ankan": 841,
+          "chi": 23592,
+          "daiminkan": 729,
+          "discard": 141334,
+          "kakan": 307,
+          "pass": 420564,
+          "pon": 13065,
+          "riichi_discard": 5812,
+          "ron": 1247,
+          "tsumo": 1003
+        },
+        "responseWindows": {
+          "chankan_response": 56,
+          "discard_response": 140132
+        }
+      },
+      "train": {
+        "confirmedRonSkips": 0,
+        "heldOrCensored": {
+          "censoredResponseLabels": 34282,
+          "heldSelfWindows": 1
+        },
+        "informativeResponseWindows": {
+          "chankan_response": 0,
+          "discard_response": 144972
+        },
+        "legalWinSkips": {
+          "ron": 10,
+          "tsumo": 11
+        },
+        "observed": {
+          "ankan": 537,
+          "chi": 4957,
+          "daiminkan": 14,
+          "discard": 565621,
+          "kakan": 183,
+          "pass": 1676652,
+          "pon": 7495,
+          "riichi_discard": 10222,
+          "ron": 4675,
+          "tsumo": 4070
+        },
+        "opportunities": {
+          "ankan": 3894,
+          "chi": 97826,
+          "daiminkan": 2951,
+          "discard": 580634,
+          "kakan": 902,
+          "pass": 1728075,
+          "pon": 54733,
+          "riichi_discard": 25767,
+          "ron": 4721,
+          "tsumo": 4081
+        },
+        "responseWindows": {
+          "chankan_response": 182,
+          "discard_response": 575843
+        }
+      }
+    },
+    "thresholdRole": "diagnostic_only_D4_must_freeze_adoption_thresholds",
+    "unidentifiedComponents": [
+      {
+        "component": "ron_pass",
+        "confirmedSkips": 1,
+        "observedSkips": 17,
+        "reason": "observed_skip_below_30",
+        "status": "opponent_component_unidentified"
+      },
+      {
+        "component": "tsumo_pass",
+        "observedSkips": 14,
+        "reason": "observed_skip_below_30",
+        "status": "opponent_component_unidentified"
+      },
+      {
+        "component": "chankan_response_policy",
+        "informativeWindows": 0,
+        "reason": "all_legal_sets_are_structural_pass_only",
+        "status": "opponent_component_unidentified"
+      },
+      {
+        "component": "daiminkan_policy",
+        "observedActions": 32,
+        "reason": "observed_action_below_100_and_rate_unstable",
+        "status": "opponent_component_unidentified"
+      }
+    ]
+  },
+  "temperatureSelection": {
+    "chankan_response": {
+      "candidates": [
+        {
+          "meanNll": 0.0,
+          "temperature": 0.5,
+          "windows": 45
+        },
+        {
+          "meanNll": 0.0,
+          "temperature": 0.75,
+          "windows": 45
+        },
+        {
+          "meanNll": 0.0,
+          "temperature": 1.0,
+          "windows": 45
+        },
+        {
+          "meanNll": 0.0,
+          "temperature": 1.25,
+          "windows": 45
+        },
+        {
+          "meanNll": 0.0,
+          "temperature": 1.5,
+          "windows": 45
+        },
+        {
+          "meanNll": 0.0,
+          "temperature": 2.0,
+          "windows": 45
+        }
+      ],
+      "selected": {
+        "meanNll": 0.0,
+        "temperature": 1.0,
+        "windows": 45
+      }
+    },
+    "discard_response": {
+      "candidates": [
+        {
+          "meanNll": 0.13099561776579732,
+          "temperature": 0.5,
+          "windows": 139212
+        },
+        {
+          "meanNll": 0.09777775187445649,
+          "temperature": 0.75,
+          "windows": 139212
+        },
+        {
+          "meanNll": 0.08838817636718548,
+          "temperature": 1.0,
+          "windows": 139212
+        },
+        {
+          "meanNll": 0.08789862897554708,
+          "temperature": 1.25,
+          "windows": 139212
+        },
+        {
+          "meanNll": 0.09092701018581142,
+          "temperature": 1.5,
+          "windows": 139212
+        },
+        {
+          "meanNll": 0.099906724108866,
+          "temperature": 2.0,
+          "windows": 139212
+        }
+      ],
+      "selected": {
+        "meanNll": 0.08789862897554708,
+        "temperature": 1.25,
+        "windows": 139212
+      }
+    },
+    "self_action_after_call": {
+      "candidates": [
+        {
+          "meanNll": 1.6319268947142167,
+          "temperature": 0.5,
+          "windows": 3959
+        },
+        {
+          "meanNll": 1.5031214314241979,
+          "temperature": 0.75,
+          "windows": 3959
+        },
+        {
+          "meanNll": 1.5046000081334707,
+          "temperature": 1.0,
+          "windows": 3959
+        },
+        {
+          "meanNll": 1.5376819990667492,
+          "temperature": 1.25,
+          "windows": 3959
+        },
+        {
+          "meanNll": 1.576767286815326,
+          "temperature": 1.5,
+          "windows": 3959
+        },
+        {
+          "meanNll": 1.6484693161359376,
+          "temperature": 2.0,
+          "windows": 3959
+        }
+      ],
+      "selected": {
+        "meanNll": 1.5031214314241979,
+        "temperature": 0.75,
+        "windows": 3959
+      }
+    },
+    "self_action_after_live": {
+      "candidates": [
+        {
+          "meanNll": 1.546980920466834,
+          "temperature": 0.5,
+          "windows": 136246
+        },
+        {
+          "meanNll": 1.3981945242332596,
+          "temperature": 0.75,
+          "windows": 136246
+        },
+        {
+          "meanNll": 1.4043917066878917,
+          "temperature": 1.0,
+          "windows": 136246
+        },
+        {
+          "meanNll": 1.4526480096201984,
+          "temperature": 1.25,
+          "windows": 136246
+        },
+        {
+          "meanNll": 1.5097682812598094,
+          "temperature": 1.5,
+          "windows": 136246
+        },
+        {
+          "meanNll": 1.6154753390189107,
+          "temperature": 2.0,
+          "windows": 136246
+        }
+      ],
+      "selected": {
+        "meanNll": 1.3981945242332596,
+        "temperature": 0.75,
+        "windows": 136246
+      }
+    },
+    "self_action_after_rinshan": {
+      "candidates": [
+        {
+          "meanNll": 0.9215492693623419,
+          "temperature": 0.5,
+          "windows": 203
+        },
+        {
+          "meanNll": 0.8376025432615504,
+          "temperature": 0.75,
+          "windows": 203
+        },
+        {
+          "meanNll": 0.8533278135154517,
+          "temperature": 1.0,
+          "windows": 203
+        },
+        {
+          "meanNll": 0.8964517958890013,
+          "temperature": 1.25,
+          "windows": 203
+        },
+        {
+          "meanNll": 0.9446165014498975,
+          "temperature": 1.5,
+          "windows": 203
+        },
+        {
+          "meanNll": 1.0319297987925404,
+          "temperature": 2.0,
+          "windows": 203
+        }
+      ],
+      "selected": {
+        "meanNll": 0.8376025432615504,
+        "temperature": 0.75,
+        "windows": 203
+      }
+    }
+  },
+  "training": {
+    "epochs": 2,
+    "refitVisited": 2313318,
+    "structural": 862106,
+    "visited": 2313318
+  },
+  "winLegality": {
+    "allObservedWinsInLegalSet": true,
+    "evidence": {
+      "summaryPath": "summary.json",
+      "verificationPath": "verification.json"
+    },
+    "residualExceptions": [],
+    "unclassifiedCount": 0
+  }
+}
