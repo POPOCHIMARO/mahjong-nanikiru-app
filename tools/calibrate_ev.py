@@ -68,6 +68,7 @@ DEFAULT_OPPONENT_DATASET_DIR = APP_ROOT / "calibration" / "dataset-opponent-v3"
 DEFAULT_OPPONENT_FEATURE_DIR = APP_ROOT / "calibration" / "features-opponent-v3"
 DEFAULT_OPPONENT_MODEL_DIR = APP_ROOT / "calibration" / "model-opponent-v3"
 DEFAULT_OPPONENT_FEATURE_PROBE_DIR = APP_ROOT / "calibration" / "probes" / "opponent-features-v3"
+DEFAULT_BELIEF_EVALUATOR_PROBE_DIR = APP_ROOT / "calibration" / "probes" / "d33-evaluator"
 DEFAULT_WIN_LEGALITY_DIR = APP_ROOT / "calibration" / "probes" / "win-legality-d32b"
 
 REQUIRED_PAIFU_FIELDS = ("season", "date", "gameId", "roundIndex", "roundName", "paifu")
@@ -2144,6 +2145,16 @@ def _parser() -> argparse.ArgumentParser:
     probe_opponent_features.add_argument(
         "--max-windows", type=int, default=20_000, help="既定20000。小さい値はデバッグ測定"
     )
+    probe_policy_belief = subparsers.add_parser(
+        "probe-policy-belief", help="D.3.3の事後分布推定の検査（現在は工程1の履歴評価器の照合だけ）"
+    )
+    probe_policy_belief.add_argument("--stage", choices=("evaluator",), default="evaluator")
+    probe_policy_belief.add_argument("--dataset-dir", type=Path, default=DEFAULT_OPPONENT_DATASET_DIR)
+    probe_policy_belief.add_argument("--model-dir", type=Path, default=DEFAULT_OPPONENT_MODEL_DIR)
+    probe_policy_belief.add_argument("--output-dir", type=Path, default=DEFAULT_BELIEF_EVALUATOR_PROBE_DIR)
+    probe_policy_belief.add_argument("--decisions", type=int, default=100)
+    probe_policy_belief.add_argument("--assignments-per-decision", type=int, default=10)
+    probe_policy_belief.add_argument("--seed", type=int, default=20260929)
     build_opponent_features = subparsers.add_parser(
         "build-opponent-features", help="D.3.1教師窓からD.3.2aの厳密特徴cacheを生成する"
     )
@@ -2466,6 +2477,28 @@ def main(argv: list[str] | None = None) -> int:
             "projectedFullBuildSeconds": report["projection"]["fullBuildSecondsFromColdMean"],
         }, ensure_ascii=False))
         return 0 if report["status"] != "feature_budget_exceeded" else 2
+    if args.command == "probe-policy-belief":
+        if args.decisions < 1 or args.assignments_per_decision < 1:
+            print(json.dumps({"error": "decisionsとassignments-per-decisionは1以上が必要"}, ensure_ascii=False), file=sys.stderr)
+            return 2
+        try:
+            from tools.ev_policy_belief import probe_seat_evaluator
+            report = probe_seat_evaluator(
+                args.dataset_dir.resolve(),
+                args.model_dir.resolve(),
+                args.output_dir.resolve(),
+                decisions=args.decisions,
+                assignments_per_decision=args.assignments_per_decision,
+                seed=args.seed,
+            )
+        except (ImportError, OSError, ValueError, KeyError, json.JSONDecodeError) as error:
+            print(json.dumps({"error": str(error)}, ensure_ascii=False), file=sys.stderr)
+            return 2
+        print(json.dumps({key: report[key] for key in (
+            "status", "consistentAssignments", "seatComparisons", "violationCases", "violationAgreements",
+            "teacherSeatsChecked", "teacherMismatches", "mismatchCount", "seconds",
+        )}, ensure_ascii=False))
+        return 0 if report["status"] == "pass" else 1
     if args.command == "build-opponent-features":
         if args.max_windows < 0 or not 1 <= args.shard_windows <= 10_000:
             print(json.dumps({"error": "max-windowsは0以上、shard-windowsは1〜10000が必要"}, ensure_ascii=False), file=sys.stderr)

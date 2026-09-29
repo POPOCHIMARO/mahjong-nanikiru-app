@@ -7,7 +7,7 @@
   "designPath": "PHASE_D3_DESIGN.md",
   "reservationPath": "future-evaluation-reservation.json",
   "doesNotAmendFutureReservation": true,
-  "nextPhase": "D.3.3_step1_history_evaluator",
+  "nextPhase": "D.3.3_step2_reference_smc_measurement",
   "models": {
     "designRecommendation": "Astra/high",
     "implementationRecommendation": "Sol/high",
@@ -477,8 +477,28 @@
     },
     {
       "id": "D.3.3",
-      "status": "design_reviewed_not_implemented",
+      "status": "step1_complete",
       "focus": "reference_smc_measurement_then_constrained_mcmc_pilot",
+      "step1": {
+        "status": "complete",
+        "module": "tools/ev_policy_belief.py",
+        "evaluatorVersion": "ev-policy-belief-seat-evaluator/v1",
+        "acceptance": "D33-06 pass, D33-07 evaluator_part pass (cache_and_theta_variant_parts_deferred_to_step5)",
+        "tests": "tests/test_ev_policy_belief.py (8)",
+        "evaluatorCheck": {
+          "path": "probes/d33-evaluator/evaluator-check.json",
+          "command": "probe-policy-belief --stage evaluator",
+          "seed": 20260929,
+          "consistentAssignments": 1000,
+          "seatComparisons": 3000,
+          "mismatches": 0,
+          "violationAgreements": "100/100",
+          "teacherWindowSeatsMatched": "300/300",
+          "fastEvaluatorSeconds": 66.37,
+          "referenceSeconds": 292.633
+        },
+        "note": "one_seat_evaluation_about_22ms_with_model_far_above_design_budget_1.1ms_per_iteration_to_be_judged_at_step5_cache_and_step7_benchmark"
+      },
       "designPath": "PHASE_D33_DESIGN.md",
       "designSha256": "7729de94eac1db8e578fe618108d40e519e61fdbd623608a41951c5fe3fe09e8",
       "reviewPaths": [
