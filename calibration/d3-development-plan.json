@@ -1,13 +1,13 @@
 {
   "schemaVersion": "ev-policy-d3-development-plan/v1",
   "createdDate": "2026-09-07",
-  "status": "D3_2b_complete_D3_3_pending_design",
+  "status": "D3_2b_complete_D3_3_design_reviewed",
   "implementationStatus": "D3_2b_all_holds_resolved",
   "eligibleForAdoption": false,
   "designPath": "PHASE_D3_DESIGN.md",
   "reservationPath": "future-evaluation-reservation.json",
   "doesNotAmendFutureReservation": true,
-  "nextPhase": "D.3.3_design_pending_user_decision",
+  "nextPhase": "D.3.3_step1_history_evaluator",
   "models": {
     "designRecommendation": "Astra/high",
     "implementationRecommendation": "Sol/high",
@@ -23,6 +23,19 @@
         "5": "Sonnet 5 (report judgment Opus 5.5)"
       },
       "designReview": "Astra/high (2 rounds)"
+    },
+    "d33Implementation": {
+      "executor": "Claude",
+      "byStep": {
+        "1": "Sol/high",
+        "2": "Sol/high (gate judgment Opus 5.5)",
+        "3": "Sol/high",
+        "4": "Opus 5.5/high",
+        "5": "Sol/high",
+        "6": "Sol/high",
+        "7": "Sol/high (judgment Opus 5.5)"
+      },
+      "designReview": "Astra/high (3 rounds)"
     }
   },
   "developmentSplits": {
@@ -164,7 +177,28 @@
     "resampleMoveImplementation": "requires_pilot_and_separate_proposal_design",
     "uniformFallbackAllowed": false,
     "futureOutcomeConditioningAllowed": false,
-    "candidateSpecificInitialPosteriorAllowed": false
+    "candidateSpecificInitialPosteriorAllowed": false,
+    "mcmcCandidate": {
+      "status": "designed_pending_reference_smc_gate",
+      "designSection": "PHASE_D33_DESIGN.md#7",
+      "stateSpace": "physical_assignment_conditional_on_fixed_tsumogiri_draw_ids",
+      "moves": [
+        "M1_physical_swap",
+        "M2_riichi_tenpai_preserving_swap",
+        "M3_per_seat_history_regeneration",
+        "M4_joint_three_seat_regeneration"
+      ],
+      "iteration": "ordered_composition_M1_M2_M3_M4_last",
+      "reachability": "one_iteration_positive_between_any_support_states_via_M4",
+      "tenpaiFamilyProbabilitiesMustBePositive": true,
+      "iterationGridPrefixesOfOneChain": [
+        10000,
+        40000,
+        160000
+      ],
+      "chainsPerSetting": 4,
+      "uniformFallbackAllowed": false
+    }
   },
   "pilot": {
     "status": "planned_not_executed",
@@ -185,7 +219,13 @@
       "status": "must_set_before_pilot",
       "maximumTransitionEvaluations": null,
       "maximumWallClockSeconds": null,
-      "maximumWorkingSetBytes": null
+      "maximumWorkingSetBytes": null,
+      "designInitialMaximumWallClockSeconds": 86400,
+      "designInitialMaximumWorkingSetBytesPerProcess": 4294967296,
+      "designMaximumParallelProcesses": 3,
+      "designMaximumTotalWorkingSetBytes": 12884901888,
+      "microBenchmarkIsPilotStartGate": true,
+      "reduceIterationsOrScenariosOnOverrun": false
     },
     "posteriorAcceptanceThresholds": {
       "status": "pending_pilot_and_D4_freeze",
@@ -195,7 +235,9 @@
       "minimumHandDiversity": null,
       "maximumReplicateDisagreement": null
     },
-    "nullThresholdsMayPassGate": false
+    "nullThresholdsMayPassGate": false,
+    "referenceSmcScenario": "base",
+    "mcmcScenarios": "22_fixed_component_scenarios_plus_theta_riichi_response_recalibrated"
   },
   "simulation": {
     "policyVersionsPlanned": [
@@ -435,8 +477,40 @@
     },
     {
       "id": "D.3.3",
-      "status": "not_started",
-      "focus": "reference_smc_and_coverage_pilot"
+      "status": "design_reviewed_not_implemented",
+      "focus": "reference_smc_measurement_then_constrained_mcmc_pilot",
+      "designPath": "PHASE_D33_DESIGN.md",
+      "designSha256": "7729de94eac1db8e578fe618108d40e519e61fdbd623608a41951c5fe3fe09e8",
+      "reviewPaths": [
+        "PHASE_D33_ADVERSARIAL_REVIEW.md",
+        "PHASE_D33_ADVERSARIAL_REVIEW_2.md",
+        "PHASE_D33_ADVERSARIAL_REVIEW_3.md"
+      ],
+      "reviewOutcome": "round3_needs_attention_p2x3_addressed_in_revision3_no_further_review",
+      "feasibilityProbe": {
+        "path": "probes/d33-feasibility/riichi-tenpai-rate.json",
+        "meanUniformTenpaiRate": 0.000315,
+        "interpretation": "uniform_13_tile_draw_inefficient_not_an_smc_survival_bound"
+      },
+      "referenceSmcGate": {
+        "particleCountForDecision": 4096,
+        "replicates": 64,
+        "noZeroMassAtAllReplicates": "return_to_design_as_undetermined_with_ess_ancestor_replicate_diagnostics",
+        "anyZeroMass": "proceed_to_mcmc_implementation",
+        "lowerParticleCountsUsedForGate": false
+      },
+      "acceptanceTestIds": [
+        "D33-01",
+        "D33-02",
+        "D33-03",
+        "D33-04",
+        "D33-05",
+        "D33-06",
+        "D33-07",
+        "D33-08",
+        "D33-09"
+      ],
+      "completionDoesNotAuthorizeD34": true
     },
     {
       "id": "D.3.4",
@@ -472,6 +546,10 @@
     "D33-03",
     "D33-04",
     "D33-05",
+    "D33-06",
+    "D33-07",
+    "D33-08",
+    "D33-09",
     "D34-01",
     "D34-02",
     "D34-03",

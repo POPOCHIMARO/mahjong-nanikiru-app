@@ -1,0 +1,819 @@
+{
+  "seed": 20260928,
+  "inputSha256": {
+    "inference-prefixes.jsonl.gz": "df1bfbc8fa4865772c99c1cd2c18c9a322cb67bb16837d8241c960aee6a18040",
+    "public-events.jsonl.gz": "9ef1d4f47a8e639f9668b23da30e8dae3e45fe10be6e538c2e8e6f24ec05cf29",
+    "private-events.jsonl.gz": "c1239a6e4684950ebb8d25e7cd0583d493516150fcf378906b711b87bed39ea0"
+  },
+  "prefixes": 200,
+  "handsPerPrefix": 4000,
+  "meanTenpaiRate": 0.000315,
+  "median": 0.00025,
+  "p90": 0.00075,
+  "max": 0.003,
+  "decisionsWithZeroHits": 69,
+  "interpretation": "一様13枚抽出のテンパイ率。観測で条件付けた基準SMCの生存率の上限ではない",
+  "actualRiichiHandTenpaiCheck": "200/200",
+  "decisions": [
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0004_02A:0:0:e107:s1",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S004_0006_02A:7:0:e93:s0",
+      "tenpaiHits": 3
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0032_02A:13:0:e85:s3",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0027_02A:7:0:e125:s0",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0015_01A:2:0:e105:s0",
+      "tenpaiHits": 4
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S012_0001_02A:0:0:e69:s2",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0063_01A:3:0:e103:s2",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0012_02A:7:0:e123:s2",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0086_02A:4:0:e81:s3",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0059_01A:7:0:e43:s1",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S015_0002_02A:14:0:e85:s0",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0005_01A:2:0:e93:s3",
+      "tenpaiHits": 4
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0047_01A:1:0:e83:s2",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S004_0011_02A:11:0:e137:s1",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0033_01A:2:0:e77:s0",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0051_02A:4:0:e79:s2",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0010_01A:0:0:e101:s2",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0069_01A:5:0:e85:s2",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0021_02A:6:0:e93:s0",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0058_02A:6:0:e77:s2",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0056_01A:9:0:e79:s1",
+      "tenpaiHits": 3
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0086_02A:6:0:e107:s2",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0025_01A:6:0:e53:s2",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S011_0003_01A:5:0:e59:s3",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0006_01A:2:0:e71:s3",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0055_01A:7:0:e59:s3",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0037_02A:2:0:e111:s1",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S008_0003_01A:3:0:e107:s0",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0026_02A:12:0:e61:s0",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0068_02A:10:0:e109:s3",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0022_01A:0:0:e59:s1",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S009_0002_01A:1:0:e65:s1",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0031_01A:4:0:e91:s0",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0066_02A:0:0:e87:s3",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0067_01A:6:0:e103:s3",
+      "tenpaiHits": 3
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0069_02A:0:0:e69:s2",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0045_01A:7:0:e71:s0",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0049_02A:4:0:e71:s2",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0042_01A:8:0:e125:s2",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0075_01A:1:0:e71:s0",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0015_02A:8:0:e135:s0",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0034_01A:1:0:e97:s1",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0094_01A:1:0:e49:s1",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0007_01A:4:0:e55:s1",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0054_01A:9:0:e103:s3",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S015_0004_01A:2:0:e113:s2",
+      "tenpaiHits": 3
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0032_01A:2:0:e89:s1",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0039_02A:7:0:e95:s1",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0058_01A:1:0:e79:s0",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0031_02A:5:0:e99:s3",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0027_01A:4:0:e89:s3",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S004_0010_01A:8:0:e53:s3",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0003_01A:1:0:e113:s1",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0042_01A:2:0:e87:s1",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0067_02A:4:0:e73:s0",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0054_01A:0:0:e125:s2",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S004_0011_02A:8:0:e125:s3",
+      "tenpaiHits": 4
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0024_01A:6:0:e113:s1",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0088_02A:5:0:e97:s3",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0074_01A:2:0:e111:s0",
+      "tenpaiHits": 5
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0005_01A:6:0:e97:s0",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S014_0015_01A:1:0:e81:s1",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0023_02A:10:0:e79:s2",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0043_01A:3:0:e69:s1",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0066_02A:3:0:e109:s3",
+      "tenpaiHits": 5
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0034_01A:0:0:e101:s2",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S004_0009_01A:3:0:e121:s2",
+      "tenpaiHits": 8
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S002_0007_02A:8:0:e127:s0",
+      "tenpaiHits": 3
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S002_0006_02A:0:0:e105:s0",
+      "tenpaiHits": 3
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0066_01A:0:0:e139:s1",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0019_02A:8:0:e77:s2",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0023_01A:2:0:e57:s0",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0039_02A:7:0:e89:s3",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0048_02A:1:0:e61:s3",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0083_02A:8:0:e95:s3",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0056_02A:7:0:e97:s0",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0063_02A:3:0:e79:s0",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0047_01A:5:0:e61:s1",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0014_02A:2:0:e103:s1",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0037_01A:8:0:e65:s1",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0075_01A:12:0:e33:s2",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0036_01A:12:0:e69:s0",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0044_01A:3:0:e117:s2",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S002_0007_03A:2:0:e75:s3",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0002_01A:5:0:e105:s0",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0060_01A:6:0:e127:s2",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0061_02A:1:0:e131:s1",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0024_01A:2:0:e93:s0",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S002_0007_01A:4:0:e61:s1",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0026_02A:3:0:e67:s2",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0056_02A:0:0:e71:s3",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0030_02A:2:0:e89:s2",
+      "tenpaiHits": 4
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0077_02A:7:0:e117:s3",
+      "tenpaiHits": 4
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S004_0008_02A:0:0:e35:s1",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0046_02A:8:0:e63:s0",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0037_02A:7:0:e79:s3",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S015_0004_02A:3:0:e113:s1",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S008_0001_02A:7:0:e77:s0",
+      "tenpaiHits": 4
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0017_01A:3:0:e93:s0",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0092_02A:3:0:e75:s3",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0018_01A:6:0:e103:s0",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S002_0008_01A:3:0:e61:s3",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0079_01A:5:0:e103:s2",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0062_02A:5:0:e45:s3",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0026_01A:6:0:e133:s3",
+      "tenpaiHits": 6
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0005_01A:4:0:e109:s0",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0061_02A:2:0:e123:s2",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0010_02A:3:0:e75:s3",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0021_02A:1:0:e55:s0",
+      "tenpaiHits": 3
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0040_02A:11:0:e85:s0",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0040_01A:1:0:e59:s2",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0006_02A:1:0:e127:s0",
+      "tenpaiHits": 3
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0050_02A:11:0:e49:s2",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S012_0004_01A:6:0:e37:s1",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0040_02A:8:0:e97:s1",
+      "tenpaiHits": 3
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0079_02A:9:0:e105:s2",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0082_02A:7:0:e123:s1",
+      "tenpaiHits": 12
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0065_02A:2:0:e85:s0",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S008_0003_02A:8:0:e51:s3",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0092_02A:3:0:e41:s2",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0077_01A:2:0:e77:s0",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0025_02A:4:0:e129:s0",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0060_01A:9:0:e81:s3",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S008_0002_01A:7:0:e121:s2",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S014_0011_01A:3:0:e111:s1",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0045_02A:1:0:e81:s0",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0075_02A:4:0:e69:s1",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0010_02A:5:0:e123:s2",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0039_01A:8:0:e41:s3",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0026_01A:2:0:e79:s1",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0010_01A:4:0:e65:s3",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0065_01A:3:0:e97:s1",
+      "tenpaiHits": 3
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0092_02A:0:0:e71:s3",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0019_02A:8:0:e19:s3",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0090_01A:1:0:e75:s1",
+      "tenpaiHits": 3
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0066_01A:4:0:e111:s0",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0034_01A:0:0:e117:s2",
+      "tenpaiHits": 4
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0018_01A:1:0:e65:s0",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0056_02A:8:0:e97:s2",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0006_02A:1:0:e107:s2",
+      "tenpaiHits": 3
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0006_01A:7:0:e73:s3",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0081_02A:5:0:e83:s0",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0026_02A:14:0:e83:s3",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S008_0001_01A:3:0:e85:s0",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0088_01A:6:0:e77:s1",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0021_02A:6:0:e87:s3",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S008_0012_01A:4:0:e43:s3",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0002_02A:1:0:e71:s0",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0090_02A:7:0:e115:s3",
+      "tenpaiHits": 6
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S005_0003_01A:0:0:e79:s3",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0092_02A:3:0:e107:s3",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S002_0003_02A:12:0:e65:s2",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0078_01A:1:0:e67:s1",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S008_0005_01A:9:0:e105:s0",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0071_02A:1:0:e67:s1",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S009_0006_01A:0:0:e53:s2",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0039_01A:9:0:e115:s1",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0052_02A:2:0:e75:s2",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S011_0007_01A:8:0:e59:s3",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0033_01A:6:0:e73:s2",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0070_01A:1:0:e99:s1",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0003_02A:6:0:e45:s2",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0022_01A:1:0:e93:s2",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0082_01A:3:0:e93:s0",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0064_02A:11:0:e111:s0",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0067_02A:5:0:e89:s3",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0006_02A:3:0:e75:s2",
+      "tenpaiHits": 3
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S014_0015_01A:0:0:e113:s0",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0041_01A:6:0:e131:s1",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0027_01A:6:0:e69:s2",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0083_02A:6:0:e79:s1",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0016_02A:7:0:e45:s2",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0062_02A:5:0:e97:s1",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0015_01A:4:0:e55:s1",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0087_01A:3:0:e105:s0",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0002_02A:8:0:e109:s3",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0039_01A:2:0:e85:s3",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0077_01A:8:0:e73:s2",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0060_01A:4:0:e85:s1",
+      "tenpaiHits": 3
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S011_0007_02A:5:0:e113:s3",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S008_0002_02A:2:0:e73:s2",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0079_01A:1:0:e91:s2",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0002_01A:2:0:e77:s0",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S011_0005_01A:11:0:e107:s3",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0046_02A:5:0:e59:s3",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0065_02A:3:0:e125:s1",
+      "tenpaiHits": 4
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0053_01A:0:0:e93:s2",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0015_01A:4:0:e125:s0",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0052_01A:3:0:e69:s3",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0073_02A:5:0:e49:s0",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S008_0008_01A:8:0:e73:s2",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0078_02A:12:0:e81:s2",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0021_02A:4:0:e71:s3",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0032_02A:7:0:e107:s0",
+      "tenpaiHits": 3
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0039_02A:10:0:e87:s0",
+      "tenpaiHits": 0
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0013_02A:3:0:e97:s2",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0019_01A:1:0:e129:s1",
+      "tenpaiHits": 4
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0038_01A:9:0:e87:s0",
+      "tenpaiHits": 1
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0020_02A:2:0:e121:s1",
+      "tenpaiHits": 2
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0048_01A:9:0:e45:s1",
+      "tenpaiHits": 0
+    }
+  ]
+}
