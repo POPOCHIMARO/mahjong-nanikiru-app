@@ -7,7 +7,7 @@
   "designPath": "PHASE_D3_DESIGN.md",
   "reservationPath": "future-evaluation-reservation.json",
   "doesNotAmendFutureReservation": true,
-  "nextPhase": "D.3.3_step4_mcmc_kernels",
+  "nextPhase": "D.3.3_step5_cache_scenarios_diagnostics_holds",
   "models": {
     "designRecommendation": "Astra/high",
     "implementationRecommendation": "Sol/high",
@@ -477,7 +477,7 @@
     },
     {
       "id": "D.3.3",
-      "status": "step3_complete",
+      "status": "step4_complete",
       "focus": "reference_smc_measurement_then_constrained_mcmc_pilot",
       "step1": {
         "status": "complete",
@@ -601,6 +601,29 @@
           "maxAttempts": 307,
           "maxSeconds": 1.5851,
           "onlyRetryReason": "riichi_shape_inventory"
+        }
+      },
+      "step4": {
+        "status": "complete",
+        "module": "tools/ev_policy_belief.py",
+        "acceptance": "D33-01 (a) per-kernel detailed balance on 4 finite examples, (b) one-iteration invariance, (c) iteration matrix strictly positive and unique stationary equals exact posterior, fixed-pool-order restore detected, (d) removing M3+M4 breaks irreducibility (kokushi-like family isolation; tiles fixed in another seat with empty pool also needs M4), (e) zero family probability rejected; D33-02 (a) prior marginals hypergeometric, (b) constrained stationary equals normalized p0*H, (c) 8 mutations detected by kernel invariance, (d) regular numerator 168, independent path enumeration, 1e6-draw chi-square at fixed A_r; D33-03 cross-family clause pass (toy both directions for M3 and M4, real decision kokushi->regular with unit likelihood)",
+        "exactMatrixMethod": "M1/M2 enumerate every branch of the implemented move via a replay chooser; M3/M4 enumerate proposal and restore separately and compose with the implemented acceptance ratio (regenerate_step is the same three-stage composition)",
+        "frequencyTestLimit": "regular/chiitoi per-hand generator probabilities are ~1e-8, so their path sums are verified by independent enumeration rather than the 1e6-draw frequency test (kokushi and feasibility cells are frequency-tested)",
+        "realIterationProbe": {
+          "decisionIndexInTestFixture": 1,
+          "scenario": "base",
+          "secondsPerIteration": [
+            2.72,
+            5.42,
+            3.79
+          ],
+          "evaluatorCallsPerIteration": [
+            59,
+            57,
+            49
+          ],
+          "budgetMillisecondsPerIteration": 1.1,
+          "note": "cache (step5) and benchmark gate (step7) decide; not a pilot measurement"
         }
       }
     },

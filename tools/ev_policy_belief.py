@@ -25,6 +25,7 @@ import math
 import random
 from collections import Counter
 from dataclasses import dataclass, field
+from functools import lru_cache
 from itertools import combinations
 from typing import Any, Callable, Mapping, Sequence
 
@@ -2193,3 +2194,1007 @@ def record_pilot_initialization(
     }
     (manifest_path.parent / "initialization.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return report
+
+
+
+# ===========================================================================
+# 工程4：MCMCの移動M1〜M4と受理計算（PHASE_D33_DESIGN.md 4.2節、7節）
+# ===========================================================================
+#
+# 鎖の状態は「位置→物理ID」の割当（物理水準）で持つ。位置は、他家ごとに配牌（hand_size個）と
+# 手出し窓の自摸を並べ、最後に未割当プールを置く。ツモ切り窓の自摸位置は物理IDを固定した
+# 条件付きの空間（4.2節）とし、状態に含めない（牌種は打牌と同じなので型だけ持つ）。
+# 牌種は整数で表す。麻雀では tile34 + 34*赤、類（生成器が扱う牌の種類）は tile34。
+# 小例（受入試験D33-01・D33-02）は同じ実装に、任意の牌種・類・生成器を渡して使う。
+#
+# 乱数は「選択器」を通して引く。RandomChooserは通常の実行、_ReplayChooserは全分岐を列挙して
+# 小例の正確な遷移行列を作る。同じ移動の実装を両方で使うので、行列の検査は実装そのものを検査する。
+
+
+class RuleUnresolvedError(RuntimeError):
+    """履歴評価器が得点器の未知エラーに遭遇した（10.2節 rule_unresolved）。"""
+
+
+class RandomChooser:
+    """乱数で1つの分岐を選ぶ。"""
+
+    def __init__(self, rng: random.Random):
+        self.rng = rng
+
+    def index(self, n: int) -> int:
+        return self.rng.randrange(n)
+
+    def weighted(self, weights: Sequence[float]) -> int:
+        threshold = self.rng.random() * math.fsum(weights)
+        cumulative, last = 0.0, 0
+        for position, weight in enumerate(weights):
+            if weight <= 0:
+                continue
+            cumulative += weight
+            last = position
+            if threshold < cumulative:
+                return position
+        return last
+
+    def accept(self, log_ratio: float) -> bool:
+        """MHの受理。log_ratio = log(受理比)。"""
+        if log_ratio >= 0.0:
+            return True
+        if log_ratio == -math.inf:
+            return False
+        return self.rng.random() < math.exp(log_ratio)
+
+
+class _ReplayChooser:
+    """決めた分岐の列をなぞり、その先は確率が正の最初の分岐を選んで、通った分岐を記録する。"""
+
+    def __init__(self, prefix: Sequence[int]):
+        self.prefix = prefix
+        self.trace: list[tuple[int, tuple[float, ...]]] = []
+
+    def _choose(self, probabilities: tuple[float, ...]) -> int:
+        depth = len(self.trace)
+        if depth < len(self.prefix):
+            choice = self.prefix[depth]
+        else:
+            choice = next(i for i, p in enumerate(probabilities) if p > 0)
+        self.trace.append((choice, probabilities))
+        return choice
+
+    def index(self, n: int) -> int:
+        return self._choose((1.0 / n,) * n)
+
+    def weighted(self, weights: Sequence[float]) -> int:
+        total = math.fsum(weights)
+        return self._choose(tuple(weight / total for weight in weights))
+
+    def accept(self, log_ratio: float) -> bool:
+        if log_ratio >= 0.0:
+            return True
+        if log_ratio == -math.inf:
+            return False
+        probability = math.exp(log_ratio)
+        return self._choose((probability, 1.0 - probability)) == 0
+
+
+def enumerate_outcomes(step: Callable[[Any], Any]) -> dict[Any, float]:
+    """step(chooser)の全分岐を深さ優先でたどり、結果ごとの確率を返す（小例の遷移行列用）。"""
+    outcomes: dict[Any, float] = {}
+    stack: list[tuple[int, ...]] = [()]
+    while stack:
+        prefix = stack.pop()
+        chooser = _ReplayChooser(prefix)
+        result = step(chooser)
+        probability = 1.0
+        for choice, probabilities in chooser.trace:
+            probability *= probabilities[choice]
+        outcomes[result] = outcomes.get(result, 0.0) + probability
+        # prefixより先で初めて通った分岐点について、選ばなかった兄弟を積む。
+        for depth in range(len(prefix), len(chooser.trace)):
+            choice, probabilities = chooser.trace[depth]
+            head = tuple(c for c, _ in chooser.trace[:depth])
+            for alternative in range(choice + 1, len(probabilities)):
+                if probabilities[alternative] > 0:
+                    stack.append(head + (alternative,))
+    return outcomes
+
+
+# ---------------------------------------------------------------------------
+# 位置の構造と、牌種水準の見方
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class TurnLayout:
+    """他家の1回の自摸と打牌。ツモ切りなら自摸の牌種は打牌と同じで、位置は動かさない。"""
+
+    tsumogiri: bool
+    discard_type: int
+
+
+@dataclass(frozen=True)
+class SeatLayout:
+    seat: int
+    riichi: bool
+    turns: tuple[TurnLayout, ...]
+
+
+class BeliefLayout:
+    """判断ごとに固定する位置の構造。
+
+    type_of：物理ID→牌種（添字で引ける列または辞書）。class_of：牌種→類。
+    """
+
+    def __init__(
+        self,
+        hand_size: int,
+        seats: Sequence[SeatLayout],
+        pool_size: int,
+        type_of: Sequence[int] | Mapping[int, int],
+        class_of: Mapping[int, int],
+    ):
+        self.hand_size = hand_size
+        self.seats = tuple(seats)
+        self.pool_size = pool_size
+        self.type_of = type_of
+        self.class_of = class_of
+        riichi = [i for i, seat in enumerate(self.seats) if seat.riichi]
+        if len(riichi) > 1:
+            raise ValueError("リーチ者は高々1人")
+        self.riichi_index: int | None = riichi[0] if riichi else None
+        self.offsets: list[int] = []
+        self.tedashi: list[tuple[int, ...]] = []  # 家ごとの手出し窓の添字（turnsの中の位置）
+        position = 0
+        for seat in self.seats:
+            self.offsets.append(position)
+            tedashi = tuple(k for k, turn in enumerate(seat.turns) if not turn.tsumogiri)
+            self.tedashi.append(tedashi)
+            position += hand_size + len(tedashi)
+        self.seat_size = position  # |S|：牌種が未知の位置（配牌と手出し窓の自摸）
+        self.size = position + pool_size  # |U| = |S| + プール
+        self.position_seat = [i for i, seat in enumerate(self.seats) for _ in range(hand_size + len(self.tedashi[i]))]
+        self.position_seat += [-1] * pool_size
+        # M3の順序：リーチ者、リーチしていない家の順（7.5節）。M4の生成順も同じ（7.4節）。
+        self.m3_order = tuple(([self.riichi_index] if self.riichi_index is not None else [])
+                              + [i for i in range(len(self.seats)) if i != self.riichi_index])
+
+    def initial_positions(self, i: int) -> range:
+        return range(self.offsets[i], self.offsets[i] + self.hand_size)
+
+    def draw_positions(self, i: int) -> range:
+        start = self.offsets[i] + self.hand_size
+        return range(start, start + len(self.tedashi[i]))
+
+    def seat_positions(self, i: int) -> range:
+        return range(self.offsets[i], self.offsets[i] + self.hand_size + len(self.tedashi[i]))
+
+    @property
+    def pool_positions(self) -> range:
+        return range(self.seat_size, self.size)
+
+
+# 家の牌種水準の状態：（配牌の牌種の昇順タプル, 各窓の自摸の牌種のタプル（ツモ切り窓も含む））
+SeatTypes = tuple[tuple[int, ...], tuple[int, ...]]
+
+
+def seat_type_state(layout: BeliefLayout, ids: Sequence[int], i: int, override: Mapping[int, int] | None = None) -> SeatTypes:
+    """位置の物理IDから家iの牌種水準の状態を作る。overrideは位置→牌種の差し替え（交換の試算用）。"""
+
+    def type_at(position: int) -> int:
+        if override is not None and position in override:
+            return override[position]
+        return layout.type_of[ids[position]]
+
+    initial = tuple(sorted(type_at(p) for p in layout.initial_positions(i)))
+    draws: list[int] = []
+    position = layout.offsets[i] + layout.hand_size
+    for turn in layout.seats[i].turns:
+        if turn.tsumogiri:
+            draws.append(turn.discard_type)
+        else:
+            draws.append(type_at(position))
+            position += 1
+    return initial, tuple(draws)
+
+
+def seat_final_hand(layout: BeliefLayout, i: int, initial: Sequence[int], draws: Sequence[int]) -> Counter | None:
+    """判断時点の手（牌種の計数）。打牌整合（4.4節の2）に反すればNone。
+
+    手出しの打牌は、その時点の手中にあり、直前の自摸とは別の物理牌（同じ牌種でもよい）。
+    """
+    hand = Counter(initial)
+    for turn, drawn in zip(layout.seats[i].turns, draws):
+        if turn.tsumogiri:
+            continue  # 自摸と同じ牌を切るので手は変わらない
+        hand[drawn] += 1
+        if hand[turn.discard_type] - (1 if drawn == turn.discard_type else 0) < 1:
+            return None
+        hand[turn.discard_type] -= 1
+    return +hand
+
+
+def tedashi_discards(layout: BeliefLayout, i: int) -> Counter:
+    """家iの手出しの打牌の牌種の計数（D_j）。"""
+    return Counter(layout.seats[i].turns[k].discard_type for k in layout.tedashi[i])
+
+
+def tedashi_draws(layout: BeliefLayout, i: int, draws: Sequence[int]) -> list[int]:
+    return [draws[k] for k in layout.tedashi[i]]
+
+
+def class_counts(problem: "BeliefProblem", hand: Mapping[int, int]) -> tuple[int, ...]:
+    values = [0] * problem.rules.class_count
+    for tile_type, count in hand.items():
+        values[problem.layout.class_of[tile_type]] += count
+    return tuple(values)
+
+
+# ---------------------------------------------------------------------------
+# 問題の定義：位置の構造、テンパイ形の規則（生成器g_r）、家ごとの尤度因子
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class BeliefProblem:
+    """MCMCの対象。model.log_factor(i, initial, draws)は家iの対数尤度（H=1を前提に呼ぶ）。"""
+
+    layout: BeliefLayout
+    rules: Any
+    model: Any
+    max_generator_attempts: int = 1000
+
+    def __post_init__(self) -> None:
+        # 系統の確率はすべて正（7.3節）。0を設定した実行は開始前に拒否する（D33-01(e)）。
+        values = [value for _, value in self.rules.families]
+        if any(not value > 0 for value in values) or abs(math.fsum(values) - 1.0) > 1e-12:
+            raise ValueError("系統の確率はすべて正で、和が1である必要がある（7.3節）")
+        if self.max_generator_attempts < 1:
+            raise ValueError("生成器の引き直しの上限は1以上")
+
+
+def seat_hard_violation(problem: BeliefProblem, i: int, initial: Sequence[int], draws: Sequence[int]) -> str | None:
+    """家iの硬い制約（4.4節）の違反理由。牌在庫は位置の割当が保証する。"""
+    final = seat_final_hand(problem.layout, i, initial, draws)
+    if final is None:
+        return "discard_consistency"
+    if problem.layout.seats[i].riichi and not problem.rules.is_tenpai(class_counts(problem, final)):
+        return "tenpai"
+    return None
+
+
+def seat_log_factor(problem: BeliefProblem, i: int, state: SeatTypes) -> float:
+    """家iの因子 log(H×L)。H=0なら-inf。"""
+    if seat_hard_violation(problem, i, *state) is not None:
+        return -math.inf
+    return float(problem.model.log_factor(i, *state))
+
+
+# ---------------------------------------------------------------------------
+# テンパイ形の生成器g_rと、その密度（7.3節）
+# ---------------------------------------------------------------------------
+
+
+def tenpai_removal_classes(rules: Any, counts: Sequence[int]) -> Sequence[int]:
+    """経路の和で除いた牌として数える類。合法な待ちに限らず、すべての類（7.3節、再レビュー指摘1）。"""
+    return range(rules.class_count)
+
+
+def _family_densities(rules: Any, counts: tuple[int, ...]) -> list[float]:
+    size = rules.hand_size + 1
+    values = []
+    for family, _ in rules.families:
+        total = 0.0
+        for removed in tenpai_removal_classes(rules, counts):
+            complete = counts[:removed] + (counts[removed] + 1,) + counts[removed + 1:]
+            probability = rules.complete_probability(family, complete)
+            if probability > 0:
+                total += probability * complete[removed] / size
+        values.append(total)
+    return values
+
+
+def tenpai_class_density(rules: Any, counts: tuple[int, ...]) -> float:
+    """g_r(h)の類の段：hに至るすべての生成経路の確率の和（系統ごとの確率を掛けて足す）。"""
+    return math.fsum(probability * value for (_, probability), value in zip(rules.families, _family_densities(rules, counts)))
+
+
+def tenpai_families(rules: Any, counts: tuple[int, ...]) -> tuple[str, ...]:
+    """hを生成できる系統の名前（診断の「系統」。面子手と七対子の両方になる手もある）。"""
+    return tuple(name for (name, _), value in zip(rules.families, _family_densities(rules, counts)) if value > 0)
+
+
+def sample_tenpai_classes(rules: Any, chooser: Any) -> list[int]:
+    """g_rの類の段の抽出：系統を選び、完成形から1枚を一様に除く。"""
+    family = rules.families[chooser.weighted([value for _, value in rules.families])][0]
+    complete = list(rules.sample_complete(family, chooser))
+    complete.pop(chooser.index(len(complete)))
+    return sorted(complete)
+
+
+def _log_comb(n: int, k: int) -> float:
+    if k < 0 or k > n:
+        return -math.inf
+    return math.lgamma(n + 1) - math.lgamma(k + 1) - math.lgamma(n - k + 1)
+
+
+def _draw_without_replacement(items: Sequence[int], count: int, chooser: Any) -> list[int]:
+    remaining = list(items)
+    return [remaining.pop(chooser.index(len(remaining))) for _ in range(count)]
+
+
+def _variants_log_density(problem: BeliefProblem, available: Counter, hand: Counter) -> float:
+    """類を決めた後、各類の中で物理牌を一様に選ぶ段（赤の超幾何分布）の確率。"""
+    class_of = problem.layout.class_of
+    total = 0.0
+    need: Counter = Counter()
+    supply: Counter = Counter()
+    for tile_type, count in hand.items():
+        total += _log_comb(available[tile_type], count)
+        need[class_of[tile_type]] += count
+    for tile_type, count in available.items():
+        supply[class_of[tile_type]] += count
+    for tile_class, count in need.items():
+        total -= _log_comb(supply[tile_class], count)
+    return total
+
+
+def _uniform_log_density(available: Counter, hand: Counter) -> float:
+    """リーチしていない家のg_j：availableから手の枚数を一様に引く（超幾何分布）。"""
+    total = -_log_comb(sum(available.values()), sum(hand.values()))
+    for tile_type, count in hand.items():
+        total += _log_comb(available[tile_type], count)
+    return total
+
+
+def propose_final_hands(problem: BeliefProblem, order: Sequence[int], available: Counter, chooser: Any) -> list[Counter] | None:
+    """判断時点の手を家の順に作る（7.3節の段1、7.4節の段1〜2）。
+
+    リーチ者はg_rを、類の在庫に収まるまで引き直す（上限で失敗ならNone＝現状維持）。
+    引き直しで失われる確率はavailableだけで決まり、移動の前後で相殺する。
+    """
+    layout, rules = problem.layout, problem.rules
+    remaining = Counter(available)
+    hands = []
+    for i in order:
+        if layout.seats[i].riichi:
+            supply = class_counts(problem, remaining)
+            classes = None
+            for _ in range(problem.max_generator_attempts):
+                candidate = Counter(sample_tenpai_classes(rules, chooser))
+                if all(supply[c] >= n for c, n in candidate.items()):
+                    classes = candidate
+                    break
+            if classes is None:
+                return None
+            hand: Counter = Counter()
+            for tile_class in sorted(classes):
+                items = sorted(t for t in remaining.elements() if layout.class_of[t] == tile_class)
+                hand.update(_draw_without_replacement(items, classes[tile_class], chooser))
+        else:
+            hand = Counter(_draw_without_replacement(sorted(remaining.elements()), layout.hand_size, chooser))
+        remaining -= hand
+        hands.append(hand)
+    return hands
+
+
+def final_hands_log_density(problem: BeliefProblem, order: Sequence[int], available: Counter, hands: Sequence[Counter]) -> float:
+    """propose_final_handsが手の列を作る確率（引き直しの正規化を除く）。"""
+    remaining = Counter(available)
+    total = 0.0
+    for i, hand in zip(order, hands):
+        if problem.layout.seats[i].riichi:
+            density = tenpai_class_density(problem.rules, class_counts(problem, hand))
+            if density <= 0:
+                return -math.inf
+            total += math.log(density) + _variants_log_density(problem, remaining, hand)
+        else:
+            total += _uniform_log_density(remaining, hand)
+        remaining -= hand
+    return total
+
+
+def backward_history(layout: BeliefLayout, i: int, final: Counter, chooser: Any) -> SeatTypes:
+    """自摸の逆算（7.3節の段2）。手出し窓では自摸を打牌後の手の物理牌から一様に選ぶ。"""
+    hand = Counter(final)
+    draws: list[int] = [0] * len(layout.seats[i].turns)
+    for k in reversed(range(len(layout.seats[i].turns))):
+        turn = layout.seats[i].turns[k]
+        if turn.tsumogiri:
+            draws[k] = turn.discard_type
+            continue
+        drawn = _draw_without_replacement(sorted(hand.elements()), 1, chooser)[0]
+        draws[k] = drawn
+        hand[turn.discard_type] += 1
+        hand[drawn] -= 1
+    return tuple(sorted((+hand).elements())), tuple(draws)
+
+
+def backward_log_density(layout: BeliefLayout, i: int, initial: Sequence[int], draws: Sequence[int]) -> float:
+    """逆算が自摸の列を作る確率 Π n_after(d)/手の枚数。"""
+    hand = Counter(initial)
+    total = 0.0
+    for turn, drawn in zip(layout.seats[i].turns, draws):
+        if turn.tsumogiri:
+            continue
+        hand[drawn] += 1
+        hand[turn.discard_type] -= 1
+        total += math.log(hand[drawn] / layout.hand_size)
+    return total
+
+
+def initial_log_weight(initial: Sequence[int]) -> float:
+    """牌種水準の目標の重みのうち配牌の分 Π 1/h0_t!（4.2節）。"""
+    return -math.fsum(math.lgamma(count + 1) for count in Counter(initial).values())
+
+
+def pool_log_weight(pool: Counter) -> float:
+    """牌種水準の目標の重みのうちプールの分 Π 1/pool_t!（4.2節）。"""
+    return -math.fsum(math.lgamma(count + 1) for count in pool.values())
+
+
+# ---------------------------------------------------------------------------
+# 鎖の状態と移動の統計
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class ChainState:
+    ids: list[int]  # 位置→物理ID
+    log_factors: list[float]  # 家ごとの log(H×L)
+
+    def copy(self) -> "ChainState":
+        return ChainState(list(self.ids), list(self.log_factors))
+
+
+def initial_chain_state(problem: BeliefProblem, ids: Sequence[int]) -> ChainState:
+    layout = problem.layout
+    if len(ids) != layout.size or len(set(ids)) != len(ids):
+        raise ValueError("位置の数と物理IDが一致しない")
+    factors = [seat_log_factor(problem, i, seat_type_state(layout, ids, i)) for i in range(len(layout.seats))]
+    if not all(math.isfinite(value) for value in factors):
+        raise ValueError("出発点がH=1かつ尤度が正でない")
+    return ChainState(list(ids), factors)
+
+
+@dataclass
+class MoveStatistics:
+    """移動の種類ごとの提案・受理・棄却理由・系統をまたいだ受理（10.1節）。"""
+
+    proposed: Counter = field(default_factory=Counter)
+    accepted: Counter = field(default_factory=Counter)
+    rejected: Counter = field(default_factory=Counter)  # "移動:理由"
+    null_moves: Counter = field(default_factory=Counter)  # 同じ牌種どうしの交換（受理比1の空移動）
+    cross_family: Counter = field(default_factory=Counter)
+
+    def as_dict(self) -> dict[str, Any]:
+        return {name: dict(sorted(getattr(self, name).items())) for name in
+                ("proposed", "accepted", "rejected", "null_moves", "cross_family")}
+
+
+# ---------------------------------------------------------------------------
+# M1：物理牌の交換（7.1節）
+# ---------------------------------------------------------------------------
+
+
+def m1_partner(layout: BeliefLayout, ids: Sequence[int], a: int, chooser: Any) -> int:
+    """U = S ∪ プールのうちa以外から一様に選ぶ。同じ牌種どうしも候補から除かない（7.1節）。"""
+    k = chooser.index(layout.size - 1)
+    return k if k < a else k + 1
+
+
+def _swap_factors(problem: BeliefProblem, state: ChainState, a: int, b: int) -> tuple[dict[int, float], str | None]:
+    """a、bの物理牌を交換したときに変わる家の新しい因子。硬い制約の違反なら理由を返す。"""
+    layout, ids = problem.layout, state.ids
+    type_a, type_b = layout.type_of[ids[a]], layout.type_of[ids[b]]
+    override = {a: type_b, b: type_a}
+    factors: dict[int, float] = {}
+    for i in sorted({layout.position_seat[a], layout.position_seat[b]} - {-1}):
+        after = seat_type_state(layout, ids, i, override)
+        if after == seat_type_state(layout, ids, i):
+            factors[i] = state.log_factors[i]
+            continue
+        violation = seat_hard_violation(problem, i, *after)
+        if violation is not None:
+            return factors, violation
+        factors[i] = float(problem.model.log_factor(i, *after))
+    return factors, None
+
+
+def m1_step(problem: BeliefProblem, state: ChainState, chooser: Any, stats: MoveStatistics) -> None:
+    layout = problem.layout
+    stats.proposed["m1"] += 1
+    a = chooser.index(layout.seat_size)
+    b = m1_partner(layout, state.ids, a, chooser)
+    if layout.type_of[state.ids[a]] == layout.type_of[state.ids[b]]:
+        stats.null_moves["m1"] += 1
+    factors, violation = _swap_factors(problem, state, a, b)
+    if violation is not None:
+        stats.rejected[f"m1:{violation}"] += 1
+        return
+    log_ratio = math.fsum(value - state.log_factors[i] for i, value in factors.items())
+    if not chooser.accept(log_ratio):
+        stats.rejected["m1:mh"] += 1
+        return
+    state.ids[a], state.ids[b] = state.ids[b], state.ids[a]
+    for i, value in factors.items():
+        state.log_factors[i] = value
+    stats.accepted["m1"] += 1
+
+
+# ---------------------------------------------------------------------------
+# M2：リーチ者のテンパイを保つ交換（7.2節）
+# ---------------------------------------------------------------------------
+
+
+def m2_positions(problem: BeliefProblem, ids: Sequence[int]) -> list[int]:
+    """S_r：リーチ者の牌種が未知の位置（配牌と手出し窓の自摸）。交換で変わらない固定の集合。"""
+    return list(problem.layout.seat_positions(problem.layout.riichi_index))  # type: ignore[arg-type]
+
+
+def m2_candidates(problem: BeliefProblem, ids: Sequence[int], a: int) -> list[int]:
+    """V(z, a)：aと交換してもすべての硬い制約を満たす、プールとリーチしていない家の位置。"""
+    layout = problem.layout
+    r = layout.riichi_index
+    type_a = layout.type_of[ids[a]]
+    riichi_ok: dict[int, bool] = {}
+    result = []
+    for b in range(layout.size):
+        i = layout.position_seat[b]
+        if i == r:
+            continue
+        type_b = layout.type_of[ids[b]]
+        if type_b not in riichi_ok:
+            riichi_ok[type_b] = seat_hard_violation(problem, r, *seat_type_state(layout, ids, r, {a: type_b})) is None  # type: ignore[arg-type]
+        if not riichi_ok[type_b]:
+            continue
+        if i != -1 and seat_hard_violation(problem, i, *seat_type_state(layout, ids, i, {b: type_a})) is not None:
+            continue
+        result.append(b)
+    return result
+
+
+def m2_log_correction(size_before: int, size_after: int) -> float:
+    """提案の非対称の補正 log(|V(z,a)| / |V(z',a)|)。"""
+    return math.log(size_before) - math.log(size_after)
+
+
+def m2_step(problem: BeliefProblem, state: ChainState, chooser: Any, stats: MoveStatistics, a: int | None = None) -> None:
+    """aを固定した核は可逆。a=Noneなら状態によらず一様に選ぶ（その混合も可逆）。"""
+    stats.proposed["m2"] += 1
+    if a is None:
+        positions = m2_positions(problem, state.ids)
+        a = positions[chooser.index(len(positions))]
+    before = m2_candidates(problem, state.ids, a)
+    if not before:
+        stats.rejected["m2:no_candidate"] += 1
+        return
+    b = before[chooser.index(len(before))]
+    layout = problem.layout
+    if layout.type_of[state.ids[a]] == layout.type_of[state.ids[b]]:
+        stats.null_moves["m2"] += 1
+    factors, violation = _swap_factors(problem, state, a, b)
+    if violation is not None:  # V(z,a)の定義から起きない
+        raise AssertionError(f"M2の候補が硬い制約に反する: {violation}")
+    swapped = list(state.ids)
+    swapped[a], swapped[b] = swapped[b], swapped[a]
+    after = m2_candidates(problem, swapped, a)
+    log_ratio = math.fsum(value - state.log_factors[i] for i, value in factors.items())
+    log_ratio += m2_log_correction(len(before), len(after))
+    if not chooser.accept(log_ratio):
+        stats.rejected["m2:mh"] += 1
+        return
+    state.ids = swapped
+    for i, value in factors.items():
+        state.log_factors[i] = value
+    stats.accepted["m2"] += 1
+
+
+# ---------------------------------------------------------------------------
+# M3・M4：家ごと／他家全員の履歴の再生成（7.3〜7.4節）
+# ---------------------------------------------------------------------------
+
+
+def _shuffled(items: Sequence[int], chooser: Any) -> list[int]:
+    """一様な順列（Fisher–Yates）。"""
+    values = list(items)
+    for k in range(len(values) - 1, 0, -1):
+        j = chooser.index(k + 1)
+        values[k], values[j] = values[j], values[k]
+    return values
+
+
+def arrange_pool_types(pool_types: Sequence[int], chooser: Any) -> list[int]:
+    """復元の段3：プールの牌種をプール位置へ一様な順列で並べる（改訂3で追加。省くと目標を保たない）。"""
+    return _shuffled(pool_types, chooser)
+
+
+def restore_block(
+    problem: BeliefProblem, state: ChainState, order: Sequence[int], proposed: Mapping[int, SeatTypes], pool: Counter, chooser: Any
+) -> None:
+    """条件付き復元（4.2節）：牌種状態に一致するブロック内の物理配置全体から一様に1つ選ぶ。"""
+    layout = problem.layout
+    labels: dict[int, int] = {}
+    for i in order:
+        initial, draws = proposed[i]
+        for position, tile_type in zip(layout.initial_positions(i), _shuffled(initial, chooser)):
+            labels[position] = tile_type  # 段1：配牌の多重集合を配牌位置へ一様に並べる
+        for position, tile_type in zip(layout.draw_positions(i), tedashi_draws(layout, i, draws)):
+            labels[position] = tile_type
+    for position, tile_type in zip(layout.pool_positions, arrange_pool_types(sorted(pool.elements()), chooser)):
+        labels[position] = tile_type
+    by_type: dict[int, list[int]] = {}
+    for position in labels:
+        tile_id = state.ids[position]
+        by_type.setdefault(layout.type_of[tile_id], []).append(tile_id)
+    for tile_type in sorted(by_type):
+        # 段2：その牌種の物理IDを、その牌種の位置へ一様に割り当てる（非復元）。
+        positions = [p for p in sorted(labels) if labels[p] == tile_type]
+        tile_ids = _shuffled(sorted(by_type[tile_type]), chooser)
+        if len(positions) != len(tile_ids):
+            raise AssertionError("復元の牌種の計数がブロックと一致しない")
+        for position, tile_id in zip(positions, tile_ids):
+            state.ids[position] = tile_id
+
+
+@dataclass(frozen=True)
+class RegenerationBlock:
+    """M3・M4のブロック（移動する家の未知の位置とプール）の現在の牌種状態。"""
+
+    order: tuple[int, ...]  # 生成順（リーチ者が先）
+    current: Mapping[int, SeatTypes]
+    pool: Counter  # 現在のプールの牌種
+    block: Counter  # ブロック内の牌種の合計（移動で変わらない）
+    available: Counter  # block − 手出しの打牌（判断時点の手を引く元）
+
+
+def regeneration_block(problem: BeliefProblem, ids: Sequence[int], seats: Sequence[int]) -> RegenerationBlock:
+    layout = problem.layout
+    chosen = set(seats)
+    order = tuple(i for i in layout.m3_order if i in chosen)
+    current = {i: seat_type_state(layout, ids, i) for i in order}
+    pool = Counter(layout.type_of[ids[p]] for p in layout.pool_positions)
+    block = Counter(pool)
+    discards: Counter = Counter()
+    for i in order:
+        block.update(current[i][0])
+        block.update(tedashi_draws(layout, i, current[i][1]))
+        discards += tedashi_discards(layout, i)
+    available = block - discards
+    if sum(available.values()) + sum(discards.values()) != sum(block.values()):
+        raise AssertionError("手出しの打牌がブロックにない")
+    return RegenerationBlock(order, current, pool, block, available)
+
+
+def propose_regeneration(problem: BeliefProblem, block: RegenerationBlock, chooser: Any) -> dict[int, SeatTypes] | None:
+    """新しい牌種状態x'を作る（判断時点の手の生成と自摸の逆算）。生成器が上限に達したらNone。
+
+    結果はブロックの牌種の合計と手出しの打牌だけに依存し、物理配置には依存しない。
+    """
+    hands = propose_final_hands(problem, block.order, block.available, chooser)
+    if hands is None:
+        return None
+    return {i: backward_history(problem.layout, i, hand, chooser) for i, hand in zip(block.order, hands)}
+
+
+def regeneration_pool(problem: BeliefProblem, block: RegenerationBlock, proposed: Mapping[int, SeatTypes]) -> Counter:
+    pool = Counter(block.block)
+    for i in block.order:
+        pool.subtract(proposed[i][0])
+        pool.subtract(tedashi_draws(problem.layout, i, proposed[i][1]))
+    if any(count < 0 for count in pool.values()):
+        raise AssertionError("提案がブロックの牌種を超える")
+    return +pool
+
+
+def regeneration_log_ratio(
+    problem: BeliefProblem, block: RegenerationBlock, log_factors: Sequence[float], proposed: Mapping[int, SeatTypes]
+) -> tuple[float, dict[int, float]]:
+    """log([w(x')L(x')q(x)] / [w(x)L(x)q(x')]) と、新しい家ごとの因子。"""
+    layout = problem.layout
+    order = block.order
+    hands = [seat_final_hand(layout, i, *proposed[i]) for i in order]
+    current_hands = [seat_final_hand(layout, i, *block.current[i]) for i in order]
+    log_q_new = final_hands_log_density(problem, order, block.available, hands)  # type: ignore[arg-type]
+    log_q_old = final_hands_log_density(problem, order, block.available, current_hands)  # type: ignore[arg-type]
+    log_w_new = pool_log_weight(regeneration_pool(problem, block, proposed))
+    log_w_old = pool_log_weight(block.pool)
+    for i in order:
+        log_q_new += backward_log_density(layout, i, *proposed[i])
+        log_q_old += backward_log_density(layout, i, *block.current[i])
+        log_w_new += initial_log_weight(proposed[i][0])
+        log_w_old += initial_log_weight(block.current[i][0])
+    factors = {i: seat_log_factor(problem, i, proposed[i]) for i in order}
+    if not all(math.isfinite(value) for value in factors.values()):
+        # 構成でH=1を保証する（打牌整合は逆算、テンパイは生成器）。起きれば実装の誤り。
+        raise AssertionError(f"再生成の提案がH=0: {factors}")
+    log_ratio = (log_w_new + math.fsum(factors.values()) + log_q_old) - (
+        log_w_old + math.fsum(log_factors[i] for i in order) + log_q_new
+    )
+    return log_ratio, factors
+
+
+def regenerate_step(
+    problem: BeliefProblem, state: ChainState, seats: Sequence[int], chooser: Any, stats: MoveStatistics, move: str
+) -> None:
+    """seatsの未知の位置とプールをブロックとする独立型MH（M3は1家、M4は他家全員）。
+
+    α = min(1, [w(x')L(x')q(x)] / [w(x)L(x)q(x')])。提案が同じ牌種状態でもα=1で復元する。
+    棄却したときは物理配置も変えない（牌種水準のMHの後の一様な復元と同じ遷移になる）。
+    """
+    stats.proposed[move] += 1
+    block = regeneration_block(problem, state.ids, seats)
+    proposed = propose_regeneration(problem, block, chooser)
+    if proposed is None:
+        stats.rejected[f"{move}:generator_cap"] += 1
+        return
+    log_ratio, factors = regeneration_log_ratio(problem, block, state.log_factors, proposed)
+    if not chooser.accept(log_ratio):
+        stats.rejected[f"{move}:mh"] += 1
+        return
+    restore_block(problem, state, block.order, proposed, regeneration_pool(problem, block, proposed), chooser)
+    for i in block.order:
+        state.log_factors[i] = factors[i]
+    stats.accepted[move] += 1
+    r = problem.layout.riichi_index
+    if r is not None and r in block.order:
+        before = tenpai_families(problem.rules, class_counts(problem, seat_final_hand(problem.layout, r, *block.current[r])))  # type: ignore[arg-type]
+        after = tenpai_families(problem.rules, class_counts(problem, seat_final_hand(problem.layout, r, *proposed[r])))  # type: ignore[arg-type]
+        if before != after:
+            stats.cross_family[move] += 1
+
+
+
+def m3_step(problem: BeliefProblem, state: ChainState, i: int, chooser: Any, stats: MoveStatistics) -> None:
+    regenerate_step(problem, state, (i,), chooser, stats, f"m3:{problem.layout.seats[i].seat}")
+
+
+def m4_step(problem: BeliefProblem, state: ChainState, chooser: Any, stats: MoveStatistics) -> None:
+    regenerate_step(problem, state, range(len(problem.layout.seats)), chooser, stats, "m4")
+
+
+def mcmc_iteration(problem: BeliefProblem, state: ChainState, chooser: Any, stats: MoveStatistics) -> None:
+    """1反復＝順序付き合成（7.5節）：M1を|S|回、M2を|S_r|回、M3を家ごとに1回、最後にM4を1回。"""
+    layout = problem.layout
+    for _ in range(layout.seat_size):
+        m1_step(problem, state, chooser, stats)
+    if layout.riichi_index is not None:
+        for _ in range(len(layout.seat_positions(layout.riichi_index))):
+            m2_step(problem, state, chooser, stats)
+    for i in layout.m3_order:
+        m3_step(problem, state, i, chooser, stats)
+    m4_step(problem, state, chooser, stats)  # 到達可能性の論証のため必ず最後（7.4節）
+
+
+# ---------------------------------------------------------------------------
+# 規則：小例用（完成形の明示的な一覧）と麻雀用（面子手・七対子・国士）
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class ExplicitTenpaiRules:
+    """小例用のテンパイ形の規則。系統ごとに完成形（類の列）の一覧から一様に選ぶ。"""
+
+    families: tuple[tuple[str, float], ...]
+    shapes: tuple[tuple[str, tuple[tuple[int, ...], ...]], ...]
+    class_count: int
+    hand_size: int
+
+    def _shapes(self, family: str) -> tuple[tuple[int, ...], ...]:
+        return dict(self.shapes)[family]
+
+    def sample_complete(self, family: str, chooser: Any) -> list[int]:
+        options = self._shapes(family)
+        return list(options[chooser.index(len(options))])
+
+    def complete_probability(self, family: str, counts: tuple[int, ...]) -> float:
+        options = self._shapes(family)
+        hits = sum(1 for shape in options if tuple(shape.count(c) for c in range(self.class_count)) == counts)
+        return hits / len(options)
+
+    def is_tenpai(self, counts: tuple[int, ...]) -> bool:
+        for family, _ in self.families:
+            for removed in range(self.class_count):
+                complete = counts[:removed] + (counts[removed] + 1,) + counts[removed + 1:]
+                if self.complete_probability(family, complete) > 0:
+                    return True
+        return False
+
+
+MENTSU_SHAPE_COUNT = len(MENTSU_KINDS)  # 55（刻子34、順子21）
+
+
+def _ordered_mentsu_count(counts: tuple[int, ...], start: int, remaining: int) -> int:
+    """countsを面子remaining個へ分ける、面子の順序付きの列の数（枚数の上限なし）。
+
+    最小の牌種iは、iの刻子かiから始まる順子に必ず入る。その個数(t, s)の組で分けると、
+    面子の多重集合を重複なく数えられ、順序付きの数は多項係数 Π C(k, t)C(k−t, s) になる。
+    """
+    i = start
+    while i < 34 and counts[i] == 0:
+        i += 1
+    if i == 34:
+        return 1 if remaining == 0 else 0
+    n = counts[i]
+    total = 0
+    for triplets in range(n // 3 + 1):
+        runs = n - 3 * triplets
+        if triplets + runs > remaining:
+            continue
+        following = list(counts)
+        following[i] = 0
+        if runs:
+            if i >= 27 or i % 9 > 6 or counts[i + 1] < runs or counts[i + 2] < runs:
+                continue
+            following[i + 1] -= runs
+            following[i + 2] -= runs
+        total += math.comb(remaining, triplets) * math.comb(remaining - triplets, runs) * _ordered_mentsu_count(
+            tuple(following), i + 1, remaining - triplets - runs
+        )
+    return total
+
+
+@lru_cache(maxsize=500_000)
+def regular_complete_paths(counts: tuple[int, ...]) -> int:
+    """14枚の完成形Cに至る面子手の生成経路（雀頭、順序付きの面子4つ）の数。"""
+    total = 0
+    for pair in range(34):
+        if counts[pair] >= 2:
+            rest = list(counts)
+            rest[pair] -= 2
+            total += _ordered_mentsu_count(tuple(rest), 0, 4)
+    return total
+
+
+def regular_path_numerator(counts: tuple[int, ...]) -> int:
+    """面子手の項の分子（共通分母34×55⁴×14）：34種すべての除去牌xについてΣ 経路数×c_{h+x}(x)。"""
+    total = 0
+    for removed in range(34):
+        complete = counts[:removed] + (counts[removed] + 1,) + counts[removed + 1:]
+        total += regular_complete_paths(complete) * complete[removed]
+    return total
+
+
+@dataclass(frozen=True)
+class MahjongTenpaiRules:
+    """麻雀のテンパイ形の生成器g_r（7.3節）。sample_tenpai_shapeと同じ構成を選択器で引く。"""
+
+    families: tuple[tuple[str, float], ...] = TENPAI_FAMILY_PROBABILITIES
+    class_count: int = 34
+    hand_size: int = 13
+
+    def sample_complete(self, family: str, chooser: Any) -> list[int]:
+        if family == "regular":
+            tiles = [chooser.index(34)] * 2
+            for _ in range(4):
+                tiles.extend(MENTSU_KINDS[chooser.index(MENTSU_SHAPE_COUNT)])
+            return tiles
+        if family == "chiitoi":
+            return [t for t in _draw_without_replacement(range(34), 7, chooser) for _ in range(2)]
+        return [*YAOCHUU, YAOCHUU[chooser.index(len(YAOCHUU))]]
+
+    def complete_probability(self, family: str, counts: tuple[int, ...]) -> float:
+        if family == "regular":
+            paths = regular_complete_paths(counts)
+            return paths / (34 * MENTSU_SHAPE_COUNT**4) if paths else 0.0
+        if family == "chiitoi":
+            values = [c for c in counts if c]
+            return 1.0 / math.comb(34, 7) if values == [2] * 7 else 0.0
+        orphans = sum(counts[t] for t in YAOCHUU)
+        if orphans == 14 and all(counts[t] >= 1 for t in YAOCHUU):
+            return 1.0 / len(YAOCHUU)
+        return 0.0
+
+    def is_tenpai(self, counts: tuple[int, ...]) -> bool:
+        return shanten(counts, 0) == 0
+
+
+# ---------------------------------------------------------------------------
+# 実局面への接続：判断文脈と初期化の割当から問題と鎖の状態を作る
+# ---------------------------------------------------------------------------
+
+
+def type_of_key(key: tuple[int, bool]) -> int:
+    return key[0] + 34 * int(key[1])
+
+
+def key_of_type(tile_type: int) -> tuple[int, bool]:
+    return tile_type % 34, tile_type >= 34
+
+
+TYPE_OF_ID: tuple[int, ...] = tuple(type_of_key(id_key(tile_id)) for tile_id in range(136))
+MAHJONG_CLASS_OF: dict[int, int] = {tile_type: tile_type % 34 for tile_type in set(TYPE_OF_ID)}
+
+
+class MahjongSeatModel:
+    """家ごとの因子を履歴評価器（5節）で計算する。resolver=Noneなら尤度1（規則だけ）。
+
+    評価器の結果は牌種だけで決まるので、牌種ごとに物理IDを順に当てて評価する。
+    """
+
+    def __init__(self, context: DecisionContext, layout: BeliefLayout, resolver: ModelResolver | None):
+        self.context = context
+        self.layout = layout
+        self.resolver = resolver
+        self.evaluations = 0
+
+    def hypothesis(self, i: int, initial: Sequence[int], draws: Sequence[int]) -> SeatHypothesis:
+        seat = self.layout.seats[i].seat
+        supply: dict[int, list[int]] = {}
+
+        def take(tile_type: int) -> int:
+            return supply.setdefault(tile_type, ids_of_key(key_of_type(tile_type))).pop(0)
+
+        initial_ids = tuple(take(t) for t in initial)
+        draw_ids = {turn.raw_event_index: take(t) for turn, t in zip(self.context.turns[seat], draws)}
+        return SeatHypothesis(seat, initial_ids, draw_ids)
+
+    def log_factor(self, i: int, initial: Sequence[int], draws: Sequence[int]) -> float:
+        self.evaluations += 1
+        evaluation = evaluate_seat(self.context, self.hypothesis(i, initial, draws), self.resolver)
+        if evaluation.holds:
+            raise RuleUnresolvedError(f"{self.context.decision_id}:{self.layout.seats[i].seat}:{evaluation.holds}")
+        return evaluation.log_likelihood
+
+
+@dataclass
+class MahjongBelief:
+    """判断1件のMCMCの問題と、位置⇔割当の変換に要る固定部分（対象家の牌、表示牌、ツモ切りの自摸）。"""
+
+    context: DecisionContext
+    problem: BeliefProblem
+    target_initial: tuple[int, ...]
+    target_draws: Mapping[int, int]
+    dora_indicator: int
+    fixed_draws: Mapping[int, Mapping[int, int]]  # 家 → ツモ切り窓のrawEventIndex → 物理ID
+
+    def ids_from_world(self, world: WorldAssignment) -> list[int]:
+        ids: list[int] = []
+        for seat_layout in self.problem.layout.seats:
+            hypothesis = world.hypotheses[seat_layout.seat]
+            ids.extend(hypothesis.initial)
+            turns = self.context.turns[seat_layout.seat]
+            ids.extend(hypothesis.draws[turn.raw_event_index] for turn in turns if not turn.tsumogiri)
+        ids.extend(world.pool)
+        return ids
+
+    def world_from_state(self, state: ChainState) -> WorldAssignment:
+        layout = self.problem.layout
+        hypotheses = {}
+        for i, seat_layout in enumerate(layout.seats):
+            seat = seat_layout.seat
+            draws = dict(self.fixed_draws[seat])
+            tedashi = [turn for turn in self.context.turns[seat] if not turn.tsumogiri]
+            for turn, position in zip(tedashi, layout.draw_positions(i)):
+                draws[turn.raw_event_index] = state.ids[position]
+            initial = tuple(state.ids[p] for p in layout.initial_positions(i))
+            hypotheses[seat] = SeatHypothesis(seat, initial, draws)
+        pool = tuple(state.ids[p] for p in layout.pool_positions)
+        return WorldAssignment(hypotheses, self.target_initial, self.target_draws, self.dora_indicator, pool)
+
+
+def mahjong_belief(
+    context: DecisionContext,
+    world: WorldAssignment,
+    resolver: ModelResolver | None,
+    *,
+    probabilities: Sequence[tuple[str, float]] = TENPAI_FAMILY_PROBABILITIES,
+    max_generator_attempts: int = 1000,
+) -> tuple[MahjongBelief, ChainState]:
+    """初期化の割当（6節）から、判断1件の問題と出発点の状態を作る。"""
+    validate_family_probabilities(probabilities)
+    world.validate()
+    seats = tuple(
+        SeatLayout(seat, seat == context.riichi_seat,
+                   tuple(TurnLayout(turn.tsumogiri, type_of_key(turn.discard)) for turn in context.turns[seat]))
+        for seat in context.other_seats
+    )
+    layout = BeliefLayout(13, seats, len(world.pool), TYPE_OF_ID, MAHJONG_CLASS_OF)
+    problem = BeliefProblem(layout, MahjongTenpaiRules(tuple(probabilities)), MahjongSeatModel(context, layout, resolver),
+                            max_generator_attempts)
+    fixed = {
+        seat: {turn.raw_event_index: world.hypotheses[seat].draws[turn.raw_event_index]
+               for turn in context.turns[seat] if turn.tsumogiri}
+        for seat in context.other_seats
+    }
+    belief = MahjongBelief(context, problem, world.target_initial, world.target_draws, world.dora_indicator, fixed)
+    return belief, initial_chain_state(problem, belief.ids_from_world(world))

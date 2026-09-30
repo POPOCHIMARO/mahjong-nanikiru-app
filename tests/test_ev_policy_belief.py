@@ -484,5 +484,766 @@ def _hand_at(context: DecisionContext, hypothesis, position: int) -> list[int]:
     return hand
 
 
+# ===========================================================================
+# 工程4：MCMCの移動（D33-01、D33-02、D33-03の積み残し）
+# ===========================================================================
+#
+# 小例では、支持（H=1）の物理状態をすべて列挙し、実装した移動の遷移行列を正確に作る。
+# M1・M2は移動そのものを全分岐列挙する。M3・M4は実装と同じ3段（提案→受理比→復元）に分け、
+# 提案と復元をそれぞれ全分岐列挙して合成する（regenerate_stepはこの3段の合成）。
+
+import itertools  # noqa: E402
+from collections import Counter  # noqa: E402
+from unittest import mock  # noqa: E402
+
+import numpy as np  # noqa: E402
+
+import tools.ev_policy_belief as belief  # noqa: E402
+from tools.ev_policy_belief import (  # noqa: E402
+    BeliefLayout,
+    BeliefProblem,
+    ExplicitTenpaiRules,
+    MahjongTenpaiRules,
+    MoveStatistics,
+    RandomChooser,
+    SeatLayout,
+    TurnLayout,
+    enumerate_outcomes,
+    initial_chain_state,
+    mahjong_belief,
+    regular_path_numerator,
+    seat_type_state,
+)
+from tools.ev_policy_belief import MENTSU_KINDS  # noqa: E402
+
+TOL = 1e-12
+
+
+class FlatModel:
+    """尤度1（H=1の状態を等しく扱う）。"""
+
+    def log_factor(self, i, initial, draws):
+        return 0.0
+
+
+class ToyModel:
+    """牌種水準の状態だけで決まる正の尤度。家ごと・位置ごとに固定の係数を持つ。"""
+
+    def __init__(self, initial_scores, draw_scores):
+        self.initial_scores, self.draw_scores = initial_scores, draw_scores
+
+    def log_factor(self, i, initial, draws):
+        return math.fsum(self.initial_scores[i].get(t, 0.0) for t in initial) + math.fsum(
+            self.draw_scores[i].get((k, t), 0.0) for k, t in enumerate(draws))
+
+
+def _rules(families, shapes, class_count, hand_size):
+    return ExplicitTenpaiRules(tuple(families), tuple(shapes), class_count, hand_size)
+
+
+def kokushi_example(model=None, families=(("regular", 0.7), ("kokushi", 0.3)), *, discard_type=1, wide=False):
+    """国士に相当する系統が、M1・M2では孤立する例。
+
+    牌種（類）：0×2、1（通常と赤11）、2、3。テンパイ形（手2枚＋1枚で完成）は、
+    面子手＝{0,1}だけの形、国士＝{2,3}だけの形。面子手の{0,0}は5枚目に当たる000からも生成される。
+    リーチ者rは手出し1回（打牌discard_type）とツモ切り1回（牌種4、位置は固定）、もう1家jは配牌2枚、プール1枚。
+    discard_type=0なら打牌の牌種が2枚あり、宣言時点で手に残る位置が配置で変わる。
+    wide=Trueならテンパイに関わらない牌種5を1枚加えてプールを2枚にする（M3のブロックに国士の牌がそろう）。
+    """
+    rules = _rules(families, (("regular", ((0, 0, 0), (0, 0, 1), (0, 1, 1), (1, 1, 1))),
+                              ("kokushi", ((2, 2, 3), (2, 3, 3)))), 6, 2)
+    seats = (SeatLayout(1, True, (TurnLayout(False, discard_type), TurnLayout(True, 4))), SeatLayout(2, False, ()))
+    types = [0, 0, 1, 11, 2, 3] + ([5] if wide else [])
+    layout = BeliefLayout(2, seats, 2 if wide else 1, types, {0: 0, 1: 1, 11: 1, 2: 2, 3: 3, 4: 4, 5: 5})
+    model = model or ToyModel([{0: 0.3, 1: -0.2, 11: 0.5, 2: 0.1, 3: -0.4}, {0: -0.1, 1: 0.2, 11: 0.6, 2: -0.5, 3: 0.3}],
+                              [{(0, 0): 0.2, (0, 11): -0.3, (0, 2): 0.4}, {}])
+    return BeliefProblem(layout, rules, model, max_generator_attempts=2)
+
+
+def fixed_tiles_example(model=None):
+    """目的の形に必要な牌が別の家に固定され、プールが空の例（M4だけが家の間で牌を移せる）。
+
+    牌種：0×2、1×2、2、5。リーチ者の面子手は{0,0}か{1,1}（国士系統の形は在庫になく常に棄却）。
+    rは手出し1回（打牌2）、jは手出し1回（打牌5）。
+    """
+    rules = _rules((("regular", 0.8), ("kokushi", 0.2)), (("regular", ((0, 0, 0), (1, 1, 1))), ("kokushi", ((3, 3, 4),))), 6, 2)
+    seats = (SeatLayout(1, True, (TurnLayout(False, 2),)), SeatLayout(3, False, (TurnLayout(False, 5),)))
+    layout = BeliefLayout(2, seats, 0, [0, 0, 1, 1, 2, 5], {t: t for t in range(6)})
+    model = model or ToyModel([{0: 0.4, 1: -0.3, 2: 0.2}, {0: -0.2, 1: 0.5, 5: 0.1}],
+                              [{(0, 0): 0.3, (0, 1): -0.1}, {(0, 0): -0.4, (0, 1): 0.2, (0, 5): 0.1}])
+    return BeliefProblem(layout, rules, model, max_generator_attempts=2)
+
+
+def v_asymmetry_example():
+    """M2の`|V(z,a)|`が交換の前後で変わる例（`|V|`補正を省いた変異の検出用）。
+
+    他家の打牌制約がない例では、aに置ける牌種の集合が交換で変わらず、`|V|`も変わらない。
+    ここでは通常の1を1枚足し、リーチ者は赤11、他家jは0を手出しで切る（jの0が1枚だけの状態がある）。
+    """
+    base = kokushi_example()
+    seats = (SeatLayout(1, True, (TurnLayout(False, 11), TurnLayout(True, 4))), SeatLayout(2, False, (TurnLayout(False, 0),)))
+    layout = BeliefLayout(2, seats, 1, [0, 0, 1, 11, 2, 3, 1], base.layout.class_of)
+    model = ToyModel([{0: 0.3, 1: -0.2, 11: 0.5, 2: 0.1, 3: -0.4}, {0: -0.1, 1: 0.2, 11: 0.6, 2: -0.5, 3: 0.3}],
+                     [{(0, 0): 0.2, (0, 11): -0.3, (0, 2): 0.4}, {(0, 0): 0.1, (0, 2): -0.2}])
+    return BeliefProblem(layout, base.rules, model, max_generator_attempts=2)
+
+
+PRIOR_RULES = _rules((("regular", 1.0),), (("regular", ((0, 0, 0),)),), 3, 2)
+
+
+def prior_pool_example():
+    """事前分布の検査用（リーチ者なし、打牌なし）：手1枚の2家とプール3枚。プールの並びと`Π 1/pool!`を検査する。"""
+    seats = (SeatLayout(1, False, ()), SeatLayout(2, False, ()))
+    layout = BeliefLayout(1, seats, 3, [0, 0, 1, 11, 2], {0: 0, 1: 1, 11: 1, 2: 2})
+    return BeliefProblem(layout, PRIOR_RULES, FlatModel())
+
+
+def prior_hand_example():
+    """事前分布の検査用：手2枚の2家とプール1枚。配牌の`Π 1/h0!`を検査する。"""
+    seats = (SeatLayout(1, False, ()), SeatLayout(2, False, ()))
+    layout = BeliefLayout(2, seats, 1, [0, 0, 1, 1, 2], {0: 0, 1: 1, 2: 2})
+    return BeliefProblem(layout, PRIOR_RULES, FlatModel())
+
+
+class ExactChain:
+    """小例の支持状態の全列挙と、移動ごとの正確な遷移行列。"""
+
+    def __init__(self, problem):
+        self.problem = problem
+        layout = problem.layout
+        self.states = [
+            perm for perm in itertools.permutations(range(layout.size))
+            if all(belief.seat_hard_violation(problem, i, *seat_type_state(layout, perm, i)) is None
+                   for i in range(len(layout.seats)))
+        ]
+        self.index = {state: k for k, state in enumerate(self.states)}
+        self.base = {state: initial_chain_state(problem, state) for state in self.states}
+        logs = np.array([math.fsum(self.base[state].log_factors) for state in self.states])
+        weights = np.exp(logs - logs.max())
+        self.target = weights / weights.sum()  # p0（物理配置で一様）× H × L を正規化
+
+    def _row(self, matrix, k, outcomes):
+        for outcome, probability in outcomes.items():
+            matrix[k, self.index[outcome]] += probability
+
+    def swap_matrix(self, kernel):
+        """M1・M2：移動全体を全分岐列挙する。"""
+        size = len(self.states)
+        matrix = np.zeros((size, size))
+        for k, state in enumerate(self.states):
+            def step(chooser, state=state):
+                current = self.base[state].copy()
+                kernel(self.problem, current, chooser, MoveStatistics())
+                return tuple(current.ids)
+            self._row(matrix, k, enumerate_outcomes(step))
+        return matrix
+
+    def m1(self):
+        return self.swap_matrix(belief.m1_step)
+
+    def m2(self, a=None):
+        return self.swap_matrix(lambda p, s, c, st: belief.m2_step(p, s, c, st, a=a))
+
+    def regeneration(self, seats):
+        """M3・M4：提案（牌種状態だけに依存）→受理比→復元を、regenerate_stepと同じ順に合成する。"""
+        size = len(self.states)
+        matrix = np.zeros((size, size))
+        proposals: dict = {}
+        for k, state in enumerate(self.states):
+            current = self.base[state]
+            block = belief.regeneration_block(self.problem, state, seats)
+            key = (block.order, tuple(sorted(block.available.items())))
+            if key not in proposals:
+                def propose(chooser, block=block):
+                    proposed = belief.propose_regeneration(self.problem, block, chooser)
+                    return None if proposed is None else tuple(sorted(proposed.items()))
+                proposals[key] = enumerate_outcomes(propose)
+            for proposal, probability in proposals[key].items():
+                if proposal is None:
+                    matrix[k, k] += probability  # 生成器の上限：現状維持
+                    continue
+                proposed = dict(proposal)
+                log_ratio, _ = belief.regeneration_log_ratio(self.problem, block, current.log_factors, proposed)
+                alpha = 1.0 if log_ratio >= 0 else math.exp(log_ratio)
+                matrix[k, k] += probability * (1.0 - alpha)
+                pool = belief.regeneration_pool(self.problem, block, proposed)
+
+                def restore(chooser, proposed=proposed, pool=pool, block=block, state=state):
+                    moved = self.base[state].copy()
+                    belief.restore_block(self.problem, moved, block.order, proposed, pool, chooser)
+                    return tuple(moved.ids)
+                for outcome, share in enumerate_outcomes(restore).items():
+                    matrix[k, self.index[outcome]] += probability * alpha * share
+        return matrix
+
+    def kernels(self):
+        """個々の核（名前、行列）。M2はaを固定した核ごと、M3は家ごと。"""
+        layout = self.problem.layout
+        result = [("m1", self.m1())]
+        if layout.riichi_index is not None:
+            result += [(f"m2:a={a}", self.m2(a)) for a in layout.seat_positions(layout.riichi_index)]
+        result += [(f"m3:{i}", self.regeneration((i,))) for i in range(len(layout.seats))]
+        result.append(("m4", self.regeneration(range(len(layout.seats)))))
+        return result
+
+    def iteration(self, *, m3=True, m4=True):
+        """7.5節の1反復（順序付き合成）の行列。"""
+        layout = self.problem.layout
+        result = np.linalg.matrix_power(self.m1(), layout.seat_size)
+        if layout.riichi_index is not None:
+            result = result @ np.linalg.matrix_power(self.m2(), len(layout.seat_positions(layout.riichi_index)))
+        if m3:
+            for i in layout.m3_order:
+                result = result @ self.regeneration((i,))
+        if m4:
+            result = result @ self.regeneration(range(len(layout.seats)))
+        return result
+
+
+@lru_cache(maxsize=None)
+def exact(name: str) -> ExactChain:
+    return ExactChain({
+        "kokushi": kokushi_example, "kokushi_flat": lambda: kokushi_example(FlatModel()),
+        "kokushi_discard0": lambda: kokushi_example(discard_type=0),
+        "v_asymmetry": v_asymmetry_example,
+        "kokushi_wide_flat": lambda: kokushi_example(FlatModel(), wide=True),
+        "fixed": fixed_tiles_example, "fixed_flat": lambda: fixed_tiles_example(FlatModel()),
+        "prior_pool": prior_pool_example, "prior_hand": prior_hand_example,
+    }[name]())
+
+
+def invariance_error(pi, matrix) -> float:
+    return float(np.abs(pi @ matrix - pi).max())
+
+
+def balance_error(pi, matrix) -> float:
+    flow = pi[:, None] * matrix
+    return float(np.abs(flow - flow.T).max())
+
+
+def stationary(matrix) -> np.ndarray:
+    size = matrix.shape[0]
+    system = matrix.T - np.eye(size)
+    system[-1, :] = 1.0
+    rhs = np.zeros(size)
+    rhs[-1] = 1.0
+    return np.linalg.solve(system, rhs)
+
+
+def strongly_connected(matrix) -> bool:
+    edges = matrix > 0
+
+    def reach(adjacency) -> int:
+        seen, frontier = {0}, [0]
+        while frontier:
+            node = frontier.pop()
+            for nxt in np.nonzero(adjacency[node])[0]:
+                if int(nxt) not in seen:
+                    seen.add(int(nxt))
+                    frontier.append(int(nxt))
+        return len(seen)
+
+    return reach(edges) == len(edges) and reach(edges.T) == len(edges)
+
+
+def family_of(chain: ExactChain, state) -> tuple:
+    problem = chain.problem
+    r = problem.layout.riichi_index
+    final = belief.seat_final_hand(problem.layout, r, *seat_type_state(problem.layout, state, r))
+    return belief.tenpai_families(problem.rules, belief.class_counts(problem, final))
+
+
+EXAMPLES = ("kokushi", "fixed", "prior_pool", "prior_hand")
+
+
+class D33_01TransitionMatrixTest(unittest.TestCase):
+    """有限小例の正確な遷移行列で、個々の核の詳細釣合い、1反復の不変性、既約性を確かめる。"""
+
+    def test_each_kernel_satisfies_detailed_balance(self) -> None:
+        for name in EXAMPLES:
+            chain = exact(name)
+            for kernel, matrix in chain.kernels():
+                with self.subTest(example=name, kernel=kernel):
+                    self.assertLess(float(np.abs(matrix.sum(axis=1) - 1.0).max()), TOL)
+                    self.assertLess(balance_error(chain.target, matrix), TOL)
+                    self.assertLess(invariance_error(chain.target, matrix), TOL)
+
+    def test_one_iteration_preserves_the_target(self) -> None:
+        for name in EXAMPLES:
+            with self.subTest(example=name):
+                chain = exact(name)
+                self.assertLess(invariance_error(chain.target, chain.iteration()), TOL)
+
+    def test_iteration_is_irreducible_with_the_exact_posterior_as_unique_stationary(self) -> None:
+        for name in EXAMPLES:
+            with self.subTest(example=name):
+                chain = exact(name)
+                matrix = chain.iteration()
+                # M4を最後に置くので、支持の任意の2状態間で1反復の遷移確率が正（7.4節の論証の実装検査）。
+                self.assertTrue(bool((matrix > 0).all()))
+                self.assertLess(float(np.abs(stationary(matrix) - chain.target).max()), 1e-10)
+
+    def test_restore_with_fixed_pool_order_is_detected(self) -> None:
+        chain = ExactChain(prior_pool_example())
+        with mock.patch.object(belief, "arrange_pool_types", lambda items, chooser: list(items)):
+            errors = [invariance_error(chain.target, chain.regeneration(seats)) for seats in ((0,), (1,), (0, 1))]
+        self.assertGreater(max(errors), 1e-6)
+
+    def test_removing_m3_and_m4_breaks_irreducibility(self) -> None:
+        for name in ("kokushi", "fixed"):
+            with self.subTest(example=name):
+                chain = exact(name)
+                self.assertFalse(strongly_connected(chain.iteration(m3=False, m4=False)))
+                self.assertTrue(strongly_connected(chain.iteration()))
+        # 国士の例：M1・M2だけでは系統をまたぐ遷移の確率が0。
+        chain = exact("kokushi")
+        local = chain.iteration(m3=False, m4=False)
+        families = [family_of(chain, state) for state in chain.states]
+        crossing = sum(local[i, j] for i in range(len(families)) for j in range(len(families)) if families[i] != families[j])
+        self.assertEqual(crossing, 0.0)
+        self.assertEqual(set(families), {("regular",), ("kokushi",)})
+        # 牌が別の家に固定され、プールが空の例：M3があってもM4を外すと分断が残る。
+        self.assertFalse(strongly_connected(exact("fixed").iteration(m4=False)))
+
+    def test_zero_family_probability_is_rejected_before_start(self) -> None:
+        with self.assertRaises(ValueError):
+            kokushi_example(families=(("regular", 1.0), ("kokushi", 0.0)))
+        layout = kokushi_example().layout
+        with self.assertRaises(ValueError):
+            BeliefProblem(layout, MahjongTenpaiRules((("regular", 0.95), ("chiitoi", 0.05), ("kokushi", 0.0))), FlatModel())
+
+    def test_iteration_runs_moves_in_the_fixed_order(self) -> None:
+        problem = kokushi_example()
+        state = initial_chain_state(problem, exact("kokushi").states[0])
+        calls = []
+        original = belief.regenerate_step
+
+        def record(problem, state, seats, chooser, stats, move):
+            calls.append(move)
+            return original(problem, state, seats, chooser, stats, move)
+
+        stats = MoveStatistics()
+        with mock.patch.object(belief, "regenerate_step", record):
+            belief.mcmc_iteration(problem, state, RandomChooser(random.Random(5)), stats)
+        self.assertEqual(stats.proposed["m1"], problem.layout.seat_size)
+        self.assertEqual(stats.proposed["m2"], 3)
+        self.assertEqual(calls, ["m3:1", "m3:2", "m4"])  # リーチ者、他家の順にM3、最後にM4
+
+    def test_random_execution_matches_exact_rows(self) -> None:
+        """乱数実行（RandomChooser）の遷移頻度が、正確な行列の行と一致する（固定seed、カイ二乗）。"""
+        chain = exact("kokushi")
+        start = chain.states[0]
+        rng = random.Random(0)
+        for label, run, matrix in (
+            ("m4", lambda s: belief.m4_step(chain.problem, s, RandomChooser(rng), MoveStatistics()),
+             chain.regeneration(range(2))),
+            ("iteration", lambda s: belief.mcmc_iteration(chain.problem, s, RandomChooser(rng), MoveStatistics()),
+             chain.iteration()),
+        ):
+            with self.subTest(move=label):
+                rng.seed(11 if label == "m4" else 12)
+                counts: Counter = Counter()
+                trials = 20_000
+                for _ in range(trials):
+                    state = chain.base[start].copy()
+                    run(state)
+                    counts[chain.index[tuple(state.ids)]] += 1
+                assert_frequencies(self, counts, matrix[chain.index[start]], trials)
+
+
+def chi_square_critical(df: int, z: float = 3.090232) -> float:
+    """カイ二乗分布の上側0.1%点（Wilson–Hilferty近似。有意水準0.001をテスト内に固定）。"""
+    return df * (1 - 2 / (9 * df) + z * math.sqrt(2 / (9 * df))) ** 3
+
+
+def assert_frequencies(case: unittest.TestCase, counts: Counter, probabilities, trials: int) -> None:
+    """期待度数5未満のセルをまとめてからカイ二乗検定する。確率0のセルに観測があれば不合格。"""
+    statistic, pooled_expected, pooled_observed, cells = 0.0, 0.0, 0, 0
+    for index, probability in enumerate(probabilities):
+        observed = counts.get(index, 0)
+        if probability <= 0:
+            case.assertEqual(observed, 0, f"確率0の結果が出た: {index}")
+            continue
+        expected = probability * trials
+        if expected < 5:
+            pooled_expected += expected
+            pooled_observed += observed
+            continue
+        statistic += (observed - expected) ** 2 / expected
+        cells += 1
+    if pooled_expected > 0:
+        statistic += (pooled_observed - pooled_expected) ** 2 / pooled_expected
+        cells += 1
+    case.assertLess(statistic, chi_square_critical(max(cells - 1, 1)))
+
+
+def remaining_hand_positions(problem, ids):
+    """変異用：リーチ者の位置のうち、宣言時点で手中に残る牌の位置（評価器と同じく最初の同種を切る）。"""
+    layout = problem.layout
+    r = layout.riichi_index
+    hand = list(layout.initial_positions(r))
+    draws = iter(layout.draw_positions(r))
+    for turn in layout.seats[r].turns:
+        if turn.tsumogiri:
+            continue
+        drawn = next(draws)
+        hand.append(drawn)
+        hand.remove(next(p for p in hand if p != drawn and layout.type_of[ids[p]] == turn.discard_type))
+    return hand
+
+
+def different_type_partner(layout, ids, a, chooser):
+    """変異用：M1で同じ牌種どうしの交換を候補から除く。"""
+    options = [b for b in range(layout.size) if b != a and layout.type_of[ids[b]] != layout.type_of[ids[a]]]
+    return options[chooser.index(len(options))]
+
+
+def first_path_density(rules, counts):
+    """変異用：生成経路の和をとらず、最初に見つかった1経路だけを数える。"""
+    for family, probability in rules.families:
+        for removed in range(rules.class_count):
+            complete = counts[:removed] + (counts[removed] + 1,) + counts[removed + 1:]
+            value = rules.complete_probability(family, complete)
+            if value > 0:
+                return probability * value * complete[removed] / (rules.hand_size + 1)
+    return 0.0
+
+
+def kokushi_hand(rules, chooser) -> tuple:
+    """国士の系統だけの生成（完成形から1枚を一様に除く）。"""
+    complete = rules.sample_complete("kokushi", chooser)
+    complete.pop(chooser.index(len(complete)))
+    return tuple(sorted(complete))
+
+
+# 変異用：麻雀で「すでに4枚持つ牌を待ちから除く」ことに当たる、小例の上限（手に2枚ある類は待ちにしない）。
+LEGAL_WAIT_LIMIT = 2
+
+
+class D33_02PriorAndMutationTest(unittest.TestCase):
+    def test_prior_marginals_are_hypergeometric(self) -> None:
+        """尤度1、牌在庫だけの例：定常分布の各位置と各家の手の周辺が、残数に対する超幾何分布。"""
+        for name in ("prior_pool", "prior_hand"):
+            with self.subTest(example=name):
+                chain = exact(name)
+                layout = chain.problem.layout
+                pi = stationary(chain.iteration())
+                types = [layout.type_of[tile_id] for tile_id in range(layout.size)]
+                supply = Counter(types)
+                for position in range(layout.size):
+                    marginal: Counter = Counter()
+                    for probability, state in zip(pi, chain.states):
+                        marginal[layout.type_of[state[position]]] += probability
+                    for tile_type, count in supply.items():
+                        self.assertAlmostEqual(marginal[tile_type], count / layout.size, places=12)
+                for i in range(len(layout.seats)):
+                    hands: Counter = Counter()
+                    for probability, state in zip(pi, chain.states):
+                        hands[seat_type_state(layout, state, i)[0]] += probability
+                    for hand, probability in hands.items():
+                        expected = math.prod(math.comb(supply[t], n) for t, n in Counter(hand).items()) / math.comb(
+                            layout.size, layout.hand_size)
+                        self.assertAlmostEqual(probability, expected, places=12)
+
+    def test_constrained_stationary_equals_normalized_p0_times_h(self) -> None:
+        """尤度1でHを課した例：定常分布は、p0×Hを全列挙して正規化した分布（物理配置で一様）。"""
+        for name in ("kokushi_flat", "fixed_flat"):
+            with self.subTest(example=name):
+                chain = exact(name)
+                uniform = np.full(len(chain.states), 1.0 / len(chain.states))
+                self.assertLess(float(np.abs(stationary(chain.iteration()) - uniform).max()), 1e-10)
+
+    def test_mutations_are_detected(self) -> None:
+        """設計の誤り方を移植した実装が、核の不変性（πP=π）の不一致で検出される。"""
+        kokushi = exact("kokushi")
+        cases = [
+            ("m2_without_V_correction", "m2_log_correction", lambda before, after: 0.0, exact("v_asymmetry"),
+             lambda c: c.m2()),
+            ("m1_excludes_same_type", "m1_partner", different_type_partner, exact("prior_pool"), lambda c: c.m1()),
+            ("m2_position_in_remaining_hand", "m2_positions", remaining_hand_positions, exact("kokushi_discard0"),
+             lambda c: c.m2()),
+            ("m3_single_generation_path", "tenpai_class_density", first_path_density, kokushi, lambda c: c.regeneration((0,))),
+            ("m3_without_backward_n_over_13", "backward_log_density", lambda *args: 0.0, kokushi, lambda c: c.regeneration((0,))),
+            ("regular_paths_only_legal_waits", "tenpai_removal_classes",
+             lambda rules, counts: [x for x in range(rules.class_count) if counts[x] < LEGAL_WAIT_LIMIT],
+             kokushi, lambda c: c.regeneration((0,))),
+            ("without_pool_factorial", "pool_log_weight", lambda pool: 0.0, exact("prior_pool"), lambda c: c.regeneration((0,))),
+            ("without_initial_factorial", "initial_log_weight", lambda initial: 0.0, exact("prior_hand"), lambda c: c.regeneration((0,))),
+        ]
+        for label, attribute, replacement, chain, build in cases:
+            with self.subTest(mutation=label):
+                self.assertLess(invariance_error(chain.target, build(chain)), TOL)
+                with mock.patch.object(belief, attribute, replacement):
+                    self.assertGreater(invariance_error(chain.target, build(chain)), 1e-6)
+
+    def test_regular_numerator_of_the_fixed_example_is_168(self) -> None:
+        counts = [0] * 34
+        for tile, n in ((0, 4), (1, 1), (2, 1), (3, 1), (10, 3), (20, 3)):  # 1111234m 222p 333s
+            counts[tile] = n
+        self.assertEqual(regular_path_numerator(tuple(counts)), 168)
+        # 合法な待ち（4m）だけの和は48＝経路24×4mの枚数2（5枚目の1mを除く経路120が抜ける）
+        self.assertEqual(belief.regular_complete_paths(tuple(c + (1 if t == 3 else 0) for t, c in enumerate(counts))) * 2, 48)
+        density = belief.tenpai_class_density(MahjongTenpaiRules(), tuple(counts))
+        self.assertAlmostEqual(density / (0.9 * 168 / (34 * 55**4 * 14)), 1.0, places=12)
+
+    def test_density_matches_independent_path_enumeration(self) -> None:
+        """面子手の経路の和を、雀頭と順序付きの面子4つを直接たどる独立な列挙と照合する。"""
+        rng = random.Random(21)
+        hands = [
+            (0, 0, 0, 0, 1, 2, 3, 10, 10, 10, 20, 20, 20),  # 1111234m 222p 333s（5枚目の除去を含む）
+            (0, 0, 0, 0, 9, 10, 11, 12, 13, 14, 24, 25, 26),  # 1111m 123456p 789s（待ちは5枚目の1mだけ）
+            (0, 0, 1, 1, 2, 2, 9, 9, 10, 10, 11, 11, 33),  # 七対子と面子手の両方でテンパイ
+        ]
+        while len(hands) < 8:
+            shape = belief.sample_tenpai_classes(MahjongTenpaiRules((("regular", 0.98), ("chiitoi", 0.01), ("kokushi", 0.01))),
+                                                 RandomChooser(rng))
+            if max(Counter(shape).values()) <= 4 and belief.regular_path_numerator(tuple(shape.count(t) for t in range(34))):
+                hands.append(tuple(shape))
+        for hand in hands:
+            counts = tuple(hand.count(t) for t in range(34))
+            with self.subTest(hand=hand):
+                self.assertEqual(regular_path_numerator(counts), brute_regular_numerator(counts))
+        chiitoi_regular = tuple(hands[2].count(t) for t in range(34))
+        rules = MahjongTenpaiRules()
+        self.assertEqual(belief.tenpai_families(rules, chiitoi_regular), ("regular", "chiitoi"))
+        expected = 0.9 * regular_path_numerator(chiitoi_regular) / (34 * 55**4 * 14) + 0.05 * 2 / (14 * math.comb(34, 7))
+        self.assertAlmostEqual(belief.tenpai_class_density(rules, chiitoi_regular) / expected, 1.0, places=12)
+        # 国士の系統：生成器を全分岐列挙した分布と密度が一致する。
+        outcomes = enumerate_outcomes(lambda chooser: kokushi_hand(rules, chooser))
+        self.assertEqual(len(outcomes), 157)
+        for hand, probability in outcomes.items():
+            counts = tuple(hand.count(t) for t in range(34))
+            family = belief._family_densities(rules, counts)[2]
+            self.assertAlmostEqual(family, probability, places=15)
+
+    def test_generator_frequencies_match_density_at_fixed_inventory(self) -> None:
+        """固定したA_r（么九牌各2枚）で、生成器10^6回の頻度と計算した密度が一致する（固定seed、カイ二乗）。
+
+        在庫に収まる手は国士157形と么九牌の七対子（12,012形、まとめて1セル）だけで、残りは「在庫超過」。
+        面子手・七対子の個々の手の確率は1e-8程度で頻度検定に向かないため、経路の和は独立な列挙で照合する。
+        """
+        rules = MahjongTenpaiRules()
+        supply = [2 if t in YAOCHUU else 0 for t in range(34)]
+        kokushi = sorted(enumerate_outcomes(lambda chooser: kokushi_hand(rules, chooser)))
+        cells = {hand: k for k, hand in enumerate(kokushi)}
+        chiitoi_cell, overflow_cell = len(cells), len(cells) + 1
+        probabilities = [belief.tenpai_class_density(rules, tuple(hand.count(t) for t in range(34))) for hand in kokushi]
+        chiitoi_total = 0.0
+        for pairs in itertools.combinations(YAOCHUU, 7):
+            for single in pairs:
+                counts = [0] * 34
+                for t in pairs:
+                    counts[t] = 1 if t == single else 2
+                chiitoi_total += belief.tenpai_class_density(rules, tuple(counts))
+        probabilities += [chiitoi_total, 1.0 - math.fsum(probabilities) - chiitoi_total]
+        rng = random.Random(20261001)
+        chooser = RandomChooser(rng)
+        counts: Counter = Counter()
+        for _ in range(1_000_000):
+            hand = tuple(belief.sample_tenpai_classes(rules, chooser))
+            if hand in cells:
+                counts[cells[hand]] += 1
+                continue
+            shape = Counter(hand)
+            feasible = all(supply[t] >= n for t, n in shape.items())
+            counts[chiitoi_cell if feasible else overflow_cell] += 1
+            if feasible:
+                self.assertEqual(belief.tenpai_families(rules, tuple(shape[t] for t in range(34))), ("chiitoi",))
+        assert_frequencies(self, counts, probabilities, 1_000_000)
+
+    def test_red_is_hypergeometric_within_the_class(self) -> None:
+        """赤：類を決めた後、その類の物理牌から一様（超幾何分布）。全分岐列挙と密度を照合する。"""
+        layout = kokushi_example().layout
+        problem = BeliefProblem(BeliefLayout(2, layout.seats, 1, TYPE_OF_ID_FOR_TEST, belief.MAHJONG_CLASS_OF),
+                                MahjongTenpaiRules(), FlatModel())
+        available = Counter({4: 3, 38: 1, 13: 2, 47: 1})  # 5m×3・赤5m、5p×2・赤5p
+
+        def draw(chooser):
+            hand: Counter = Counter()
+            for tile_class, count in ((4, 2), (13, 2)):
+                items = sorted(t for t in available.elements() if belief.MAHJONG_CLASS_OF[t] == tile_class)
+                hand.update(belief._draw_without_replacement(items, count, chooser))
+            return tuple(sorted(hand.elements()))
+        for hand, probability in enumerate_outcomes(draw).items():
+            density = math.exp(belief._variants_log_density(problem, available, Counter(hand)))
+            self.assertAlmostEqual(density, probability, places=14)
+
+    def test_positive_density_iff_shanten_zero(self) -> None:
+        rules = MahjongTenpaiRules()
+        rng = random.Random(7)
+        tenpai = 0
+        for trial in range(3_000):
+            if trial % 2:
+                hand = belief.sample_tenpai_classes(rules, RandomChooser(rng))
+                if max(Counter(hand).values()) > 4:
+                    continue
+            else:
+                hand = [TILE_BY_ID_FOR_TEST[i] for i in rng.sample(range(136), 13)]
+            counts = tuple(hand.count(t) for t in range(34))
+            positive = belief.tenpai_class_density(rules, counts) > 0
+            self.assertEqual(positive, shanten(counts, 0) == 0, hand)
+            tenpai += positive
+        self.assertGreater(tenpai, 1000)
+
+
+TYPE_OF_ID_FOR_TEST = belief.TYPE_OF_ID
+TILE_BY_ID_FOR_TEST = [belief.TILE_BY_ID[i].tile34 for i in range(136)]
+
+
+def brute_regular_numerator(counts) -> int:
+    """独立な列挙：雀頭と順序付きの面子4つを直接たどり、除去で手に一致する経路×除去位置の数を数える。"""
+    def excess(values) -> int:
+        return sum(max(0, v - c) for v, c in zip(values, counts))
+
+    def walk(values, depth) -> int:
+        if depth == 4:
+            extra = [v - c for v, c in zip(values, counts)]
+            if min(extra) < 0 or sum(extra) != 1:
+                return 0
+            return values[extra.index(1)]
+        total = 0
+        for mentsu in MENTSU_KINDS:
+            following = list(values)
+            for t in mentsu:
+                following[t] += 1
+            if excess(following) <= 1:
+                total += walk(following, depth + 1)
+        return total
+
+    total = 0
+    for pair in range(34):
+        start = [0] * 34
+        start[pair] = 2
+        if excess(start) <= 1:
+            total += walk(start, 0)
+    return total
+
+
+class D33_03CrossFamilyToyTest(unittest.TestCase):
+    def test_m3_and_m4_accept_transitions_across_families_with_unit_likelihood(self) -> None:
+        """国士と面子手の両方に支持がある小例で、尤度1のときM3（リーチ者）とM4が系統をまたぐ遷移を受理する。"""
+        chain = exact("kokushi_wide_flat")
+        families = [family_of(chain, state) for state in chain.states]
+        for label, matrix in (("m3", chain.regeneration((0,))), ("m4", chain.regeneration((0, 1)))):
+            for source, target in ((("regular",), ("kokushi",)), (("kokushi",), ("regular",))):
+                with self.subTest(move=label, source=source):
+                    mass = max(sum(matrix[i, j] for j, f in enumerate(families) if f == target)
+                               for i, f in enumerate(families) if f == source)
+                    self.assertGreater(mass, 0.0)
+
+
+@unittest.skipUnless(HAS_DATA, "D.3.1の実データ（Git管理外）がない")
+class MahjongMcmcTest(unittest.TestCase):
+    """実局面への接続：牌種水準の硬い制約が評価器と一致し、移動がH=1を保つ。"""
+
+    def _belief(self, prefix, seed, resolver=None, **options):
+        context = context_of(prefix)
+        initial = construct_initial_world(context, random.Random(seed), **options)
+        self.assertEqual(initial.status, "ok")
+        return context, initial.world, mahjong_belief(context, initial.world, resolver)
+
+    def test_type_level_hard_check_matches_the_evaluator(self) -> None:
+        for prefix in fixture()["prefixes"][:6]:
+            context = context_of(prefix)
+            for seed in range(6):
+                world = random_world(context, random.Random(seed), riichi_tenpai=seed % 2 == 0)
+                layout = _layout_for(context, world)
+                ids = _ids_for(context, world, layout)
+                for i, seat_layout in enumerate(layout.seats):
+                    with self.subTest(decision=prefix["decisionId"], seed=seed, seat=seat_layout.seat):
+                        problem = BeliefProblem(layout, MahjongTenpaiRules(), FlatModel())
+                        fast = belief.seat_hard_violation(problem, i, *seat_type_state(layout, ids, i))
+                        evaluation = evaluate_seat(context, world.hypotheses[seat_layout.seat], None)
+                        self.assertEqual(fast is None, evaluation.violation is None)
+
+    def test_state_round_trip_and_factors_match_the_evaluator(self) -> None:
+        resolver = model_resolver(fixture()["model"])
+        for prefix in fixture()["prefixes"][:4]:
+            context, world, (mahjong, state) = self._belief(prefix, 3, resolver)
+            with self.subTest(decision=prefix["decisionId"]):
+                self.assertEqual(mahjong.world_from_state(state), world)
+                for i, seat_layout in enumerate(mahjong.problem.layout.seats):
+                    evaluation = evaluate_seat(context, world.hypotheses[seat_layout.seat], resolver)
+                    self.assertAlmostEqual(state.log_factors[i], evaluation.log_likelihood, places=10)
+
+    def test_m2_candidates_match_the_evaluator(self) -> None:
+        prefix = fixture()["prefixes"][2]
+        context, world, (mahjong, state) = self._belief(prefix, 4)
+        problem, layout = mahjong.problem, mahjong.problem.layout
+        r = layout.riichi_index
+        for a in list(layout.seat_positions(r))[:3]:
+            candidates = set(belief.m2_candidates(problem, state.ids, a))
+            for b in range(layout.size):
+                if layout.position_seat[b] == r:
+                    continue
+                swapped = state.copy()
+                swapped.ids[a], swapped.ids[b] = swapped.ids[b], swapped.ids[a]
+                trial = mahjong.world_from_state(swapped)
+                ok = all(evaluate_seat(context, trial.hypotheses[s], None).violation is None for s in context.other_seats)
+                self.assertEqual(b in candidates, ok, (a, b))
+
+    def test_iterations_keep_hard_constraints_and_factors(self) -> None:
+        prefix = fixture()["prefixes"][1]
+        context, _, (mahjong, state) = self._belief(prefix, 6)
+        stats = MoveStatistics()
+        chooser = RandomChooser(random.Random(8))
+        for _ in range(2):
+            belief.mcmc_iteration(mahjong.problem, state, chooser, stats)
+            world = mahjong.world_from_state(state)
+            world.validate()
+            for i, seat in enumerate(context.other_seats):
+                evaluation = evaluate_seat(context, world.hypotheses[seat], None)
+                self.assertIsNone(evaluation.violation)
+                self.assertEqual(state.log_factors[i], 0.0)
+        layout = mahjong.problem.layout
+        self.assertEqual(stats.proposed["m1"], 2 * layout.seat_size)
+        self.assertEqual(stats.proposed["m4"], 2)
+        self.assertGreater(sum(stats.accepted.values()), 0)
+
+    def test_m3_and_m4_accept_kokushi_to_regular_with_unit_likelihood(self) -> None:
+        """D33-03の積み残し：国士と面子手の両方に支持がある実局面で、尤度1のときM3とM4が系統をまたぐ遷移を受理する。"""
+        forced = (("regular", 0.01), ("chiitoi", 0.01), ("kokushi", 0.98))
+        for prefix in fixture()["prefixes"]:
+            context = context_of(prefix)
+            initial = construct_initial_world(context, random.Random(12), probabilities=forced, max_attempts=3_000)
+            if initial.status != "ok" or initial.family != "kokushi":
+                continue
+            for move in ("m3", "m4"):
+                with self.subTest(decision=prefix["decisionId"], move=move):
+                    mahjong, state = mahjong_belief(context, initial.world, None)
+                    stats = MoveStatistics()
+                    chooser = RandomChooser(random.Random(13))
+                    r = mahjong.problem.layout.riichi_index
+                    for _ in range(200):
+                        if move == "m3":
+                            belief.m3_step(mahjong.problem, state, r, chooser, stats)
+                        else:
+                            belief.m4_step(mahjong.problem, state, chooser, stats)
+                        if sum(stats.cross_family.values()):
+                            break
+                    self.assertGreater(sum(stats.cross_family.values()), 0, stats.as_dict())
+            return
+        self.fail("国士の出発点を作れる判断が固定例にない")
+
+
+def _layout_for(context, world):
+    seats = tuple(
+        SeatLayout(seat, seat == context.riichi_seat,
+                   tuple(TurnLayout(turn.tsumogiri, belief.type_of_key(turn.discard)) for turn in context.turns[seat]))
+        for seat in context.other_seats
+    )
+    return BeliefLayout(13, seats, len(world.pool), belief.TYPE_OF_ID, belief.MAHJONG_CLASS_OF)
+
+
+def _ids_for(context, world, layout):
+    ids = []
+    for seat_layout in layout.seats:
+        hypothesis = world.hypotheses[seat_layout.seat]
+        ids.extend(hypothesis.initial)
+        ids.extend(hypothesis.draws[t.raw_event_index] for t in context.turns[seat_layout.seat] if not t.tsumogiri)
+    ids.extend(world.pool)
+    return ids
+
+
 if __name__ == "__main__":
     unittest.main()
