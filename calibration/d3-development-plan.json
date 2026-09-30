@@ -7,7 +7,7 @@
   "designPath": "PHASE_D3_DESIGN.md",
   "reservationPath": "future-evaluation-reservation.json",
   "doesNotAmendFutureReservation": true,
-  "nextPhase": "D.3.3_step2_reference_smc_measurement",
+  "nextPhase": "D.3.3_step3_constructive_initialization",
   "models": {
     "designRecommendation": "Astra/high",
     "implementationRecommendation": "Sol/high",
@@ -477,7 +477,7 @@
     },
     {
       "id": "D.3.3",
-      "status": "step1_complete",
+      "status": "step2_complete_gate_proceed_to_mcmc",
       "focus": "reference_smc_measurement_then_constrained_mcmc_pilot",
       "step1": {
         "status": "complete",
@@ -530,7 +530,57 @@
         "D33-08",
         "D33-09"
       ],
-      "completionDoesNotAuthorizeD34": true
+      "completionDoesNotAuthorizeD34": true,
+      "step2": {
+        "status": "complete",
+        "acceptance": "D33-09 pass (finite example: normalizer rel err <5%, posterior abs err <0.02, zero mass returns no numbers)",
+        "pilotManifest": {
+          "path": "probes/d33-pilot/manifest.json",
+          "sha256": "159f984a9309216b84ae9e31fe4bd5598a2aaa6af5a18680f1653254ce0c8e90",
+          "decisions": 16,
+          "seed": 20260930,
+          "nonEmptyStrata": 9
+        },
+        "measurement": {
+          "runsPath": "probes/d33-pilot/reference-smc-runs.jsonl",
+          "summaryPath": "probes/d33-pilot/reference-smc-summary.json",
+          "scenario": "base",
+          "runs": 192,
+          "processes": 3,
+          "wallClockSeconds": 19815.0,
+          "zeroMassRuns": {
+            "256": 64,
+            "1024": 64,
+            "4096": 64
+          },
+          "zeroMassLocation": {
+            "256": {
+              "beforeRiichiDeclaration": 64,
+              "atRiichiDeclaration": 0
+            },
+            "1024": {
+              "beforeRiichiDeclaration": 55,
+              "atRiichiDeclaration": 9
+            },
+            "4096": {
+              "beforeRiichiDeclaration": 48,
+              "atRiichiDeclaration": 16
+            }
+          },
+          "meanSecondsPerRun": {
+            "256": 27,
+            "1024": 141,
+            "4096": 774
+          },
+          "winActionHolds": 0
+        },
+        "gate": {
+          "verdict": "proceed_to_mcmc_implementation",
+          "zeroMassRunsAt4096": 64,
+          "expectedRunsAt4096": 64
+        },
+        "mechanism": "one_step_ahead_proposal_cannot_restore_past_hands: tedashi_of_unheld_tile_and_riichi_tenpai_kill_all_particles_after_ancestor_collapse"
+      }
     },
     {
       "id": "D.3.4",

@@ -1,0 +1,183 @@
+{
+  "schemaVersion": "ev-policy-belief-pilot-manifest/v1",
+  "seed": 20260930,
+  "split": "train",
+  "decisionCount": 16,
+  "selectionRule": "one_per_nonempty_stratum_in_fixed_order_then_uniform_fill_distinct_rounds",
+  "riichiTimingBins": {
+    "early": [
+      1,
+      6
+    ],
+    "mid": [
+      7,
+      11
+    ],
+    "late": [
+      12,
+      99
+    ]
+  },
+  "stratumSizes": {
+    "early/dealer/nondealer": 1504,
+    "early/nondealer/dealer": 1464,
+    "early/nondealer/nondealer": 2097,
+    "late/dealer/nondealer": 1041,
+    "late/nondealer/dealer": 500,
+    "late/nondealer/nondealer": 862,
+    "mid/dealer/nondealer": 3866,
+    "mid/nondealer/dealer": 3001,
+    "mid/nondealer/nondealer": 4544
+  },
+  "replaceFailedDecisions": false,
+  "decisions": [
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0029_01A:7:0:e35:s1",
+      "roundId": "mleague:2021-22:L001_S010_0029_01A:7:0",
+      "stratum": {
+        "riichiTiming": "early",
+        "riichiSeatDealer": "dealer",
+        "targetDealer": "nondealer"
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0002_01A:5:0:e81:s0",
+      "roundId": "mleague:2021-22:L001_S010_0002_01A:5:0",
+      "stratum": {
+        "riichiTiming": "early",
+        "riichiSeatDealer": "nondealer",
+        "targetDealer": "dealer"
+      }
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0044_01A:7:0:e87:s0",
+      "roundId": "mleague:2020-21:L001_S007_0044_01A:7:0",
+      "stratum": {
+        "riichiTiming": "early",
+        "riichiSeatDealer": "nondealer",
+        "targetDealer": "nondealer"
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0070_02A:3:0:e79:s1",
+      "roundId": "mleague:2021-22:L001_S010_0070_02A:3:0",
+      "stratum": {
+        "riichiTiming": "mid",
+        "riichiSeatDealer": "dealer",
+        "targetDealer": "nondealer"
+      }
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0028_01A:5:0:e65:s2",
+      "roundId": "mleague:2020-21:L001_S007_0028_01A:5:0",
+      "stratum": {
+        "riichiTiming": "mid",
+        "riichiSeatDealer": "nondealer",
+        "targetDealer": "dealer"
+      }
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0074_02A:11:0:e109:s3",
+      "roundId": "mleague:2022-23:L001_S013_0074_02A:11:0",
+      "stratum": {
+        "riichiTiming": "mid",
+        "riichiSeatDealer": "nondealer",
+        "targetDealer": "nondealer"
+      }
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0036_01A:11:0:e93:s3",
+      "roundId": "mleague:2022-23:L001_S013_0036_01A:11:0",
+      "stratum": {
+        "riichiTiming": "late",
+        "riichiSeatDealer": "dealer",
+        "targetDealer": "nondealer"
+      }
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0023_01A:2:0:e105:s2",
+      "roundId": "mleague:2022-23:L001_S013_0023_01A:2:0",
+      "stratum": {
+        "riichiTiming": "late",
+        "riichiSeatDealer": "nondealer",
+        "targetDealer": "dealer"
+      }
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0010_01A:1:0:e123:s1",
+      "roundId": "mleague:2018-19:L001_S001_0010_01A:1:0",
+      "stratum": {
+        "riichiTiming": "late",
+        "riichiSeatDealer": "nondealer",
+        "targetDealer": "nondealer"
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0061_02A:1:0:e53:s2",
+      "roundId": "mleague:2021-22:L001_S010_0061_02A:1:0",
+      "stratum": {
+        "riichiTiming": "mid",
+        "riichiSeatDealer": "dealer",
+        "targetDealer": "nondealer"
+      }
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0032_02A:13:0:e105:s1",
+      "roundId": "mleague:2019-20:L001_S003_0032_02A:13:0",
+      "stratum": {
+        "riichiTiming": "mid",
+        "riichiSeatDealer": "nondealer",
+        "targetDealer": "dealer"
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0082_02A:4:0:e71:s2",
+      "roundId": "mleague:2021-22:L001_S010_0082_02A:4:0",
+      "stratum": {
+        "riichiTiming": "early",
+        "riichiSeatDealer": "dealer",
+        "targetDealer": "nondealer"
+      }
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0087_02A:3:0:e85:s1",
+      "roundId": "mleague:2019-20:L001_S003_0087_02A:3:0",
+      "stratum": {
+        "riichiTiming": "mid",
+        "riichiSeatDealer": "dealer",
+        "targetDealer": "nondealer"
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S012_0002_01A:1:0:e99:s1",
+      "roundId": "mleague:2021-22:L001_S012_0002_01A:1:0",
+      "stratum": {
+        "riichiTiming": "late",
+        "riichiSeatDealer": "dealer",
+        "targetDealer": "nondealer"
+      }
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0044_01A:3:0:e131:s0",
+      "roundId": "mleague:2018-19:L001_S001_0044_01A:3:0",
+      "stratum": {
+        "riichiTiming": "mid",
+        "riichiSeatDealer": "nondealer",
+        "targetDealer": "nondealer"
+      }
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0008_02A:0:0:e51:s1",
+      "roundId": "mleague:2020-21:L001_S007_0008_02A:0:0",
+      "stratum": {
+        "riichiTiming": "early",
+        "riichiSeatDealer": "nondealer",
+        "targetDealer": "nondealer"
+      }
+    }
+  ],
+  "inputSha256": {
+    "inference-prefixes.jsonl.gz": "df1bfbc8fa4865772c99c1cd2c18c9a322cb67bb16837d8241c960aee6a18040",
+    "public-events.jsonl.gz": "9ef1d4f47a8e639f9668b23da30e8dae3e45fe10be6e538c2e8e6f24ec05cf29"
+  }
+}

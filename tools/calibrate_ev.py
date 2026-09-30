@@ -69,6 +69,7 @@ DEFAULT_OPPONENT_FEATURE_DIR = APP_ROOT / "calibration" / "features-opponent-v3"
 DEFAULT_OPPONENT_MODEL_DIR = APP_ROOT / "calibration" / "model-opponent-v3"
 DEFAULT_OPPONENT_FEATURE_PROBE_DIR = APP_ROOT / "calibration" / "probes" / "opponent-features-v3"
 DEFAULT_BELIEF_EVALUATOR_PROBE_DIR = APP_ROOT / "calibration" / "probes" / "d33-evaluator"
+DEFAULT_BELIEF_PILOT_DIR = APP_ROOT / "calibration" / "probes" / "d33-pilot"
 DEFAULT_WIN_LEGALITY_DIR = APP_ROOT / "calibration" / "probes" / "win-legality-d32b"
 
 REQUIRED_PAIFU_FIELDS = ("season", "date", "gameId", "roundIndex", "roundName", "paifu")
@@ -2148,7 +2149,10 @@ def _parser() -> argparse.ArgumentParser:
     probe_policy_belief = subparsers.add_parser(
         "probe-policy-belief", help="D.3.3の事後分布推定の検査（現在は工程1の履歴評価器の照合だけ）"
     )
-    probe_policy_belief.add_argument("--stage", choices=("evaluator",), default="evaluator")
+    probe_policy_belief.add_argument("--stage", choices=("evaluator", "pilot-manifest", "reference-smc"), default="evaluator")
+    probe_policy_belief.add_argument("--manifest", type=Path, default=DEFAULT_BELIEF_PILOT_DIR / "manifest.json")
+    probe_policy_belief.add_argument("--processes", type=int, default=3, help="並列数。設計12.3節の上限は3")
+    probe_policy_belief.add_argument("--wall-clock-seconds", type=float, default=86_400.0)
     probe_policy_belief.add_argument("--dataset-dir", type=Path, default=DEFAULT_OPPONENT_DATASET_DIR)
     probe_policy_belief.add_argument("--model-dir", type=Path, default=DEFAULT_OPPONENT_MODEL_DIR)
     probe_policy_belief.add_argument("--output-dir", type=Path, default=DEFAULT_BELIEF_EVALUATOR_PROBE_DIR)
@@ -2477,6 +2481,29 @@ def main(argv: list[str] | None = None) -> int:
             "projectedFullBuildSeconds": report["projection"]["fullBuildSecondsFromColdMean"],
         }, ensure_ascii=False))
         return 0 if report["status"] != "feature_budget_exceeded" else 2
+    if args.command == "probe-policy-belief" and args.stage == "pilot-manifest":
+        manifest_path = args.manifest.resolve()
+        if manifest_path.exists():
+            # manifestは実行前に一度だけ固定する（D33-08）。上書きしない。
+            print(json.dumps({"error": f"manifestは作成済みで上書きしない: {manifest_path}"}, ensure_ascii=False), file=sys.stderr)
+            return 2
+        from tools.ev_policy_belief import select_pilot_decisions
+        manifest = select_pilot_decisions(args.dataset_dir.resolve())
+        manifest_path.parent.mkdir(parents=True, exist_ok=True)
+        manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(json.dumps({"manifest": str(manifest_path), "decisions": manifest["decisionCount"]}, ensure_ascii=False))
+        return 0
+    if args.command == "probe-policy-belief" and args.stage == "reference-smc":
+        if not 1 <= args.processes <= 3:
+            print(json.dumps({"error": "processesは1〜3（設計12.3節）"}, ensure_ascii=False), file=sys.stderr)
+            return 2
+        from tools.ev_policy_belief import measure_reference_smc
+        report = measure_reference_smc(
+            args.dataset_dir.resolve(), args.model_dir.resolve(), args.manifest.resolve(), args.manifest.resolve().parent,
+            processes=args.processes, wall_clock_seconds=args.wall_clock_seconds,
+        )
+        print(json.dumps({key: report[key] for key in ("status", "runs", "zeroMassBySetting", "gate", "wallClockSeconds")}, ensure_ascii=False))
+        return 0 if report["status"] == "complete" else 1
     if args.command == "probe-policy-belief":
         if args.decisions < 1 or args.assignments_per_decision < 1:
             print(json.dumps({"error": "decisionsとassignments-per-decisionは1以上が必要"}, ensure_ascii=False), file=sys.stderr)

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "ev-policy-belief-reference-smc/v1",
+  "status": "complete",
+  "manifestSha256": "159f984a9309216b84ae9e31fe4bd5598a2aaa6af5a18680f1653254ce0c8e90",
+  "particleGrid": [
+    256,
+    1024,
+    4096
+  ],
+  "replicates": 4,
+  "processes": 3,
+  "scenario": "base",
+  "runs": 192,
+  "zeroMassBySetting": {
+    "256": 64,
+    "1024": 64,
+    "4096": 64
+  },
+  "gate": {
+    "particleCountForDecision": 4096,
+    "expectedRuns": 64,
+    "completedRuns": 64,
+    "zeroMassRuns": 64,
+    "verdict": "proceed_to_mcmc_implementation"
+  },
+  "wallClockSeconds": 19815.0
+}

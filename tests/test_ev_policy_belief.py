@@ -26,13 +26,22 @@ sys.path.insert(0, str(ROOT))
 from tools.ev_policy_belief import (  # noqa: E402
     ContextError,
     DecisionContext,
+    PublicFeatureState,
     SeatFeatureState,
+    build_smc_events,
     compare_evaluations,
     evaluate_seat,
+    id_key,
+    initial_mahjong_particles,
     model_resolver,
     random_world,
     reference_evaluations,
+    reference_smc_gate,
+    run_smc,
     teacher_window_differences,
+    toy_exact,
+    toy_initial_particles,
+    toy_problem,
     world_from_teacher,
 )
 from tools.ev_policy_fixed import constants_for_seat  # noqa: E402
@@ -228,6 +237,151 @@ class D33_07EvaluatorMatchesRoundStateTest(unittest.TestCase):
                     self.assertEqual(left.kind_features.tolist(), right.kind_features.tolist())
                     self.assertEqual(left.detail_features.tolist(), right.detail_features.tolist())
         del full
+
+
+class D33_09ReferenceSmcFiniteExampleTest(unittest.TestCase):
+    """基準SMCを全列挙できる有限小例で走らせ、正規化定数と事後分布を正解と照合する。"""
+
+    NON_DEGENERATE = [
+        ("opp", (1, "concealed", False)), ("target_draw", 2), ("opp", (0, "drawn", False)), ("opp", (2, "concealed", False)),
+    ]
+    WITH_RIICHI = [("opp", (1, "concealed", False)), ("opp", (2, "drawn", False)), ("opp", (0, "concealed", True))]
+
+    def _check(self, observations: list, seed: int) -> None:
+        pool, events = toy_problem(0, observations)
+        exact_z, exact_posterior = toy_exact(pool, events)
+        self.assertGreater(exact_z, 0.0)
+        rng = random.Random(seed)
+        result = run_smc(toy_initial_particles(pool, 20_000, rng), events, rng)
+        self.assertEqual(result.status, "ok")
+        # 粒子数20,000での正規化定数の相対誤差と、事後確率の絶対誤差（固定seed）。
+        self.assertLess(abs(math.exp(result.log_normalizer) / exact_z - 1.0), 0.05)
+        estimate: dict = {}
+        for particle, weight in zip(result.particles, result.normalized_weights()):
+            key = tuple(sorted(particle.hand))
+            estimate[key] = estimate.get(key, 0.0) + weight
+        for key in set(exact_posterior) | set(estimate):
+            self.assertLess(abs(exact_posterior.get(key, 0.0) - estimate.get(key, 0.0)), 0.02, key)
+        self.assertGreater(result.resampling_count, 0)
+        for record in result.event_diagnostics:
+            for field in ("essBefore", "essAfter", "maxWeight", "initialAncestors", "previousAncestors", "positiveG"):
+                self.assertIn(field, record)
+
+    def test_normalizer_and_posterior_match_exact_enumeration(self) -> None:
+        self._check(self.NON_DEGENERATE, seed=1)
+
+    def test_riichi_hard_constraint_matches_exact_enumeration(self) -> None:
+        self._check(self.WITH_RIICHI, seed=2)
+
+    def test_all_zero_weights_return_posterior_zero_mass_without_numbers(self) -> None:
+        # 3枚目の1を2回切らせる：プールに1が残らない観測。
+        observations = [("opp", (1, "drawn", False)), ("opp", (1, "drawn", False)), ("opp", (1, "drawn", False))]
+        pool, events = toy_problem(1, observations)
+        self.assertEqual(toy_exact(pool, events)[0], 0.0)
+        rng = random.Random(3)
+        result = run_smc(toy_initial_particles(pool, 500, rng), events, rng)
+        self.assertEqual(result.status, "posterior_zero_mass")
+        self.assertIsNone(result.log_normalizer)
+        self.assertIsNotNone(result.zero_mass_event)
+        self.assertTrue(all(value == -math.inf for value in result.log_weights))
+
+
+class ReferenceSmcGateTest(unittest.TestCase):
+    """3.3節の関門：N=4,096の64反復だけで判定し、低い粒子数の失敗は分岐に使わない。"""
+
+    def runs(self, zero_at: dict) -> list:
+        return [
+            {"particleCount": n, "status": "posterior_zero_mass" if zero_at.get(n, 0) > i else "ok"}
+            for n in (256, 1024, 4096) for i in range(64)
+        ]
+
+    def test_any_zero_mass_at_4096_proceeds_to_mcmc(self) -> None:
+        self.assertEqual(reference_smc_gate(self.runs({4096: 1}))["verdict"], "proceed_to_mcmc_implementation")
+
+    def test_failures_only_at_lower_counts_return_to_design_as_undetermined(self) -> None:
+        self.assertEqual(reference_smc_gate(self.runs({256: 64, 1024: 10}))["verdict"], "return_to_design_as_undetermined")
+
+    def test_incomplete_4096_runs_are_not_judged(self) -> None:
+        # N=4,096が63反復しかなく、失敗もない場合は判定しない。
+        self.assertEqual(reference_smc_gate(self.runs({})[:-1])["verdict"], "incomplete")
+
+
+@unittest.skipUnless(HAS_DATA, "D.3.1の実データ（Git管理外）がない")
+class ReferenceSmcAdapterTest(unittest.TestCase):
+    """麻雀への適用部分：真の経路をたどったときの行動確率の和が、工程1の評価器と一致する。"""
+
+    def test_forced_true_path_matches_seat_evaluator(self) -> None:
+        data = fixture()
+        base = next(s for s in data["scenarios"] if s["id"] == "base")
+        resolver = model_resolver(data["model"], base)
+        for index in (0, 3):
+            prefix = data["prefixes"][index]
+            context = context_of(prefix)
+            world = random_world(context, random.Random(40 + index))
+            events, _ = build_smc_events(context, resolver)
+            particle = initial_mahjong_particles(context, 1, random.Random(0))[0]
+            # 粒子を割当の配牌で置き換え、残りをプールにする。
+            hands = {seat: h.initial for seat, h in world.hypotheses.items()}
+            used = set(i for hand in hands.values() for i in hand)
+            particle.rules = {seat: particle.rules[seat].__class__(context, seat, list(hand)) for seat, hand in hands.items()}
+            particle.initial = dict(hands)
+            known = list(world.target_initial) + [world.dora_indicator]
+            particle.pool = {}
+            for tile_id in range(136):
+                if tile_id in used or tile_id in known:
+                    continue
+                particle.pool.setdefault(id_key(tile_id), []).append(tile_id)
+            particle.pool_size = sum(len(v) for v in particle.pool.values())
+            for event in events:
+                terms = event.expand(particle)
+                self.assertTrue(terms, event.name)
+                if hasattr(event, "turn"):
+                    truth = id_key(world.hypotheses[event.seat].draws[event.turn.raw_event_index])
+                    choice = next(c for _, c in terms if c[0] == truth)
+                else:
+                    choice = terms[0][1]
+                event.apply(particle, choice)
+            expected = sum(evaluate_seat(context, h, resolver).log_likelihood for h in world.hypotheses.values())
+            with self.subTest(decision=prefix["decisionId"]):
+                self.assertAlmostEqual(particle.log_model, expected, places=9)
+
+    def test_public_feature_state_matches_seat_feature_state(self) -> None:
+        data = fixture()
+        context = context_of(data["prefixes"][4])
+        world = random_world(context, random.Random(21))
+        public = PublicFeatureState(context.public_row())
+        for seat, hypothesis in world.hypotheses.items():
+            evaluation = evaluate_seat(context, hypothesis, None)
+            focus = SeatFeatureState(context.public_row(), seat, hypothesis.private_row(context))
+            for window in evaluation.windows:
+                if len(window.legal_actions) == 1:
+                    continue
+                focus.advance(window.event_position + 1)
+                if public.position <= window.event_position + 1:
+                    public.advance(window.event_position + 1)
+                hand = [id for id in _hand_at(context, hypothesis, window.event_position)]
+                mine = public.encode_for(seat, hand, window.legal_actions)
+                theirs = focus.encode(seat, window.legal_actions)
+                for left, right in zip(mine, theirs):
+                    self.assertEqual(left.kind_features.tolist(), right.kind_features.tolist())
+                    self.assertEqual(left.detail_features.tolist(), right.detail_features.tolist())
+            public = PublicFeatureState(context.public_row())
+
+
+def _hand_at(context: DecisionContext, hypothesis, position: int) -> list[int]:
+    """その家の、公開イベントpositionの直後の手牌（物理ID）。"""
+    hand = list(hypothesis.initial)
+    for index, event in enumerate(context.events[: position + 1]):
+        if event["type"] == "draw" and int(event["seat"]) == hypothesis.seat:
+            drawn = hypothesis.draws[int(event["rawEventIndex"])]
+            hand.append(drawn)
+        elif event["type"] == "discard" and int(event["seat"]) == hypothesis.seat:
+            key = (int(event["tile"]["tile34"]), bool(event["tile"]["isRed"]))
+            if event["origin"] == "drawn":
+                hand.remove(drawn)
+            else:
+                hand.remove(next(i for i in hand if id_key(i) == key and i != drawn))
+    return hand
 
 
 if __name__ == "__main__":
