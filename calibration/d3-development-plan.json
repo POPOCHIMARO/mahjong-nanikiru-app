@@ -7,7 +7,7 @@
   "designPath": "PHASE_D3_DESIGN.md",
   "reservationPath": "future-evaluation-reservation.json",
   "doesNotAmendFutureReservation": true,
-  "nextPhase": "D.3.3_step5_cache_scenarios_diagnostics_holds",
+  "nextPhase": "D.3.3_step6_theta_riichi_response_recalibrated",
   "models": {
     "designRecommendation": "Astra/high",
     "implementationRecommendation": "Sol/high",
@@ -477,7 +477,7 @@
     },
     {
       "id": "D.3.3",
-      "status": "step4_complete",
+      "status": "step5_complete",
       "focus": "reference_smc_measurement_then_constrained_mcmc_pilot",
       "step1": {
         "status": "complete",
@@ -625,6 +625,26 @@
           "budgetMillisecondsPerIteration": 1.1,
           "note": "cache (step5) and benchmark gate (step7) decide; not a pilot measurement"
         }
+      },
+      "step5": {
+        "status": "complete",
+        "module": "tools/ev_policy_belief.py",
+        "acceptance": "D33-04 (stuck chains: rhat=inf and shape overlap 0; chains in different modes with M3/M4 off detected; unvisited supported family reported while rhat is good; thresholds turn violations into chain_disagreement), D33-05 (init_failed, resource_budget_exceeded, rule_unresolved, chain_disagreement, fixed_component_sensitivity_missing, state_reconstruction_mismatch held without samples or partial aggregation), D33-07 cache parts (cache on/off identical log-likelihood and window probabilities across scenarios, theta variant alternation does not share learned distributions, 112346789m1247p+E drawn 2p/1m give different keys and 13/14 legal candidates, LRU cap)",
+        "windowCache": "entry = model-independent encoded candidates + learned distributions keyed by model identity (weights and temperatures hash) and residual indices; scenario constants composed last; per-decision LRU shared across scenarios and chains",
+        "cacheProbe": {
+          "missEvaluationMs": 22,
+          "hitEvaluationMs": 3.8,
+          "note": "remaining time is the rule-side history walk"
+        },
+        "parallelUnit": "decision (all scenarios of one decision in one process share the cache); processes <= 3",
+        "cli": "calibrate_ev.py probe-policy-belief --stage mcmc",
+        "bugFixed": "M1 swap evaluated the first changed seat's likelihood before checking the second seat's hard constraints; the feature inventory check failed on globally impossible proposals. Now all changed seats' hard constraints are checked first",
+        "notYetFixedForPilot": [
+          "iterations/burnIn/thin",
+          "cacheCapacity",
+          "processes",
+          "disagreement thresholds (null until after pilot)"
+        ]
       }
     },
     {

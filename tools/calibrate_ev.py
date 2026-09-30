@@ -2150,7 +2150,7 @@ def _parser() -> argparse.ArgumentParser:
         "probe-policy-belief", help="D.3.3の事後分布推定の検査（現在は工程1の履歴評価器の照合だけ）"
     )
     probe_policy_belief.add_argument(
-        "--stage", choices=("evaluator", "pilot-manifest", "reference-smc", "initialization"), default="evaluator"
+        "--stage", choices=("evaluator", "pilot-manifest", "reference-smc", "initialization", "mcmc"), default="evaluator"
     )
     probe_policy_belief.add_argument("--manifest", type=Path, default=DEFAULT_BELIEF_PILOT_DIR / "manifest.json")
     probe_policy_belief.add_argument("--processes", type=int, default=3, help="並列数。設計12.3節の上限は3")
@@ -2161,6 +2161,15 @@ def _parser() -> argparse.ArgumentParser:
     probe_policy_belief.add_argument("--decisions", type=int, default=100)
     probe_policy_belief.add_argument("--assignments-per-decision", type=int, default=10)
     probe_policy_belief.add_argument("--seed", type=int, default=20260929)
+    # --stage mcmc（工程5）：manifestの判断を、判断単位で並列にMCMCで推定する。設定の固定はpilot前に行う（D33-08）。
+    probe_policy_belief.add_argument("--iterations", type=int, default=10_000)
+    probe_policy_belief.add_argument("--burn-in", type=int, default=1_000)
+    probe_policy_belief.add_argument("--thin", type=int, default=10)
+    probe_policy_belief.add_argument("--checkpoint", type=int, action="append", default=[], help="途中経過の反復数（複数可）")
+    probe_policy_belief.add_argument("--chains", type=int, default=4)
+    probe_policy_belief.add_argument("--cache-capacity", type=int, default=200_000)
+    probe_policy_belief.add_argument("--scenario", action="append", default=[], help="走らせるシナリオ（既定は22件すべて）")
+    probe_policy_belief.add_argument("--decision-limit", type=int, default=None, help="manifestの先頭から何判断を使うか（検査用）")
     build_opponent_features = subparsers.add_parser(
         "build-opponent-features", help="D.3.1教師窓からD.3.2aの厳密特徴cacheを生成する"
     )
@@ -2500,6 +2509,21 @@ def main(argv: list[str] | None = None) -> int:
         report = record_pilot_initialization(args.dataset_dir.resolve(), args.model_dir.resolve(), args.manifest.resolve())
         print(json.dumps({key: report[key] for key in ("failed", "families", "maxAttempts", "maxSeconds")}, ensure_ascii=False))
         return 0 if report["failed"] == 0 else 1
+    if args.command == "probe-policy-belief" and args.stage == "mcmc":
+        if not 1 <= args.processes <= 3:
+            print(json.dumps({"error": "processesは1〜3（設計12.3節）"}, ensure_ascii=False), file=sys.stderr)
+            return 2
+        from tools.ev_policy_belief import ChainSettings, run_belief_decisions
+        manifest = json.loads(args.manifest.resolve().read_text(encoding="utf-8"))
+        decision_ids = [item["decisionId"] for item in manifest["decisions"]][: args.decision_limit]
+        report = run_belief_decisions(
+            args.dataset_dir.resolve(), args.model_dir.resolve(), decision_ids, args.output_dir.resolve(),
+            ChainSettings(args.iterations, args.burn_in, args.thin, tuple(args.checkpoint)),
+            chains=args.chains, seed=args.seed, processes=args.processes, cache_capacity=args.cache_capacity,
+            wall_clock_seconds=args.wall_clock_seconds, scenario_ids=args.scenario or None,
+        )
+        print(json.dumps({key: report[key] for key in ("held", "wallClockSeconds")}, ensure_ascii=False))
+        return 0 if report["held"] == 0 else 1
     if args.command == "probe-policy-belief" and args.stage == "reference-smc":
         if not 1 <= args.processes <= 3:
             print(json.dumps({"error": "processesは1〜3（設計12.3節）"}, ensure_ascii=False), file=sys.stderr)

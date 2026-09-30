@@ -1245,5 +1245,298 @@ def _ids_for(context, world, layout):
     return ids
 
 
+# ===========================================================================
+# 工程5：診断（D33-04）、hold（D33-05）、窓キャッシュ（D33-07の残り）
+# ===========================================================================
+
+import dataclasses  # noqa: E402
+
+from tools.ev_policy_belief import (  # noqa: E402
+    ChainSettings,
+    ChainStart,
+    DisagreementThresholds,
+    RuleUnresolvedError,
+    WindowCache,
+    generic_summary,
+    run_chain_group,
+)
+from tools.ev_policy_belief import ids_of_key  # noqa: E402
+from tools.ev_policy_opponent import canonical_action  # noqa: E402
+
+
+def toy_starts(problem, states, *, fail=()):
+    """小例の出発点を鎖ごとに与える（failに含む鎖は初期化の失敗として返す）。"""
+
+    def start(chain, seed):
+        if chain in fail:
+            return ChainStart(None, None, None, {"chain": chain, "status": "init_failed"})
+        state = initial_chain_state(problem, states[chain])
+        return ChainStart(problem, state, lambda s: generic_summary(problem, s), {"chain": chain, "status": "ok"})
+
+    return start
+
+
+class RejectAllChooser(RandomChooser):
+    """変異用：MHの提案をすべて棄却する（鎖が出発点に閉じ込められる）。"""
+
+    def accept(self, log_ratio):
+        return False
+
+
+def family_states(chain: ExactChain, family: tuple) -> list:
+    return [state for state in chain.states if family_of(chain, state) == family]
+
+
+class D33_04DiagnosticsTest(unittest.TestCase):
+    SETTINGS = ChainSettings(iterations=600, burn_in=100, thin=5, checkpoints=(300,))
+
+    def test_healthy_chains_agree(self) -> None:
+        chain = exact("kokushi")
+        problem = kokushi_example()
+        starts = family_states(chain, ("regular",))[:2] + family_states(chain, ("kokushi",))[:2]
+        record = run_chain_group(toy_starts(problem, starts), [1, 2, 3, 4], self.SETTINGS,
+                                 DisagreementThresholds(max_rhat=1.2, min_shape_overlap=0.5, require_supported_families_visited=True))
+        self.assertEqual(record["status"], "ok", record.get("holdDetails"))
+        diagnostics = record["diagnostics"]
+        self.assertLess(diagnostics["maxRhat"], 1.2)
+        self.assertEqual(diagnostics["families"]["unvisitedSupported"], [])
+        self.assertIn("300", record["checkpoints"])
+        self.assertEqual(len(record["samples"]), 4 * 100)
+
+    def test_stuck_chains_worsen_rhat_and_shape_overlap(self) -> None:
+        chain = exact("kokushi")
+        problem = kokushi_example()
+        starts = family_states(chain, ("regular",))[:2] + family_states(chain, ("kokushi",))[:2]
+        with mock.patch.object(belief, "RandomChooser", RejectAllChooser):
+            record = run_chain_group(toy_starts(problem, starts), [1, 2, 3, 4], self.SETTINGS, DisagreementThresholds())
+        diagnostics = record["diagnostics"]
+        self.assertEqual(record["status"], "ok")  # 閾値がnullの間は数値を報告するだけ
+        self.assertEqual(diagnostics["moves"]["accepted"], {})
+        self.assertEqual(diagnostics["maxRhat"], math.inf)
+        self.assertEqual(diagnostics["shapes"]["minPairwiseOverlap"], 0.0)
+        self.assertFalse(diagnostics["chainDisagreement"]["judged"])
+        with mock.patch.object(belief, "RandomChooser", RejectAllChooser):
+            held = run_chain_group(toy_starts(problem, starts), [1, 2, 3, 4], self.SETTINGS,
+                                   DisagreementThresholds(max_rhat=1.2, min_shape_overlap=0.5))
+        self.assertEqual(held["status"], "held")
+        self.assertEqual(held["holdReasons"], ["chain_disagreement"])
+        self.assertIsNone(held["samples"])
+
+    def test_chains_in_different_modes_are_detected(self) -> None:
+        """M3・M4を外し、国士と面子手から別々に出発した鎖は別の峰に留まる。"""
+        chain = exact("kokushi")
+        problem = kokushi_example()
+        starts = family_states(chain, ("regular",))[:2] + family_states(chain, ("kokushi",))[:2]
+        settings = dataclasses.replace(self.SETTINGS, moves=("m1", "m2"))
+        record = run_chain_group(toy_starts(problem, starts), [1, 2, 3, 4], settings, DisagreementThresholds())
+        diagnostics = record["diagnostics"]
+        self.assertEqual(diagnostics["scalars"]["family:kokushi"]["rhat"], math.inf)
+        self.assertEqual(diagnostics["shapes"]["minPairwiseOverlap"], 0.0)
+        self.assertEqual(diagnostics["families"]["crossFamilyAccepted"], {})
+
+    def test_unvisited_supported_family_is_reported_even_when_rhat_is_good(self) -> None:
+        """M3・M4を外し、全鎖を同じ系統から始めると、R̂は良くても未訪問の系統が報告される。"""
+        chain = exact("kokushi")
+        problem = kokushi_example()
+        starts = family_states(chain, ("regular",))[:4]
+        settings = dataclasses.replace(self.SETTINGS, moves=("m1", "m2"))
+        record = run_chain_group(toy_starts(problem, starts), [1, 2, 3, 4], settings, DisagreementThresholds())
+        diagnostics = record["diagnostics"]
+        self.assertLess(diagnostics["maxRhat"], 1.2)
+        self.assertEqual(diagnostics["families"]["support"], {"regular": True, "kokushi": True})
+        self.assertEqual(diagnostics["families"]["unvisitedSupported"], ["kokushi"])
+        held = run_chain_group(toy_starts(problem, starts), [1, 2, 3, 4], settings,
+                               DisagreementThresholds(require_supported_families_visited=True))
+        self.assertEqual(held["holdReasons"], ["chain_disagreement"])
+        self.assertEqual(held["holdDetails"]["chain_disagreement"], ["unvisited_supported_family"])
+
+    def test_rhat_and_batch_means_on_known_series(self) -> None:
+        self.assertEqual(belief.split_rhat([[1.0] * 10, [1.0] * 10]), 1.0)
+        self.assertEqual(belief.split_rhat([[0.0] * 10, [1.0] * 10]), math.inf)
+        rng = random.Random(3)
+        independent = [[rng.random() for _ in range(400)] for _ in range(4)]
+        self.assertLess(belief.split_rhat(independent), 1.05)
+        ess = belief.batch_means_ess(independent[0])
+        self.assertGreater(ess, 200)
+        sticky = [value for value in independent[0][:40] for _ in range(10)]
+        self.assertLess(belief.batch_means_ess(sticky), 100)
+
+
+class ToyRuleUnresolvedModel(ToyModel):
+    """得点器の未知エラーを注入する：ある配牌の評価でRuleUnresolvedErrorを投げる。"""
+
+    def log_factor(self, i, initial, draws):
+        if i == 1 and 3 in initial:
+            raise RuleUnresolvedError("injected")
+        return super().log_factor(i, initial, draws)
+
+
+class D33_05HoldTest(unittest.TestCase):
+    SETTINGS = ChainSettings(iterations=50, burn_in=10, thin=5)
+
+    def _assert_held_without_numbers(self, record, reason) -> None:
+        self.assertEqual(record["status"], "held")
+        self.assertIn(reason, record["holdReasons"])
+        self.assertIsNone(record["samples"])  # 一様配布への退避や、成功した鎖だけの集計をしない
+        self.assertNotIn("diagnostics", record)
+
+    def test_init_failed(self) -> None:
+        chain = exact("kokushi")
+        problem = kokushi_example()
+        record = run_chain_group(toy_starts(problem, chain.states[:4], fail=(2,)), [1, 2, 3, 4], self.SETTINGS,
+                                 DisagreementThresholds())
+        self._assert_held_without_numbers(record, "init_failed")
+
+    def test_resource_budget_exceeded(self) -> None:
+        chain = exact("kokushi")
+        problem = kokushi_example()
+        record = run_chain_group(toy_starts(problem, chain.states[:4]), [1, 2, 3, 4], self.SETTINGS,
+                                 DisagreementThresholds(), deadline=0.0)
+        self._assert_held_without_numbers(record, "resource_budget_exceeded")
+        self.assertEqual(record["holdDetails"]["resource_budget_exceeded"]["completedChains"], 0)
+
+    def test_unknown_scoring_error_is_rule_unresolved(self) -> None:
+        base = kokushi_example()
+        problem = BeliefProblem(base.layout, base.rules, ToyRuleUnresolvedModel(base.model.initial_scores, base.model.draw_scores),
+                                max_generator_attempts=2)
+        clean = [s for s in exact("kokushi").states if 3 not in (base.layout.type_of[s[p]] for p in base.layout.initial_positions(1))]
+        record = run_chain_group(toy_starts(problem, clean[:4]), [1, 2, 3, 4], self.SETTINGS, DisagreementThresholds())
+        self._assert_held_without_numbers(record, "rule_unresolved")
+
+    def test_mahjong_seat_model_raises_on_scorer_hold(self) -> None:
+        layout = kokushi_example().layout
+        context = mock.Mock(decision_id="d", turns={1: ()})
+        model = belief.MahjongSeatModel(context, layout, None)
+        evaluation = belief.SeatEvaluation(1, 0.0, holds=["hold:unknown"])
+        with mock.patch.object(belief, "evaluate_seat", return_value=evaluation):
+            with self.assertRaises(RuleUnresolvedError):
+                model.log_factor(0, (0, 0), ())
+
+    def test_chain_disagreement_threshold_holds(self) -> None:
+        chain = exact("kokushi")
+        problem = kokushi_example()
+        with mock.patch.object(belief, "RandomChooser", RejectAllChooser):
+            starts = [family_states(chain, ("regular",))[0], family_states(chain, ("kokushi",))[0]]
+            record = run_chain_group(toy_starts(problem, starts), [1, 2], self.SETTINGS,
+                                     DisagreementThresholds(max_rhat=1.1))
+        self.assertEqual(record["holdReasons"], ["chain_disagreement"])
+        self.assertIsNone(record["samples"])
+
+
+@unittest.skipUnless(HAS_DATA, "D.3.1の実データ（Git管理外）がない")
+class D33_05DecisionHoldTest(unittest.TestCase):
+    """判断単位のhold：シナリオの欠落、状態復元の不一致、初期化の失敗。"""
+
+    def _run(self, context, scenarios, required, **options):
+        return belief.run_decision_scenarios(context, fixture()["model"], scenarios, ChainSettings(2, 1, 1),
+                                             required_scenarios=required, chains=2, **options)
+
+    def test_missing_scenario_holds_the_decision(self) -> None:
+        context = context_of(fixture()["prefixes"][0])
+        scenarios = [s for s in fixture()["scenarios"] if s["id"] == "base"]
+        fake = {"status": "ok", "holdReasons": [], "samples": [], "diagnostics": {}}
+        with mock.patch.object(belief, "run_chain_group", return_value=fake):
+            result = self._run(context, scenarios, ["base", "oat_rho_low"], metadata={"fixedComponentsHash": "h"})
+        self.assertEqual(result["status"], "held")
+        self.assertEqual(result["holdReasons"], ["fixed_component_sensitivity_missing"])
+        self.assertEqual(result["missingScenarios"], ["oat_rho_low"])
+        record = result["scenarios"][0]
+        for key in ("schemaVersion", "decisionId", "informationStateHash", "privatePrefixHash", "thetaId", "scenarioId",
+                    "beliefVersion", "fixedComponentsHash"):
+            self.assertIn(key, record)
+        self.assertEqual(record["thetaId"], belief.model_identity(fixture()["model"]))
+
+    def test_all_d33_scenarios_are_required(self) -> None:
+        fixed = json.loads((MODEL_DIR / "fixed-components.json").read_text(encoding="utf-8"))
+        ids = [s["id"] for s in belief.belief_scenarios(fixed)]
+        self.assertEqual(len(ids), 22)
+        self.assertNotIn("zero", ids)
+
+    def test_state_reconstruction_mismatch(self) -> None:
+        context = context_of(fixture()["prefixes"][0])
+        turns = list(context.turns[context.riichi_seat])
+        last = turns[-1]
+        broken = dict(context.turns)
+        broken[context.riichi_seat] = tuple(turns[:-1]) + (dataclasses.replace(last, tsumogiri=False),)
+        if last.riichi_declaration:
+            self.skipTest("最後の打牌がリーチ宣言")
+        context = dataclasses.replace(context, turns=broken)
+        self.assertEqual(belief.reconstruction_mismatches(context), ["tedashi_after_riichi"])
+        result = self._run(context, [s for s in fixture()["scenarios"] if s["id"] == "base"], ["base"])
+        self.assertIn("state_reconstruction_mismatch", result["holdReasons"])
+        self.assertIsNone(result["scenarios"][0]["samples"])
+
+    def test_init_failed_holds_the_decision(self) -> None:
+        context = context_of(fixture()["prefixes"][0])
+        result = self._run(context, [s for s in fixture()["scenarios"] if s["id"] == "base"], ["base"], init_attempts=0)
+        self.assertEqual(result["holdReasons"], ["fixed_component_sensitivity_missing", "init_failed"])
+        self.assertIsNone(result["scenarios"][0]["samples"])
+
+
+@unittest.skipUnless(HAS_DATA, "D.3.1の実データ（Git管理外）がない")
+class D33_07WindowCacheTest(unittest.TestCase):
+    def test_cache_matches_direct_evaluation_across_scenarios(self) -> None:
+        scenarios = [s for s in fixture()["scenarios"] if s["id"] in ("base", "oat_rho_high", "stratum_riichi-riichi_rho_low")]
+        for prefix in fixture()["prefixes"][:3]:
+            context = context_of(prefix)
+            cache = WindowCache()
+            for seed in range(4):
+                world = random_world(context, random.Random(seed))
+                for scenario in scenarios:
+                    resolver = model_resolver(fixture()["model"], scenario)
+                    for seat in context.other_seats:
+                        direct = evaluate_seat(context, world.hypotheses[seat], resolver)
+                        cached = evaluate_seat(context, world.hypotheses[seat], resolver, cache)
+                        self.assertEqual(direct.log_likelihood, cached.log_likelihood)
+                        self.assertEqual([w.probability for w in direct.windows], [w.probability for w in cached.windows])
+            self.assertGreater(cache.hits, 0)
+
+    def test_theta_variant_does_not_share_learned_distributions(self) -> None:
+        model = fixture()["model"]
+        variant = model.copy()
+        variant.kind_weights = variant.kind_weights * 1.01
+        scenario = next(s for s in fixture()["scenarios"] if s["id"] == "base")
+        normal, other = model_resolver(model, scenario), model_resolver(variant, scenario)
+        self.assertNotEqual(normal.model_id, other.model_id)
+        context = context_of(fixture()["prefixes"][1])
+        world = random_world(context, random.Random(5))
+        cache = WindowCache()
+        for resolver in (normal, other, normal, other):  # 交互に評価しても、キャッシュの有無で一致する
+            for seat in context.other_seats:
+                direct = evaluate_seat(context, world.hypotheses[seat], resolver)
+                cached = evaluate_seat(context, world.hypotheses[seat], resolver, cache)
+                self.assertEqual(direct.log_likelihood, cached.log_likelihood)
+        ids = {model_id for entry in cache.entries.values() for model_id, _ in entry.base}
+        self.assertEqual(ids, {normal.model_id, other.model_id})
+
+    def test_drawn_tile_separates_keys_for_the_same_fourteen_tiles(self) -> None:
+        """同じ14枚`112346789m 1247p 東`で自摸牌を2pと1mに替えると、別の鍵になり合法候補数は13と14。"""
+        context = context_of(fixture()["prefixes"][0])
+        seat = context.other_seats[0]
+        tiles = [0, 0, 1, 2, 3, 5, 6, 7, 8, 9, 10, 12, 15, 27]
+        counts = []
+        keys = []
+        for drawn34 in (10, 0):
+            supply = {}
+            hand = [supply.setdefault(t, iter(ids_of_key((t, False)))).__next__() for t in tiles]
+            drawn = next(i for i in reversed(hand) if belief.TILE_BY_ID[i].tile34 == drawn34)
+            rule = belief._SeatRuleState(context, seat, hand)
+            rule.drawn = drawn
+            actions, status = rule.self_actions()
+            self.assertEqual(status, "known")
+            counts.append(len(actions))
+            names = [canonical_action(action) for action in actions]
+            keys.append(belief.window_cache_key(context, "self_action_after_live", 5, seat, hand, ("drawn", id_key(drawn)), names))
+        self.assertEqual(counts, [13, 14])
+        self.assertNotEqual(keys[0], keys[1])
+
+    def test_lru_capacity_is_enforced(self) -> None:
+        cache = WindowCache(capacity=2)
+        for key in ("a", "b", "c"):
+            cache.put((key,), belief.WindowEntry([], (), {}))
+        self.assertEqual(list(cache.entries), [("b",), ("c",)])
+        self.assertEqual(cache.statistics()["evictions"], 1)
+
+
 if __name__ == "__main__":
     unittest.main()

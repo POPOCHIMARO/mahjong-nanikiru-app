@@ -23,6 +23,8 @@ import hashlib
 import json
 import math
 import random
+
+import numpy as np
 from collections import Counter
 from dataclasses import dataclass, field
 from functools import lru_cache
@@ -30,7 +32,7 @@ from itertools import combinations
 from typing import Any, Callable, Mapping, Sequence
 
 from tools.ev_calibration_state import shanten
-from tools.ev_policy_fixed import constants_for_seat
+from tools.ev_policy_fixed import compose_probabilities, constants_for_seat
 from tools.ev_policy_observation import (
     _deduplicate_actions,
     semantic_response_actions,
@@ -291,6 +293,9 @@ class SeatEvaluation:
     holds: list[str] = field(default_factory=list)  # rule_unresolved の原因
     riichi_furiten: bool = False
     temporary_furiten: bool = False
+    ippatsu: bool = False  # 判断時点の一発の資格
+    final_hand: tuple[int, ...] = ()  # 判断時点の手牌（物理ID）
+    river34: tuple[int, ...] = ()  # その家の河（牌種）
 
     @property
     def consistent(self) -> bool:
@@ -533,19 +538,108 @@ def _consumed(tile_ids: Sequence[int]) -> list[dict[str, Any]]:
 ModelResolver = Callable[[Sequence[Any]], HierarchicalSoftmax]
 
 
-def model_resolver(model: HierarchicalSoftmax, scenario: Mapping[str, Any] | None = None) -> ModelResolver:
-    """窓の候補から、その家に使うモデルを返す関数を作る。
+def model_identity(model: HierarchicalSoftmax) -> str:
+    """学習分布を決めるモデル識別子（係数と温度のハッシュ）。固定定数は含めない（8.2節）。"""
+    payload = {
+        "kindWeights": np.asarray(model.kind_weights).tolist(),
+        "detailWeights": np.asarray(model.detail_weights).tolist(),
+        "temperatures": dict(sorted(model.temperatures.items())),
+    }
+    return hashlib.sha256(_canonical_json(payload).encode("utf-8")).hexdigest()
+
+
+class ScenarioResolver:
+    """窓の候補から、その家に使うモデルを返す（呼び出すとHierarchicalSoftmax）。
 
     シナリオがあれば、その家の層（候補の種別特徴から決まる）の固定定数を合成する。
+    キャッシュを使う評価では、保存した学習分布へ、このシナリオの定数を最後に合成する（8.2節）。
     """
 
-    if scenario is None:
-        return lambda candidates: model
+    def __init__(self, model: HierarchicalSoftmax, scenario: Mapping[str, Any] | None = None):
+        self.model = model
+        self.scenario = scenario
+        self.model_id = model_identity(model)
 
-    def resolve(candidates: Sequence[Any]) -> HierarchicalSoftmax:
-        return model.with_fixed(constants_for_seat(scenario, _stratum_attributes_of(candidates[0])))
+    def __call__(self, candidates: Sequence[Any]) -> HierarchicalSoftmax:
+        if self.scenario is None:
+            return self.model
+        return self.model.with_fixed(constants_for_seat(self.scenario, _stratum_attributes_of(candidates[0])))
 
-    return resolve
+    def cached_probability(self, entry: "WindowEntry", index: int, phase: str, cache: "WindowCache") -> float:
+        """probabilities(candidates, phase)[index] と同じ値を、保存した学習分布から計算する。"""
+        if self.scenario is None:
+            fixed = self.model.fixed
+        else:
+            fixed = constants_for_seat(self.scenario, entry.attributes)
+
+        def base(indices: Sequence[int]) -> np.ndarray:
+            key = (self.model_id, tuple(indices))
+            value = entry.base.get(key)
+            if value is None:
+                cache.base_misses += 1
+                value = self.model.base_probabilities([entry.candidates[i] for i in indices], phase)
+                entry.base[key] = value
+            else:
+                cache.base_hits += 1
+            return value
+
+        if fixed is None:
+            return float(base(list(range(len(entry.candidates))))[index])
+        return float(compose_probabilities(entry.kinds, phase, fixed, base)[index])
+
+
+def model_resolver(model: HierarchicalSoftmax, scenario: Mapping[str, Any] | None = None) -> ScenarioResolver:
+    return ScenarioResolver(model, scenario)
+
+
+@dataclass
+class WindowEntry:
+    """窓キャッシュの値：符号化した候補（モデルに依存しない）と、モデル識別子ごとの学習分布。"""
+
+    candidates: list[Any]
+    kinds: tuple[str, ...]
+    attributes: dict[str, str]
+    base: dict[tuple[str, tuple[int, ...]], np.ndarray] = field(default_factory=dict)
+
+
+class WindowCache:
+    """判断1件の窓キャッシュ（件数上限つきLRU）。同じ判断の全シナリオ・全鎖で共有する。
+
+    鍵は判断、phase、窓の位置、家、その時点の手牌の牌種、自摸牌の牌種またはフリテン状態、
+    合法候補の列。学習分布はさらにモデル識別子で分ける（θ変種と共有しない）。
+    """
+
+    def __init__(self, capacity: int = 200_000):
+        if capacity < 1:
+            raise ValueError("キャッシュの上限は1以上")
+        from collections import OrderedDict
+
+        self.capacity = capacity
+        self.entries: "OrderedDict[tuple, WindowEntry]" = OrderedDict()
+        self.hits = self.misses = self.evictions = self.base_hits = self.base_misses = 0
+
+    def get(self, key: tuple) -> WindowEntry | None:
+        entry = self.entries.get(key)
+        if entry is None:
+            self.misses += 1
+            return None
+        self.entries.move_to_end(key)
+        self.hits += 1
+        return entry
+
+    def put(self, key: tuple, entry: WindowEntry) -> None:
+        self.entries[key] = entry
+        if len(self.entries) > self.capacity:
+            self.entries.popitem(last=False)
+            self.evictions += 1
+
+    def statistics(self) -> dict[str, Any]:
+        lookups = self.hits + self.misses
+        return {
+            "capacity": self.capacity, "entries": len(self.entries), "hits": self.hits, "misses": self.misses,
+            "evictions": self.evictions, "hitRate": self.hits / lookups if lookups else None,
+            "baseHits": self.base_hits, "baseMisses": self.base_misses,
+        }
 
 
 def _window_probability(
@@ -562,15 +656,28 @@ def _window_probability(
     return resolver(candidates).action_probability(candidates, observed, phase)
 
 
+def window_cache_key(
+    context: DecisionContext, phase: str, position: int, seat: int, hand: Sequence[int], state: tuple, names: Sequence[str]
+) -> tuple:
+    """窓キャッシュの鍵（8.2節）。stateは自己行動窓なら("drawn", 自摸牌の牌種)、応答窓ならフリテンとリーチ。
+
+    同じ14枚でも自摸牌が違えば合法候補が変わる（反証レビューR3）ので、自摸牌と合法候補の列を鍵に入れる。
+    """
+    return (context.decision_id, phase, position, seat, tuple(sorted(id_key(tile_id) for tile_id in hand)), state, tuple(names))
+
+
 def evaluate_seat(
     context: DecisionContext,
     hypothesis: SeatHypothesis,
     resolver: ModelResolver | None,
+    cache: WindowCache | None = None,
 ) -> SeatEvaluation:
     """他家1人の履歴を判断時点まで評価する（設計5節）。
 
     resolverがNoneなら合法集合とフリテンだけを求め、確率は計算しない（規則だけの検査用）。
     硬い制約に違反したら、その時点で対数尤度を-infとして返す。
+    cacheがあれば、窓の符号化と学習分布を再利用する（8.2節）。特徴状態は、キャッシュに
+    ない窓に出会ったときだけ作って進める。キャッシュの有無で結果は一致する（D33-07）。
     """
 
     seat = hypothesis.seat
@@ -581,8 +688,32 @@ def evaluate_seat(
     result = SeatEvaluation(seat, 0.0)
     rule = _SeatRuleState(context, seat, list(hypothesis.initial))
     features = None
-    if resolver is not None:
+    if resolver is not None and cache is None:
         features = SeatFeatureState(context.public_row(), seat, hypothesis.private_row(context))
+
+    def window_probability(
+        position: int, actions: list[dict[str, Any]], observed: Mapping[str, Any], phase: str, state: tuple
+    ) -> float:
+        nonlocal features
+        if cache is None:
+            features.advance(position + 1)  # type: ignore[union-attr]
+            return _window_probability(features, seat, actions, observed, phase, resolver)  # type: ignore[arg-type]
+        if len(actions) == 1:
+            return 1.0 if canonical_action(actions[0]) == canonical_action(observed) else 0.0
+        names = tuple(canonical_action(action) for action in actions)
+        observed_name = canonical_action(observed)
+        if observed_name not in names:
+            return 0.0
+        key = window_cache_key(context, phase, position, seat, rule.hand, state, names)
+        entry = cache.get(key)
+        if entry is None:
+            if features is None:
+                features = SeatFeatureState(context.public_row(), seat, hypothesis.private_row(context))
+            features.advance(position + 1)
+            candidates = features.encode(seat, actions)
+            entry = WindowEntry(candidates, tuple(c.kind for c in candidates), _stratum_attributes_of(candidates[0]))
+            cache.put(key, entry)
+        return resolver.cached_probability(entry, names.index(observed_name), phase, cache)  # type: ignore[union-attr]
     pending: tuple[int, tuple[int, bool]] | None = None
     events = context.events
 
@@ -617,10 +748,9 @@ def evaluate_seat(
                 result.holds.append(status)
             if canonical_action(observed) not in {canonical_action(a) for a in actions}:
                 return fail(f"observed_self_action_not_legal:{position}")
-            if features is not None:
-                features.advance(position + 1)
-                window.probability = _window_probability(
-                    features, seat, actions, observed, "self_action_after_live", resolver  # type: ignore[arg-type]
+            if resolver is not None:
+                window.probability = window_probability(
+                    position, actions, observed, "self_action_after_live", ("drawn", id_key(tile_id))
                 )
                 result.log_likelihood += _log(window.probability)
         elif kind == "discard":
@@ -648,10 +778,10 @@ def evaluate_seat(
                 result.windows.append(window)
                 if status != "known":
                     result.holds.append(status)
-                if features is not None:
-                    features.advance(position + 1)
-                    window.probability = _window_probability(
-                        features, seat, actions, {"kind": "pass"}, "discard_response", resolver  # type: ignore[arg-type]
+                if resolver is not None:
+                    window.probability = window_probability(
+                        position, actions, {"kind": "pass"}, "discard_response",
+                        ("response", rule.furiten_reasons(), rule.active_riichi),
                     )
                     result.log_likelihood += _log(window.probability)
             pending = (discarder, key)
@@ -663,6 +793,9 @@ def evaluate_seat(
         return fail("riichi_not_committed")
     result.riichi_furiten = rule.riichi_furiten
     result.temporary_furiten = rule.temporary_furiten
+    result.ippatsu = rule.ippatsu
+    result.final_hand = tuple(rule.hand)
+    result.river34 = tuple(rule.river34)
     return result
 
 
@@ -2100,6 +2233,7 @@ def construct_initial_world(
     probabilities: Sequence[tuple[str, float]] = TENPAI_FAMILY_PROBABILITIES,
     max_attempts: int = 10_000,
     max_seconds: float = 60.0,
+    cache: WindowCache | None = None,
 ) -> InitialWorld:
     """H=1（かつresolverがあれば尤度が正）の出発点を構成的に作る（6節）。
 
@@ -2140,7 +2274,7 @@ def construct_initial_world(
         log_likelihood: dict[int, float] = {}
         reason = None
         for seat, hypothesis in hypotheses.items():
-            evaluation = evaluate_seat(context, hypothesis, resolver)
+            evaluation = evaluate_seat(context, hypothesis, resolver, cache)
             if evaluation.violation is not None:
                 reason = "hard_constraint_violation"
             elif evaluation.holds:
@@ -2688,14 +2822,20 @@ def _swap_factors(problem: BeliefProblem, state: ChainState, a: int, b: int) -> 
     type_a, type_b = layout.type_of[ids[a]], layout.type_of[ids[b]]
     override = {a: type_b, b: type_a}
     factors: dict[int, float] = {}
+    changed: dict[int, SeatTypes] = {}
     for i in sorted({layout.position_seat[a], layout.position_seat[b]} - {-1}):
         after = seat_type_state(layout, ids, i, override)
         if after == seat_type_state(layout, ids, i):
             factors[i] = state.log_factors[i]
-            continue
+        else:
+            changed[i] = after
+    # 変わる家すべての硬い制約を先に確かめる。1家だけ整合でも、もう1家が公開の打牌を持てない
+    # 提案では世界全体の牌在庫が崩れ、尤度の特徴計算が成り立たない。
+    for i, after in changed.items():
         violation = seat_hard_violation(problem, i, *after)
         if violation is not None:
             return factors, violation
+    for i, after in changed.items():
         factors[i] = float(problem.model.log_factor(i, *after))
     return factors, None
 
@@ -2952,17 +3092,28 @@ def m4_step(problem: BeliefProblem, state: ChainState, chooser: Any, stats: Move
     regenerate_step(problem, state, range(len(problem.layout.seats)), chooser, stats, "m4")
 
 
-def mcmc_iteration(problem: BeliefProblem, state: ChainState, chooser: Any, stats: MoveStatistics) -> None:
-    """1反復＝順序付き合成（7.5節）：M1を|S|回、M2を|S_r|回、M3を家ごとに1回、最後にM4を1回。"""
+ALL_MOVES = ("m1", "m2", "m3", "m4")
+
+
+def mcmc_iteration(
+    problem: BeliefProblem, state: ChainState, chooser: Any, stats: MoveStatistics, moves: Sequence[str] = ALL_MOVES
+) -> None:
+    """1反復＝順序付き合成（7.5節）：M1を|S|回、M2を|S_r|回、M3を家ごとに1回、最後にM4を1回。
+
+    movesで移動を外せるのは診断の検査（D33-04）だけ。本番の実行は全移動を使う。
+    """
     layout = problem.layout
-    for _ in range(layout.seat_size):
-        m1_step(problem, state, chooser, stats)
-    if layout.riichi_index is not None:
+    if "m1" in moves:
+        for _ in range(layout.seat_size):
+            m1_step(problem, state, chooser, stats)
+    if "m2" in moves and layout.riichi_index is not None:
         for _ in range(len(layout.seat_positions(layout.riichi_index))):
             m2_step(problem, state, chooser, stats)
-    for i in layout.m3_order:
-        m3_step(problem, state, i, chooser, stats)
-    m4_step(problem, state, chooser, stats)  # 到達可能性の論証のため必ず最後（7.4節）
+    if "m3" in moves:
+        for i in layout.m3_order:
+            m3_step(problem, state, i, chooser, stats)
+    if "m4" in moves:
+        m4_step(problem, state, chooser, stats)  # 到達可能性の論証のため必ず最後（7.4節）
 
 
 # ---------------------------------------------------------------------------
@@ -3111,10 +3262,13 @@ class MahjongSeatModel:
     評価器の結果は牌種だけで決まるので、牌種ごとに物理IDを順に当てて評価する。
     """
 
-    def __init__(self, context: DecisionContext, layout: BeliefLayout, resolver: ModelResolver | None):
+    def __init__(
+        self, context: DecisionContext, layout: BeliefLayout, resolver: ModelResolver | None, cache: WindowCache | None = None
+    ):
         self.context = context
         self.layout = layout
         self.resolver = resolver
+        self.cache = cache
         self.evaluations = 0
 
     def hypothesis(self, i: int, initial: Sequence[int], draws: Sequence[int]) -> SeatHypothesis:
@@ -3130,7 +3284,7 @@ class MahjongSeatModel:
 
     def log_factor(self, i: int, initial: Sequence[int], draws: Sequence[int]) -> float:
         self.evaluations += 1
-        evaluation = evaluate_seat(self.context, self.hypothesis(i, initial, draws), self.resolver)
+        evaluation = evaluate_seat(self.context, self.hypothesis(i, initial, draws), self.resolver, self.cache)
         if evaluation.holds:
             raise RuleUnresolvedError(f"{self.context.decision_id}:{self.layout.seats[i].seat}:{evaluation.holds}")
         return evaluation.log_likelihood
@@ -3179,6 +3333,7 @@ def mahjong_belief(
     *,
     probabilities: Sequence[tuple[str, float]] = TENPAI_FAMILY_PROBABILITIES,
     max_generator_attempts: int = 1000,
+    cache: WindowCache | None = None,
 ) -> tuple[MahjongBelief, ChainState]:
     """初期化の割当（6節）から、判断1件の問題と出発点の状態を作る。"""
     validate_family_probabilities(probabilities)
@@ -3189,8 +3344,8 @@ def mahjong_belief(
         for seat in context.other_seats
     )
     layout = BeliefLayout(13, seats, len(world.pool), TYPE_OF_ID, MAHJONG_CLASS_OF)
-    problem = BeliefProblem(layout, MahjongTenpaiRules(tuple(probabilities)), MahjongSeatModel(context, layout, resolver),
-                            max_generator_attempts)
+    problem = BeliefProblem(layout, MahjongTenpaiRules(tuple(probabilities)),
+                            MahjongSeatModel(context, layout, resolver, cache), max_generator_attempts)
     fixed = {
         seat: {turn.raw_event_index: world.hypotheses[seat].draws[turn.raw_event_index]
                for turn in context.turns[seat] if turn.tsumogiri}
@@ -3198,3 +3353,649 @@ def mahjong_belief(
     }
     belief = MahjongBelief(context, problem, world.target_initial, world.target_draws, world.dora_indicator, fixed)
     return belief, initial_chain_state(problem, belief.ids_from_world(world))
+
+
+# ===========================================================================
+# 工程5：鎖の実行、標本の要約、診断、hold、判断単位の実行（PHASE_D33_DESIGN.md 9〜12節）
+# ===========================================================================
+
+BELIEF_VERSION = "ev-policy-belief-mcmc/v1"
+POSTERIOR_SCHEMA = "ev-policy-belief-posterior/v1"
+HOLD_REASONS = (
+    "init_failed",
+    "chain_disagreement",
+    "resource_budget_exceeded",
+    "fixed_component_sensitivity_missing",
+    "rule_unresolved",
+    "state_reconstruction_mismatch",
+)
+
+
+@dataclass(frozen=True)
+class ChainSettings:
+    """鎖の長さ（7.5節）。checkpointsは同じ鎖の途中経過として診断する反復数（例：10,000と40,000）。"""
+
+    iterations: int
+    burn_in: int
+    thin: int
+    checkpoints: tuple[int, ...] = ()
+    moves: tuple[str, ...] = ALL_MOVES
+
+    def __post_init__(self) -> None:
+        if self.iterations < 1 or not 0 <= self.burn_in < self.iterations or self.thin < 1:
+            raise ValueError("反復数・burn-in・保存間隔が不正")
+        if any(not self.burn_in < c <= self.iterations for c in self.checkpoints):
+            raise ValueError("途中経過はburn-inより後、反復数以下")
+        if not set(self.moves) <= set(ALL_MOVES):
+            raise ValueError("未知の移動")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {"iterations": self.iterations, "burnIn": self.burn_in, "thin": self.thin,
+                "checkpoints": list(self.checkpoints), "moves": list(self.moves)}
+
+
+@dataclass(frozen=True)
+class DisagreementThresholds:
+    """chain_disagreementの閾値。pilot後に固定する（10.2節）。Noneの間は数値を報告するだけ。"""
+
+    max_rhat: float | None = None
+    min_shape_overlap: float | None = None
+    require_supported_families_visited: bool | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {"maxRhat": self.max_rhat, "minShapeOverlap": self.min_shape_overlap,
+                "requireSupportedFamiliesVisited": self.require_supported_families_visited}
+
+
+class BudgetExceeded(RuntimeError):
+    """実行中に時間の上限を超えた（resource_budget_exceeded）。鎖や反復を減らして続けない。"""
+
+
+@dataclass
+class ChainRun:
+    samples: list[dict[str, Any]]
+    checkpoint_sizes: dict[int, int]  # 途中経過の反復数 → その時点の標本数
+    stats: MoveStatistics
+    seconds: float
+
+
+def run_chain(
+    problem: BeliefProblem,
+    state: ChainState,
+    chooser: Any,
+    settings: ChainSettings,
+    summarize: Callable[[ChainState], dict[str, Any]],
+    deadline: float | None = None,
+) -> ChainRun:
+    """1本の鎖を走らせ、burn-in後に保存間隔ごとの要約を集める。deadline（time.time()）を超えたら止める。"""
+    import time
+
+    start = time.perf_counter()
+    stats = MoveStatistics()
+    samples: list[dict[str, Any]] = []
+    checkpoints: dict[int, int] = {}
+    for iteration in range(1, settings.iterations + 1):
+        mcmc_iteration(problem, state, chooser, stats, settings.moves)
+        if iteration > settings.burn_in and (iteration - settings.burn_in) % settings.thin == 0:
+            samples.append(summarize(state))
+        if iteration in settings.checkpoints:
+            checkpoints[iteration] = len(samples)
+        if deadline is not None and time.time() > deadline:
+            raise BudgetExceeded(f"iteration {iteration}")
+    return ChainRun(samples, checkpoints, stats, time.perf_counter() - start)
+
+
+# ---------------------------------------------------------------------------
+# 標本の要約
+# ---------------------------------------------------------------------------
+
+
+def riichi_waits(rules: Any, counts: tuple[int, ...]) -> tuple[int, ...]:
+    """小例の待ち：hに1枚足すといずれかの系統の完成形になる類。"""
+    waits = []
+    for removed in range(rules.class_count):
+        complete = counts[:removed] + (counts[removed] + 1,) + counts[removed + 1:]
+        if any(rules.complete_probability(family, complete) > 0 for family, _ in rules.families):
+            waits.append(removed)
+    return tuple(waits)
+
+
+def generic_summary(problem: BeliefProblem, state: ChainState) -> dict[str, Any]:
+    """家ごとの判断時点の手（牌種）、プール、リーチ者の形・系統・待ち（小例の標本）。"""
+    layout = problem.layout
+    hands = {}
+    for i, seat_layout in enumerate(layout.seats):
+        final = seat_final_hand(layout, i, *seat_type_state(layout, state.ids, i))
+        hands[str(seat_layout.seat)] = sorted(final.elements())  # type: ignore[union-attr]
+    pool = Counter(layout.type_of[state.ids[p]] for p in layout.pool_positions)
+    sample: dict[str, Any] = {"hands": hands, "pool": {str(t): n for t, n in sorted(pool.items())}}
+    r = layout.riichi_index
+    if r is not None:
+        counts = class_counts(problem, Counter(hands[str(layout.seats[r].seat)]))
+        sample["riichiShape"] = list(counts)
+        sample["riichiFamilies"] = list(tenpai_families(problem.rules, counts))
+        sample["riichiWaits"] = list(riichi_waits(problem.rules, counts))
+    return sample
+
+
+def generic_scalars(sample: Mapping[str, Any]) -> dict[str, float]:
+    """R̂と実効標本数を計算する要約統計：待ちの周辺、系統、（あれば）フリテンとドラ枚数。"""
+    values: dict[str, float] = {}
+    for tile in sample.get("riichiWaits", ()):
+        values[f"wait:{tile}"] = 1.0
+    for family in sample.get("riichiFamilies", ()):
+        values[f"family:{family}"] = 1.0
+    if "riichiFuriten" in sample:
+        values["furiten"] = float(any(sample["riichiFuriten"].values()))
+    for seat, count in sample.get("doraCounts", {}).items():
+        values[f"dora:{seat}"] = float(count)
+    return values
+
+
+def sample_shape(sample: Mapping[str, Any]) -> tuple:
+    return tuple(sample.get("riichiShape", ()))
+
+
+def sample_family(sample: Mapping[str, Any]) -> str:
+    return "+".join(sample.get("riichiFamilies", ())) or "none"
+
+
+# ---------------------------------------------------------------------------
+# 系統の支持（10.1節：他家の配置を固定しない、牌在庫とrの打牌整合の下での判定）
+# ---------------------------------------------------------------------------
+
+
+def _regular_supported(supply: Sequence[int]) -> bool:
+    """雀頭と面子4つの完成形Cで、Cから1枚除いた13枚がsupplyに収まるものがあるか。"""
+
+    def excess(values: Sequence[int]) -> int:
+        return sum(max(0, v - c) for v, c in zip(values, supply))
+
+    def walk(values: list[int], start: int, depth: int) -> bool:
+        if depth == 4:
+            return True
+        for kind in range(start, len(MENTSU_KINDS)):
+            for t in MENTSU_KINDS[kind]:
+                values[t] += 1
+            if excess(values) <= 1 and walk(values, kind, depth + 1):
+                return True
+            for t in MENTSU_KINDS[kind]:
+                values[t] -= 1
+        return False
+
+    for pair in range(34):
+        values = [0] * 34
+        values[pair] = 2
+        if excess(values) <= 1 and walk(values, 0, 0):
+            return True
+    return False
+
+
+def family_supported(rules: Any, family: str, supply: Sequence[int]) -> bool:
+    """類ごとの在庫supplyの下で、その系統のテンパイ形を作れるか。"""
+    if isinstance(rules, MahjongTenpaiRules):
+        if family == "regular":
+            return _regular_supported(supply)
+        if family == "chiitoi":
+            pairs = sum(value >= 2 for value in supply)
+            singles = sum(value >= 1 for value in supply)
+            return pairs >= 7 or (pairs >= 6 and singles >= 7)
+        for duplicate in YAOCHUU:
+            for removed in YAOCHUU:
+                counts = Counter(YAOCHUU)
+                counts[duplicate] += 1
+                counts[removed] -= 1
+                if all(supply[t] >= n for t, n in counts.items()):
+                    return True
+        return False
+    for shape in rules._shapes(family):
+        for removed in set(shape):
+            hand = Counter(shape)
+            hand[removed] -= 1
+            if all(supply[c] >= n for c, n in hand.items()):
+                return True
+    return False
+
+
+def family_support(problem: BeliefProblem, ids: Sequence[int]) -> dict[str, bool]:
+    """ブロック全体（他家の未知の位置とプール）から全員の手出しの打牌を除いた在庫で判定する。"""
+    layout = problem.layout
+    if layout.riichi_index is None:
+        return {}
+    supply = Counter(layout.type_of[ids[p]] for p in range(layout.size))
+    for i in range(len(layout.seats)):
+        supply -= tedashi_discards(layout, i)
+    counts = class_counts(problem, supply)
+    return {family: family_supported(problem.rules, family, counts) for family, _ in problem.rules.families}
+
+
+# ---------------------------------------------------------------------------
+# 診断（10.1節）
+# ---------------------------------------------------------------------------
+
+
+def split_rhat(chains: Sequence[Sequence[float]]) -> float | None:
+    """鎖を前後半に分けたR̂。分散0の鎖どうしで平均が異なればinf（別の状態に閉じ込められている）。"""
+    if len(chains) < 2 or min(len(c) for c in chains) < 4:
+        return None
+    half = min(len(c) for c in chains) // 2
+    pieces = [np.asarray(c[:half], dtype=float) for c in chains] + [np.asarray(c[half:2 * half], dtype=float) for c in chains]
+    means = np.asarray([piece.mean() for piece in pieces])
+    within = float(np.mean([piece.var(ddof=1) for piece in pieces]))
+    between = half * float(means.var(ddof=1))
+    if within == 0.0:
+        return 1.0 if between == 0.0 else math.inf
+    pooled = (half - 1) / half * within + between / half
+    return math.sqrt(pooled / within)
+
+
+def batch_means_ess(series: Sequence[float]) -> float | None:
+    """batch meansによる実効標本数（バッチの大きさ≒√n）。値が一定ならNone（定義できない）。"""
+    n = len(series)
+    size = int(math.sqrt(n))
+    batches = n // size if size else 0
+    if batches < 2:
+        return None
+    values = np.asarray(series[: batches * size], dtype=float)
+    variance = float(values.var(ddof=1))
+    if variance == 0.0:
+        return None
+    batch_variance = size * float(values.reshape(batches, size).mean(axis=1).var(ddof=1))
+    if batch_variance == 0.0:
+        return float(n)
+    return n * variance / batch_variance
+
+
+def _jaccard(left: set, right: set) -> float:
+    union = left | right
+    return len(left & right) / len(union) if union else 1.0
+
+
+def chain_diagnostics(
+    chains: Sequence[Sequence[Mapping[str, Any]]],
+    stats: Sequence[MoveStatistics],
+    support: Mapping[str, bool],
+    thresholds: DisagreementThresholds,
+    scalars: Callable[[Mapping[str, Any]], dict[str, float]] = generic_scalars,
+    shape: Callable[[Mapping[str, Any]], Any] = sample_shape,
+    family: Callable[[Mapping[str, Any]], str] = sample_family,
+) -> dict[str, Any]:
+    """鎖ごとの標本と移動の統計から、10.1節の診断とchain_disagreementの判定を作る。"""
+    names = sorted({name for chain in chains for sample in chain for name in scalars(sample)})
+    series = {name: [[scalars(sample).get(name, 0.0) for sample in chain] for chain in chains] for name in names}
+    summary: dict[str, Any] = {}
+    rhats = []
+    for name in names:
+        rhat = split_rhat(series[name])
+        esses = [batch_means_ess(values) for values in series[name]]
+        ess = sum(value for value in esses if value is not None) if any(v is not None for v in esses) else None
+        mean = float(np.mean([v for values in series[name] for v in values])) if any(series[name]) else None
+        summary[name] = {"rhat": rhat, "ess": ess, "mean": mean}
+        if rhat is not None:
+            rhats.append(rhat)
+    shape_sets = [{shape(sample) for sample in chain} for chain in chains]
+    pairs = [_jaccard(a, b) for k, a in enumerate(shape_sets) for b in shape_sets[k + 1:]]
+    union = set().union(*shape_sets) if shape_sets else set()
+    visits = []
+    for chain in chains:
+        labels = Counter(family(sample) for sample in chain)
+        visits.append({label: count / len(chain) for label, count in sorted(labels.items())} if chain else {})
+    visited = {part for chain in chains for sample in chain for part in family(sample).split("+")}
+    unvisited = sorted(name for name, ok in support.items() if ok and name not in visited)
+    total = MoveStatistics()
+    for item in stats:
+        for field_name in ("proposed", "accepted", "rejected", "null_moves", "cross_family"):
+            getattr(total, field_name).update(getattr(item, field_name))
+    moves = total.as_dict()
+    moves["acceptanceRate"] = {move: total.accepted[move] / count for move, count in sorted(total.proposed.items()) if count}
+    result = {
+        "samplesPerChain": [len(chain) for chain in chains],
+        "scalars": summary,
+        "maxRhat": max(rhats) if rhats else None,
+        "shapes": {
+            "perChain": [len(item) for item in shape_sets],
+            "distinct": len(union),
+            "sharedByAllChains": len(set.intersection(*shape_sets)) if shape_sets else 0,
+            "minPairwiseOverlap": min(pairs) if pairs else None,
+            "meanPairwiseOverlap": float(np.mean(pairs)) if pairs else None,
+        },
+        "families": {"support": dict(support), "visitsPerChain": visits, "unvisitedSupported": unvisited,
+                     "crossFamilyAccepted": moves["cross_family"]},
+        "moves": moves,
+    }
+    violations = []
+    if thresholds.max_rhat is not None and (result["maxRhat"] is None or result["maxRhat"] > thresholds.max_rhat):
+        violations.append("rhat")
+    overlap = result["shapes"]["minPairwiseOverlap"]
+    if thresholds.min_shape_overlap is not None and (overlap is None or overlap < thresholds.min_shape_overlap):
+        violations.append("shape_overlap")
+    if thresholds.require_supported_families_visited and unvisited:
+        violations.append("unvisited_supported_family")
+    result["chainDisagreement"] = {"thresholds": thresholds.to_dict(), "violations": violations,
+                                   "judged": any(v is not None for v in thresholds.to_dict().values())}
+    return result
+
+
+# ---------------------------------------------------------------------------
+# 鎖の組の実行とhold（10.2節）：一様配布への退避、成功した鎖だけの集計、判断の差替えをしない
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class ChainStart:
+    """鎖1本の出発点。problemは鎖ごと（ツモ切り窓の物理IDなど、出発点で固定する部分がある）。"""
+
+    problem: BeliefProblem | None
+    state: ChainState | None
+    summarize: Callable[[ChainState], dict[str, Any]] | None
+    info: dict[str, Any]
+
+
+def run_chain_group(
+    starts: Callable[[int, int], ChainStart],
+    seeds: Sequence[int],
+    settings: ChainSettings,
+    thresholds: DisagreementThresholds,
+    *,
+    deadline: float | None = None,
+    scalars: Callable[[Mapping[str, Any]], dict[str, float]] = generic_scalars,
+) -> dict[str, Any]:
+    """同じ目標の独立な鎖を走らせ、診断とholdをまとめる。heldなら標本を返さない。"""
+    import time
+
+    begin = time.perf_counter()
+    record: dict[str, Any] = {"status": "ok", "holdReasons": [], "seeds": list(seeds), "chains": len(seeds),
+                              "settings": settings.to_dict(), "initialization": []}
+
+    def held(reason: str, detail: Any = None) -> dict[str, Any]:
+        record["status"] = "held"
+        record["holdReasons"].append(reason)
+        if detail is not None:
+            record.setdefault("holdDetails", {})[reason] = detail
+        record["samples"] = None
+        record["runtime"] = {"seconds": round(time.perf_counter() - begin, 4)}
+        return record
+
+    chain_starts = []
+    try:
+        for chain, seed in enumerate(seeds):
+            start = starts(chain, seed)
+            record["initialization"].append(start.info)
+            chain_starts.append(start)
+    except RuleUnresolvedError as error:
+        return held("rule_unresolved", str(error))
+    if any(start.state is None for start in chain_starts):
+        return held("init_failed", [start.info for start in chain_starts if start.state is None])
+    runs = []
+    try:
+        for chain, (start, seed) in enumerate(zip(chain_starts, seeds)):
+            runs.append(run_chain(start.problem, start.state, RandomChooser(random.Random(seed + 1)),  # type: ignore[arg-type]
+                                  settings, start.summarize, deadline))  # type: ignore[arg-type]
+    except RuleUnresolvedError as error:
+        return held("rule_unresolved", str(error))
+    except BudgetExceeded as error:
+        return held("resource_budget_exceeded", {"completedChains": len(runs), "at": str(error)})
+    first = chain_starts[0]
+    support = family_support(first.problem, first.state.ids)  # type: ignore[arg-type,union-attr]
+    samples = [run.samples for run in runs]
+    stats = [run.stats for run in runs]
+    record["diagnostics"] = chain_diagnostics(samples, stats, support, thresholds, scalars)
+    record["checkpoints"] = {
+        str(point): chain_diagnostics([run.samples[: run.checkpoint_sizes[point]] for run in runs], stats, support,
+                                      thresholds, scalars)
+        for point in settings.checkpoints
+    }
+    record["runtime"] = {"seconds": round(time.perf_counter() - begin, 4), "chainSeconds": [round(r.seconds, 4) for r in runs]}
+    if record["diagnostics"]["chainDisagreement"]["violations"]:
+        return held("chain_disagreement", record["diagnostics"]["chainDisagreement"]["violations"])
+    record["samples"] = [{"chain": chain, **sample} for chain, run in enumerate(runs) for sample in run.samples]
+    return record
+
+
+# ---------------------------------------------------------------------------
+# 実局面：判断1件の全シナリオ
+# ---------------------------------------------------------------------------
+
+
+def reconstruction_mismatches(context: DecisionContext) -> list[str]:
+    """状態復元の検査（4.4節の4）：リーチ者の宣言が1回で、宣言後の打牌はすべてツモ切り。"""
+    problems = []
+    turns = context.turns[context.riichi_seat]
+    declarations = [k for k, turn in enumerate(turns) if turn.riichi_declaration]
+    if len(declarations) != 1:
+        problems.append("riichi_declaration_count")
+    elif any(not turn.tsumogiri for turn in turns[declarations[0] + 1:]):
+        problems.append("tedashi_after_riichi")
+    return problems
+
+
+def mahjong_summary(belief: MahjongBelief, state: ChainState) -> dict[str, Any]:
+    """11節の標本：他家3人の手牌（牌種・赤）、rの待ちとフリテン、一発の資格、未割当プールの多重集合。"""
+    from tools.ev_policy_opponent import _dora_from_indicator
+
+    problem, context = belief.problem, belief.context
+    sample = generic_summary(problem, state)
+    world = belief.world_from_state(state)
+    evaluation = evaluate_seat(context, world.hypotheses[context.riichi_seat], None)
+    waits = waiting_tile34(counts34(evaluation.final_hand), 0)
+    sample["riichiWaits"] = list(waits)
+    sample["riichiFuriten"] = {
+        "ownDiscard": bool(set(waits) & set(evaluation.river34)),
+        "temporary": evaluation.temporary_furiten,
+        "riichiPass": evaluation.riichi_furiten,
+    }
+    sample["ippatsu"] = evaluation.ippatsu
+    dora = _dora_from_indicator(context.dora_indicator[0])
+    sample["doraCounts"] = {seat: sum(1 for t in hand if t % 34 == dora) for seat, hand in sample["hands"].items()}
+    sample["redCounts"] = {seat: sum(1 for t in hand if t >= 34) for seat, hand in sample["hands"].items()}
+    return sample
+
+
+def _chain_seed(base: int, decision_id: str, scenario_id: str, chain: int) -> int:
+    digest = hashlib.sha256(f"{base}:{decision_id}:{scenario_id}:{chain}".encode("utf-8")).hexdigest()
+    return int(digest[:12], 16)
+
+
+def run_decision_scenarios(
+    context: DecisionContext,
+    model: HierarchicalSoftmax,
+    scenarios: Sequence[Mapping[str, Any]],
+    settings: ChainSettings,
+    *,
+    required_scenarios: Sequence[str],
+    chains: int = 4,
+    seed: int = 20261001,
+    cache_capacity: int = 200_000,
+    thresholds: DisagreementThresholds = DisagreementThresholds(),
+    deadline: float | None = None,
+    probabilities: Sequence[tuple[str, float]] = TENPAI_FAMILY_PROBABILITIES,
+    init_attempts: int = 10_000,
+    init_seconds: float = 60.0,
+    metadata: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """判断1件について、シナリオごとに独立な鎖を走らせる（9.1節）。窓キャッシュは全シナリオ・全鎖で共有する。
+
+    必要なシナリオのどれかの鎖が欠ければ、判断全体をfixed_component_sensitivity_missingでheldにする。
+    """
+    import time
+
+    begin = time.perf_counter()
+    cache = WindowCache(cache_capacity)
+    target = context.target_private_row()
+    base_record = {
+        "schemaVersion": POSTERIOR_SCHEMA,
+        "beliefVersion": BELIEF_VERSION,
+        "decisionId": context.decision_id,
+        "informationStateHash": context.information_state_hash,
+        "privatePrefixHash": hashlib.sha256(_canonical_json(target).encode("utf-8")).hexdigest(),
+        "inputHash": context.input_hash(),
+        "familyProbabilities": dict(probabilities),
+        **dict(metadata or {}),
+    }
+    mismatches = reconstruction_mismatches(context)
+    outputs = []
+    for scenario in scenarios:
+        resolver = model_resolver(model, scenario)
+        record = {**base_record, "scenarioId": scenario["id"], "thetaId": resolver.model_id}
+        if mismatches:
+            record.update({"status": "held", "holdReasons": ["state_reconstruction_mismatch"],
+                           "holdDetails": {"state_reconstruction_mismatch": mismatches}, "samples": None})
+            outputs.append(record)
+            continue
+
+        def start(chain: int, chain_seed: int, resolver: ScenarioResolver = resolver) -> ChainStart:
+            initial = construct_initial_world(context, random.Random(chain_seed), resolver=resolver,
+                                              probabilities=probabilities, max_attempts=init_attempts,
+                                              max_seconds=init_seconds, cache=cache)
+            info = {"chain": chain, "seed": chain_seed, "status": initial.status, "family": initial.family,
+                    "attempts": initial.attempts, "seconds": round(initial.seconds, 4),
+                    "failureReasons": initial.failure_reasons}
+            if initial.world is None:
+                return ChainStart(None, None, None, info)
+            belief, state = mahjong_belief(context, initial.world, resolver, probabilities=probabilities, cache=cache)
+            return ChainStart(belief.problem, state, lambda s, belief=belief: mahjong_summary(belief, s), info)
+
+        seeds = [_chain_seed(seed, context.decision_id, str(scenario["id"]), chain) for chain in range(chains)]
+        record.update(run_chain_group(start, seeds, settings, thresholds, deadline=deadline))
+        outputs.append(record)
+        if "resource_budget_exceeded" in record["holdReasons"]:
+            break  # 予算を超えたら残りのシナリオを走らせない（減らして続けない）
+    present = {record["scenarioId"] for record in outputs if record["status"] == "ok"}
+    missing = sorted(set(required_scenarios) - present)
+    holds = sorted({reason for record in outputs for reason in record["holdReasons"]})
+    if missing:
+        holds = sorted(set(holds) | {"fixed_component_sensitivity_missing"})
+    return {
+        "decisionId": context.decision_id,
+        "status": "held" if holds else "ok",
+        "holdReasons": holds,
+        "missingScenarios": missing,
+        "scenarios": outputs,
+        "cacheStatistics": cache.statistics(),
+        "runtime": {"seconds": round(time.perf_counter() - begin, 4)},
+    }
+
+
+def belief_scenarios(fixed_components: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """D.3.3で事後分布を作るシナリオ（`zero`を除く22件、9.1節）。"""
+    return [dict(s) for s in fixed_components["scenarios"] if s.get("usableInD33", True) and s["id"] != "zero"]
+
+
+def _json_safe(value: Any) -> Any:
+    """infやnanをJSONで表せる文字列に置き換える（R̂がinfになる例がある）。"""
+    if isinstance(value, float) and not math.isfinite(value):
+        return "inf" if value > 0 else "-inf" if value < 0 else "nan"
+    if isinstance(value, dict):
+        return {str(k): _json_safe(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(v) for v in value]
+    return value
+
+
+_BELIEF_WORKER: dict[str, Any] = {}
+
+
+def _belief_worker_init(dataset_dir: str, model_dir: str, decision_ids: Sequence[str], options: Mapping[str, Any]) -> None:
+    from pathlib import Path
+
+    _worker_init(dataset_dir, model_dir, decision_ids)
+    models = Path(model_dir)
+    fixed_path = models / "fixed-components.json"
+    fixed = json.loads(fixed_path.read_text(encoding="utf-8"))
+    _BELIEF_WORKER.update({
+        "model": HierarchicalSoftmax.from_dict(json.loads((models / "model.json").read_text(encoding="utf-8"))),
+        "fixed": fixed,
+        "fixedHash": _sha256_file(fixed_path),
+        "options": dict(options),
+    })
+
+
+def decision_file_name(decision_id: str) -> str:
+    """判断IDの出力ファイル名。IDの`:`はWindowsで使えないので置き換え、衝突を避けるハッシュを付ける。"""
+    import re
+
+    safe = re.sub(r"[^0-9A-Za-z_.-]", "_", decision_id)
+    return f"{safe}-{hashlib.sha256(decision_id.encode('utf-8')).hexdigest()[:8]}.json.gz"
+
+
+def _belief_worker_run(decision_id: str) -> dict[str, Any]:
+    import gzip
+    from pathlib import Path
+
+    options = _BELIEF_WORKER["options"]
+    scenarios = belief_scenarios(_BELIEF_WORKER["fixed"])
+    if options.get("scenarioIds"):
+        scenarios = [s for s in scenarios if s["id"] in set(options["scenarioIds"])]
+    settings = ChainSettings(**options["settings"])
+    model = _BELIEF_WORKER["model"]
+    result = run_decision_scenarios(
+        _WORKER["contexts"][decision_id], model, scenarios, settings,
+        required_scenarios=[s["id"] for s in belief_scenarios(_BELIEF_WORKER["fixed"])],
+        chains=int(options["chains"]), seed=int(options["seed"]), cache_capacity=int(options["cacheCapacity"]),
+        thresholds=DisagreementThresholds(**options.get("thresholds", {})), deadline=options.get("deadline"),
+        metadata={"modelVersion": model.to_dict()["modelVersion"], "fixedComponentsHash": _BELIEF_WORKER["fixedHash"]},
+    )
+    path = Path(options["outputDir"]) / decision_file_name(decision_id)
+    with gzip.open(path, "wt", encoding="utf-8") as handle:
+        json.dump(_json_safe(result), handle, ensure_ascii=False)
+    return {
+        "decisionId": decision_id, "status": result["status"], "holdReasons": result["holdReasons"],
+        "missingScenarios": result["missingScenarios"], "cacheStatistics": result["cacheStatistics"],
+        "seconds": result["runtime"]["seconds"], "path": path.name,
+    }
+
+
+def run_belief_decisions(
+    dataset_dir: Any,
+    model_dir: Any,
+    decision_ids: Sequence[str],
+    output_dir: Any,
+    settings: ChainSettings,
+    *,
+    chains: int = 4,
+    seed: int = 20261001,
+    processes: int = 3,
+    cache_capacity: int = 200_000,
+    wall_clock_seconds: float = 86_400.0,
+    scenario_ids: Sequence[str] | None = None,
+    thresholds: DisagreementThresholds = DisagreementThresholds(),
+) -> dict[str, Any]:
+    """判断単位で並列に実行する（P≤3、12.3節）。同じ判断の全シナリオは同じプロセスでキャッシュを共有する。"""
+    import multiprocessing
+    import time
+    from pathlib import Path
+
+    if not 1 <= processes <= 3:
+        raise ValueError("並列数は1〜3（設計12.3節）")
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    start = time.time()
+    options: dict[str, Any] = {
+        "settings": {"iterations": settings.iterations, "burn_in": settings.burn_in, "thin": settings.thin,
+                     "checkpoints": tuple(settings.checkpoints), "moves": tuple(settings.moves)},
+        "chains": chains, "seed": seed, "cacheCapacity": cache_capacity, "outputDir": str(output_dir),
+        "deadline": start + wall_clock_seconds, "scenarioIds": list(scenario_ids or []),
+        "thresholds": {"max_rhat": thresholds.max_rhat, "min_shape_overlap": thresholds.min_shape_overlap,
+                       "require_supported_families_visited": thresholds.require_supported_families_visited},
+    }
+    rows = []
+    context = multiprocessing.get_context("spawn")
+    with context.Pool(processes, initializer=_belief_worker_init,
+                      initargs=(str(dataset_dir), str(model_dir), list(decision_ids), options)) as pool:
+        for row in pool.imap_unordered(_belief_worker_run, list(decision_ids)):
+            rows.append(row)
+    rows.sort(key=lambda row: decision_ids.index(row["decisionId"]))
+    report = {
+        "schemaVersion": "ev-policy-belief-run/v1",
+        "beliefVersion": BELIEF_VERSION,
+        "settings": settings.to_dict(),
+        "chains": chains, "seed": seed, "processes": processes, "cacheCapacity": cache_capacity,
+        "scenarioIds": list(scenario_ids) if scenario_ids else "all",
+        "thresholds": thresholds.to_dict(),
+        "decisions": rows,
+        "held": sum(row["status"] != "ok" for row in rows),
+        "wallClockSeconds": round(time.time() - start, 1),
+    }
+    (output_dir / "run-summary.json").write_text(json.dumps(_json_safe(report), ensure_ascii=False, indent=2) + "\n",
+                                                 encoding="utf-8")
+    return report
