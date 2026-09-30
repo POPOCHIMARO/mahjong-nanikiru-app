@@ -7,7 +7,7 @@
   "designPath": "PHASE_D3_DESIGN.md",
   "reservationPath": "future-evaluation-reservation.json",
   "doesNotAmendFutureReservation": true,
-  "nextPhase": "D.3.3_step3_constructive_initialization",
+  "nextPhase": "D.3.3_step4_mcmc_kernels",
   "models": {
     "designRecommendation": "Astra/high",
     "implementationRecommendation": "Sol/high",
@@ -477,7 +477,7 @@
     },
     {
       "id": "D.3.3",
-      "status": "step2_complete_gate_proceed_to_mcmc",
+      "status": "step3_complete",
       "focus": "reference_smc_measurement_then_constrained_mcmc_pilot",
       "step1": {
         "status": "complete",
@@ -580,6 +580,28 @@
           "expectedRunsAt4096": 64
         },
         "mechanism": "one_step_ahead_proposal_cannot_restore_past_hands: tedashi_of_unheld_tile_and_riichi_tenpai_kill_all_particles_after_ancestor_collapse"
+      },
+      "step3": {
+        "status": "complete",
+        "acceptance": "D33-03 pass (tenpai/inventory/discard consistency, furiten riichi accepted, riichi pass furiten removes ron, reads only decision context, init_failed on budget); kokushi_regular_cross_family_transition_clause_deferred_to_step4_M3_M4",
+        "familyProbabilities": {
+          "regular": 0.9,
+          "chiitoi": 0.05,
+          "kokushi": 0.05
+        },
+        "pilotInitialization": {
+          "path": "probes/d33-pilot/initialization.json",
+          "chains": 64,
+          "failed": 0,
+          "families": {
+            "regular": 53,
+            "chiitoi": 6,
+            "kokushi": 5
+          },
+          "maxAttempts": 307,
+          "maxSeconds": 1.5851,
+          "onlyRetryReason": "riichi_shape_inventory"
+        }
       }
     },
     {

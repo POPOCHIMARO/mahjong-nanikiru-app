@@ -2007,3 +2007,189 @@ def measure_reference_smc(
     }
     (output_dir / "reference-smc-summary.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return report
+
+
+# ===========================================================================
+# 工程3：構成的初期化（PHASE_D33_DESIGN.md 6節、7.3節の生成器g_r）
+# ===========================================================================
+
+# テンパイ形の系統の確率（7.3節）。すべて正でなければならない（0だと国士などの分断が残る）。
+# 値は効率だけに影響し、正しさには影響しない。pilot前にmanifestで固定する。
+TENPAI_FAMILY_PROBABILITIES = (("regular", 0.90), ("chiitoi", 0.05), ("kokushi", 0.05))
+YAOCHUU = (0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33)
+MENTSU_KINDS: tuple[tuple[int, int, int], ...] = tuple(
+    [(t, t, t) for t in range(34)] + [(s * 9 + i, s * 9 + i + 1, s * 9 + i + 2) for s in range(3) for i in range(7)]
+)
+
+
+def validate_family_probabilities(probabilities: Sequence[tuple[str, float]]) -> None:
+    names = [name for name, _ in probabilities]
+    if sorted(names) != ["chiitoi", "kokushi", "regular"]:
+        raise ValueError("系統は面子手・七対子・国士の3つが必要")
+    if any(not value > 0 for _, value in probabilities) or abs(math.fsum(v for _, v in probabilities) - 1.0) > 1e-12:
+        raise ValueError("系統の確率はすべて正で、和が1である必要がある（7.3節）")
+
+
+def sample_tenpai_shape(
+    rng: random.Random, probabilities: Sequence[tuple[str, float]] = TENPAI_FAMILY_PROBABILITIES
+) -> tuple[str, list[int]]:
+    """生成器g_rの牌種（34種）の段：系統を選び、14枚の完成形から1枚を一様に除いた13枚を返す。
+
+    面子手は雀頭と面子を独立に選ぶので、同じ牌種が5枚以上の形も作る。在庫の判定は呼び出し側で行う。
+    """
+    validate_family_probabilities(probabilities)
+    threshold, cumulative, family = rng.random(), 0.0, probabilities[-1][0]
+    for name, value in probabilities:
+        cumulative += value
+        if threshold < cumulative:
+            family = name
+            break
+    if family == "regular":
+        tiles = [rng.randrange(34)] * 2
+        for _ in range(4):
+            tiles.extend(MENTSU_KINDS[rng.randrange(len(MENTSU_KINDS))])
+    elif family == "chiitoi":
+        tiles = [t for t in rng.sample(range(34), 7) for _ in range(2)]
+    else:
+        tiles = [*YAOCHUU, rng.choice(YAOCHUU)]
+    tiles.pop(rng.randrange(14))
+    return family, sorted(tiles)
+
+
+@dataclass
+class InitialWorld:
+    """構成的初期化の結果（6節）。"""
+
+    status: str  # "ok" または "init_failed"
+    world: WorldAssignment | None
+    family: str | None
+    attempts: int
+    seconds: float
+    failure_reasons: dict[str, int]
+    log_likelihood: dict[int, float] | None = None
+
+
+def _discard_ids(context: DecisionContext, available: list[int], rng: random.Random) -> dict[int, dict[int, int]]:
+    """他家の打牌（手出し・ツモ切り）の物理IDを先に確保する。打牌はその家の位置にあった牌（4.2節）。"""
+    return {
+        seat: {turn.raw_event_index: _take(available, turn.discard, rng) for turn in context.turns[seat]}
+        for seat in context.other_seats
+    }
+
+
+def _take_shape(available: list[int], shape: Sequence[int], rng: random.Random) -> list[int] | None:
+    """34種の牌姿を、利用可能な物理IDから一様に割り当てる（赤は同じ牌種の物理牌の中で一様＝超幾何）。"""
+    by_type: dict[int, list[int]] = {}
+    for tile_id in available:
+        by_type.setdefault(TILE_BY_ID[tile_id].tile34, []).append(tile_id)
+    need = Counter(shape)
+    if any(len(by_type.get(t, ())) < n for t, n in need.items()):
+        return None
+    picked = [tile_id for t, n in sorted(need.items()) for tile_id in rng.sample(by_type[t], n)]
+    for tile_id in picked:
+        available.remove(tile_id)
+    return picked
+
+
+def construct_initial_world(
+    context: DecisionContext,
+    rng: random.Random,
+    *,
+    resolver: ModelResolver | None = None,
+    probabilities: Sequence[tuple[str, float]] = TENPAI_FAMILY_PROBABILITIES,
+    max_attempts: int = 10_000,
+    max_seconds: float = 60.0,
+) -> InitialWorld:
+    """H=1（かつresolverがあれば尤度が正）の出発点を構成的に作る（6節）。
+
+    入力は判断文脈（公開履歴と対象家の私有履歴）だけで、他家の教師手牌は読まない。
+    分布は事後分布と一致しなくてよい。出発点の影響は複数の鎖とburn-inで診断する。
+    """
+    import time
+
+    validate_family_probabilities(probabilities)
+    start = time.perf_counter()
+    failures: Counter[str] = Counter()
+    for attempt in range(1, max_attempts + 1):
+        if time.perf_counter() - start > max_seconds:
+            break
+        available = list(range(136))
+        target_initial = [_take(available, key, rng) for key in context.target_initial]
+        target_draws = {raw: _take(available, key, rng) for raw, key in sorted(context.target_draws.items())}
+        dora = _take(available, context.dora_indicator, rng)
+        discard_ids = _discard_ids(context, available, rng)
+        # 1. リーチ者の宣言時手牌（判断時点の手と同じ）をテンパイ形の生成器で作る。
+        family, shape = sample_tenpai_shape(rng, probabilities)
+        riichi_hand = _take_shape(available, shape, rng)
+        if riichi_hand is None:
+            failures["riichi_shape_inventory"] += 1
+            continue
+        # 2〜3. 自摸の逆算。リーチしていない2家は残りから一様に13枚。
+        hypotheses = {context.riichi_seat: _backward_history(context, context.riichi_seat, riichi_hand, discard_ids[context.riichi_seat], rng)}
+        for seat in context.other_seats:
+            if seat == context.riichi_seat:
+                continue
+            final = rng.sample(available, 13)
+            for tile_id in final:
+                available.remove(tile_id)
+            hypotheses[seat] = _backward_history(context, seat, final, discard_ids[seat], rng)
+        rng.shuffle(available)
+        world = WorldAssignment(hypotheses, tuple(target_initial), target_draws, dora, tuple(available))
+        # 4. 検査：Hと（resolverがあれば）尤度が正。得点器のholdは出発点に使わない。
+        log_likelihood: dict[int, float] = {}
+        reason = None
+        for seat, hypothesis in hypotheses.items():
+            evaluation = evaluate_seat(context, hypothesis, resolver)
+            if evaluation.violation is not None:
+                reason = "hard_constraint_violation"
+            elif evaluation.holds:
+                reason = "win_action_hold"
+            elif resolver is not None and not math.isfinite(evaluation.log_likelihood):
+                reason = "zero_likelihood"
+            if reason:
+                break
+            log_likelihood[seat] = evaluation.log_likelihood
+        if reason:
+            failures[reason] += 1
+            continue
+        world.validate()
+        return InitialWorld("ok", world, family, attempt, time.perf_counter() - start, dict(failures),
+                            log_likelihood if resolver is not None else None)
+    return InitialWorld("init_failed", None, None, sum(failures.values()), time.perf_counter() - start, dict(failures))
+
+
+def record_pilot_initialization(
+    dataset_dir: Any, model_dir: Any, manifest_path: Any, *, chains: int = 4
+) -> dict[str, Any]:
+    """pilot 16判断×4鎖で構成的初期化を行い、成否・試行回数・時間・系統を記録する（12.4節）。"""
+    from pathlib import Path
+
+    manifest_path = Path(manifest_path)
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    decision_ids = [item["decisionId"] for item in manifest["decisions"]]
+    _worker_init(str(dataset_dir), str(model_dir), decision_ids)
+    rows = []
+    for decision in decision_ids:
+        context = _WORKER["contexts"][decision]
+        for chain in range(chains):
+            seed = _run_seed(int(manifest["seed"]), decision, 0, 1000 + chain)
+            result = construct_initial_world(context, random.Random(seed), resolver=_WORKER["resolver"])
+            rows.append({
+                "decisionId": decision, "chain": chain, "seed": seed, "status": result.status,
+                "family": result.family, "attempts": result.attempts, "seconds": round(result.seconds, 4),
+                "failureReasons": result.failure_reasons,
+            })
+    report = {
+        "schemaVersion": "ev-policy-belief-initialization/v1",
+        "manifestSha256": _sha256_file(manifest_path),
+        "familyProbabilities": dict(TENPAI_FAMILY_PROBABILITIES),
+        "scenario": "base",
+        "chains": chains,
+        "failed": sum(row["status"] != "ok" for row in rows),
+        "families": dict(Counter(row["family"] for row in rows if row["family"])),
+        "maxAttempts": max(row["attempts"] for row in rows),
+        "maxSeconds": max(row["seconds"] for row in rows),
+        "rows": rows,
+    }
+    (manifest_path.parent / "initialization.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return report

@@ -1,0 +1,781 @@
+{
+  "schemaVersion": "ev-policy-belief-initialization/v1",
+  "manifestSha256": "159f984a9309216b84ae9e31fe4bd5598a2aaa6af5a18680f1653254ce0c8e90",
+  "familyProbabilities": {
+    "regular": 0.9,
+    "chiitoi": 0.05,
+    "kokushi": 0.05
+  },
+  "scenario": "base",
+  "chains": 4,
+  "failed": 0,
+  "families": {
+    "regular": 53,
+    "chiitoi": 6,
+    "kokushi": 5
+  },
+  "maxAttempts": 307,
+  "maxSeconds": 1.5851,
+  "rows": [
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0029_01A:7:0:e35:s1",
+      "chain": 0,
+      "seed": 22152842185928,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 7,
+      "seconds": 0.0974,
+      "failureReasons": {
+        "riichi_shape_inventory": 6
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0029_01A:7:0:e35:s1",
+      "chain": 1,
+      "seed": 223525174972414,
+      "status": "ok",
+      "family": "chiitoi",
+      "attempts": 2,
+      "seconds": 0.0751,
+      "failureReasons": {
+        "riichi_shape_inventory": 1
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0029_01A:7:0:e35:s1",
+      "chain": 2,
+      "seed": 99604752506185,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 1,
+      "seconds": 0.1711,
+      "failureReasons": {}
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0029_01A:7:0:e35:s1",
+      "chain": 3,
+      "seed": 8921479922909,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 2,
+      "seconds": 0.0757,
+      "failureReasons": {
+        "riichi_shape_inventory": 1
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0002_01A:5:0:e81:s0",
+      "chain": 0,
+      "seed": 208673368430238,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 8,
+      "seconds": 0.9975,
+      "failureReasons": {
+        "riichi_shape_inventory": 7
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0002_01A:5:0:e81:s0",
+      "chain": 1,
+      "seed": 212445214514776,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 5,
+      "seconds": 0.174,
+      "failureReasons": {
+        "riichi_shape_inventory": 4
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0002_01A:5:0:e81:s0",
+      "chain": 2,
+      "seed": 238476198890999,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 22,
+      "seconds": 0.2009,
+      "failureReasons": {
+        "riichi_shape_inventory": 21
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0002_01A:5:0:e81:s0",
+      "chain": 3,
+      "seed": 185431015974794,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 6,
+      "seconds": 0.1895,
+      "failureReasons": {
+        "riichi_shape_inventory": 5
+      }
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0044_01A:7:0:e87:s0",
+      "chain": 0,
+      "seed": 44227811028573,
+      "status": "ok",
+      "family": "kokushi",
+      "attempts": 8,
+      "seconds": 0.1635,
+      "failureReasons": {
+        "riichi_shape_inventory": 7
+      }
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0044_01A:7:0:e87:s0",
+      "chain": 1,
+      "seed": 195955708761379,
+      "status": "ok",
+      "family": "kokushi",
+      "attempts": 12,
+      "seconds": 0.1811,
+      "failureReasons": {
+        "riichi_shape_inventory": 11
+      }
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0044_01A:7:0:e87:s0",
+      "chain": 2,
+      "seed": 161085194218270,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 11,
+      "seconds": 0.192,
+      "failureReasons": {
+        "riichi_shape_inventory": 10
+      }
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0044_01A:7:0:e87:s0",
+      "chain": 3,
+      "seed": 63551348525948,
+      "status": "ok",
+      "family": "chiitoi",
+      "attempts": 8,
+      "seconds": 0.2346,
+      "failureReasons": {
+        "riichi_shape_inventory": 7
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0070_02A:3:0:e79:s1",
+      "chain": 0,
+      "seed": 217265699256001,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 11,
+      "seconds": 0.2068,
+      "failureReasons": {
+        "riichi_shape_inventory": 10
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0070_02A:3:0:e79:s1",
+      "chain": 1,
+      "seed": 148228143314950,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 7,
+      "seconds": 0.1837,
+      "failureReasons": {
+        "riichi_shape_inventory": 6
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0070_02A:3:0:e79:s1",
+      "chain": 2,
+      "seed": 239132757975554,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 2,
+      "seconds": 0.1802,
+      "failureReasons": {
+        "riichi_shape_inventory": 1
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0070_02A:3:0:e79:s1",
+      "chain": 3,
+      "seed": 184736492236135,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 16,
+      "seconds": 0.1727,
+      "failureReasons": {
+        "riichi_shape_inventory": 15
+      }
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0028_01A:5:0:e65:s2",
+      "chain": 0,
+      "seed": 251303670444768,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 7,
+      "seconds": 0.1342,
+      "failureReasons": {
+        "riichi_shape_inventory": 6
+      }
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0028_01A:5:0:e65:s2",
+      "chain": 1,
+      "seed": 182449586851787,
+      "status": "ok",
+      "family": "chiitoi",
+      "attempts": 8,
+      "seconds": 0.138,
+      "failureReasons": {
+        "riichi_shape_inventory": 7
+      }
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0028_01A:5:0:e65:s2",
+      "chain": 2,
+      "seed": 131854876058713,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 2,
+      "seconds": 0.1495,
+      "failureReasons": {
+        "riichi_shape_inventory": 1
+      }
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0028_01A:5:0:e65:s2",
+      "chain": 3,
+      "seed": 247488803366403,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 8,
+      "seconds": 0.145,
+      "failureReasons": {
+        "riichi_shape_inventory": 7
+      }
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0074_02A:11:0:e109:s3",
+      "chain": 0,
+      "seed": 159525248414424,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 21,
+      "seconds": 0.2206,
+      "failureReasons": {
+        "riichi_shape_inventory": 20
+      }
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0074_02A:11:0:e109:s3",
+      "chain": 1,
+      "seed": 106969689331535,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 66,
+      "seconds": 0.2442,
+      "failureReasons": {
+        "riichi_shape_inventory": 65
+      }
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0074_02A:11:0:e109:s3",
+      "chain": 2,
+      "seed": 122989217123968,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 9,
+      "seconds": 0.5306,
+      "failureReasons": {
+        "riichi_shape_inventory": 8
+      }
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0074_02A:11:0:e109:s3",
+      "chain": 3,
+      "seed": 33331652139498,
+      "status": "ok",
+      "family": "chiitoi",
+      "attempts": 26,
+      "seconds": 0.2128,
+      "failureReasons": {
+        "riichi_shape_inventory": 25
+      }
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0036_01A:11:0:e93:s3",
+      "chain": 0,
+      "seed": 140115987605054,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 29,
+      "seconds": 0.2872,
+      "failureReasons": {
+        "riichi_shape_inventory": 28
+      }
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0036_01A:11:0:e93:s3",
+      "chain": 1,
+      "seed": 37419929394041,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 10,
+      "seconds": 0.2344,
+      "failureReasons": {
+        "riichi_shape_inventory": 9
+      }
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0036_01A:11:0:e93:s3",
+      "chain": 2,
+      "seed": 257990848811301,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 6,
+      "seconds": 0.2339,
+      "failureReasons": {
+        "riichi_shape_inventory": 5
+      }
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0036_01A:11:0:e93:s3",
+      "chain": 3,
+      "seed": 139666170509416,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 2,
+      "seconds": 0.24,
+      "failureReasons": {
+        "riichi_shape_inventory": 1
+      }
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0023_01A:2:0:e105:s2",
+      "chain": 0,
+      "seed": 231156500719271,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 19,
+      "seconds": 0.3393,
+      "failureReasons": {
+        "riichi_shape_inventory": 18
+      }
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0023_01A:2:0:e105:s2",
+      "chain": 1,
+      "seed": 52216069926916,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 4,
+      "seconds": 0.28,
+      "failureReasons": {
+        "riichi_shape_inventory": 3
+      }
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0023_01A:2:0:e105:s2",
+      "chain": 2,
+      "seed": 229527893280026,
+      "status": "ok",
+      "family": "chiitoi",
+      "attempts": 8,
+      "seconds": 0.2137,
+      "failureReasons": {
+        "riichi_shape_inventory": 7
+      }
+    },
+    {
+      "decisionId": "mleague:2022-23:L001_S013_0023_01A:2:0:e105:s2",
+      "chain": 3,
+      "seed": 149013894393964,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 2,
+      "seconds": 0.2354,
+      "failureReasons": {
+        "riichi_shape_inventory": 1
+      }
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0010_01A:1:0:e123:s1",
+      "chain": 0,
+      "seed": 210269375829689,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 55,
+      "seconds": 0.3411,
+      "failureReasons": {
+        "riichi_shape_inventory": 54
+      }
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0010_01A:1:0:e123:s1",
+      "chain": 1,
+      "seed": 76787862540500,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 35,
+      "seconds": 0.255,
+      "failureReasons": {
+        "riichi_shape_inventory": 34
+      }
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0010_01A:1:0:e123:s1",
+      "chain": 2,
+      "seed": 104818854187350,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 307,
+      "seconds": 0.4065,
+      "failureReasons": {
+        "riichi_shape_inventory": 306
+      }
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0010_01A:1:0:e123:s1",
+      "chain": 3,
+      "seed": 132069520267107,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 6,
+      "seconds": 0.2482,
+      "failureReasons": {
+        "riichi_shape_inventory": 5
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0061_02A:1:0:e53:s2",
+      "chain": 0,
+      "seed": 92631028843602,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 3,
+      "seconds": 0.1363,
+      "failureReasons": {
+        "riichi_shape_inventory": 2
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0061_02A:1:0:e53:s2",
+      "chain": 1,
+      "seed": 252981220878283,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 5,
+      "seconds": 0.1182,
+      "failureReasons": {
+        "riichi_shape_inventory": 4
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0061_02A:1:0:e53:s2",
+      "chain": 2,
+      "seed": 21333661254242,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 2,
+      "seconds": 0.1782,
+      "failureReasons": {
+        "riichi_shape_inventory": 1
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0061_02A:1:0:e53:s2",
+      "chain": 3,
+      "seed": 76211043107571,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 1,
+      "seconds": 0.1213,
+      "failureReasons": {}
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0032_02A:13:0:e105:s1",
+      "chain": 0,
+      "seed": 64863275330661,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 11,
+      "seconds": 0.2004,
+      "failureReasons": {
+        "riichi_shape_inventory": 10
+      }
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0032_02A:13:0:e105:s1",
+      "chain": 1,
+      "seed": 141359614479005,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 81,
+      "seconds": 0.262,
+      "failureReasons": {
+        "riichi_shape_inventory": 80
+      }
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0032_02A:13:0:e105:s1",
+      "chain": 2,
+      "seed": 152724160854588,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 6,
+      "seconds": 0.2115,
+      "failureReasons": {
+        "riichi_shape_inventory": 5
+      }
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0032_02A:13:0:e105:s1",
+      "chain": 3,
+      "seed": 146638412724667,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 4,
+      "seconds": 0.2185,
+      "failureReasons": {
+        "riichi_shape_inventory": 3
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0082_02A:4:0:e71:s2",
+      "chain": 0,
+      "seed": 198289342540765,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 5,
+      "seconds": 0.1946,
+      "failureReasons": {
+        "riichi_shape_inventory": 4
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0082_02A:4:0:e71:s2",
+      "chain": 1,
+      "seed": 219925811105655,
+      "status": "ok",
+      "family": "chiitoi",
+      "attempts": 6,
+      "seconds": 0.1182,
+      "failureReasons": {
+        "riichi_shape_inventory": 5
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0082_02A:4:0:e71:s2",
+      "chain": 2,
+      "seed": 3029845170522,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 10,
+      "seconds": 0.1724,
+      "failureReasons": {
+        "riichi_shape_inventory": 9
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0082_02A:4:0:e71:s2",
+      "chain": 3,
+      "seed": 20636323755079,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 12,
+      "seconds": 0.2334,
+      "failureReasons": {
+        "riichi_shape_inventory": 11
+      }
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0087_02A:3:0:e85:s1",
+      "chain": 0,
+      "seed": 142665371803210,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 13,
+      "seconds": 0.8156,
+      "failureReasons": {
+        "riichi_shape_inventory": 12
+      }
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0087_02A:3:0:e85:s1",
+      "chain": 1,
+      "seed": 182753082254141,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 4,
+      "seconds": 0.1971,
+      "failureReasons": {
+        "riichi_shape_inventory": 3
+      }
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0087_02A:3:0:e85:s1",
+      "chain": 2,
+      "seed": 181053953939722,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 7,
+      "seconds": 1.2091,
+      "failureReasons": {
+        "riichi_shape_inventory": 6
+      }
+    },
+    {
+      "decisionId": "mleague:2019-20:L001_S003_0087_02A:3:0:e85:s1",
+      "chain": 3,
+      "seed": 261655444550700,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 16,
+      "seconds": 0.159,
+      "failureReasons": {
+        "riichi_shape_inventory": 15
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S012_0002_01A:1:0:e99:s1",
+      "chain": 0,
+      "seed": 205744458752668,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 5,
+      "seconds": 1.5851,
+      "failureReasons": {
+        "riichi_shape_inventory": 4
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S012_0002_01A:1:0:e99:s1",
+      "chain": 1,
+      "seed": 83077240670338,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 5,
+      "seconds": 0.2115,
+      "failureReasons": {
+        "riichi_shape_inventory": 4
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S012_0002_01A:1:0:e99:s1",
+      "chain": 2,
+      "seed": 1082737942638,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 6,
+      "seconds": 0.3412,
+      "failureReasons": {
+        "riichi_shape_inventory": 5
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S012_0002_01A:1:0:e99:s1",
+      "chain": 3,
+      "seed": 79570708932972,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 45,
+      "seconds": 0.2653,
+      "failureReasons": {
+        "riichi_shape_inventory": 44
+      }
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0044_01A:3:0:e131:s0",
+      "chain": 0,
+      "seed": 227699415570787,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 224,
+      "seconds": 0.4034,
+      "failureReasons": {
+        "riichi_shape_inventory": 223
+      }
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0044_01A:3:0:e131:s0",
+      "chain": 1,
+      "seed": 48426002111839,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 88,
+      "seconds": 0.3723,
+      "failureReasons": {
+        "riichi_shape_inventory": 87
+      }
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0044_01A:3:0:e131:s0",
+      "chain": 2,
+      "seed": 279401511135809,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 15,
+      "seconds": 0.3463,
+      "failureReasons": {
+        "riichi_shape_inventory": 14
+      }
+    },
+    {
+      "decisionId": "mleague:2018-19:L001_S001_0044_01A:3:0:e131:s0",
+      "chain": 3,
+      "seed": 205470492910756,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 93,
+      "seconds": 0.2989,
+      "failureReasons": {
+        "riichi_shape_inventory": 92
+      }
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0008_02A:0:0:e51:s1",
+      "chain": 0,
+      "seed": 162167196522064,
+      "status": "ok",
+      "family": "kokushi",
+      "attempts": 1,
+      "seconds": 0.0953,
+      "failureReasons": {}
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0008_02A:0:0:e51:s1",
+      "chain": 1,
+      "seed": 10720758905045,
+      "status": "ok",
+      "family": "kokushi",
+      "attempts": 3,
+      "seconds": 0.0961,
+      "failureReasons": {
+        "riichi_shape_inventory": 2
+      }
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0008_02A:0:0:e51:s1",
+      "chain": 2,
+      "seed": 54437718972589,
+      "status": "ok",
+      "family": "kokushi",
+      "attempts": 1,
+      "seconds": 0.0868,
+      "failureReasons": {}
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0008_02A:0:0:e51:s1",
+      "chain": 3,
+      "seed": 236982482339269,
+      "status": "ok",
+      "family": "regular",
+      "attempts": 2,
+      "seconds": 0.1115,
+      "failureReasons": {
+        "riichi_shape_inventory": 1
+      }
+    }
+  ]
+}

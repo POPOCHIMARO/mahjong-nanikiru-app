@@ -29,8 +29,13 @@ from tools.ev_policy_belief import (  # noqa: E402
     PublicFeatureState,
     SeatFeatureState,
     build_smc_events,
+    YAOCHUU,
     compare_evaluations,
+    construct_initial_world,
+    counts34,
     evaluate_seat,
+    sample_tenpai_shape,
+    validate_family_probabilities,
     id_key,
     initial_mahjong_particles,
     model_resolver,
@@ -44,6 +49,7 @@ from tools.ev_policy_belief import (  # noqa: E402
     toy_problem,
     world_from_teacher,
 )
+from tools.ev_calibration_state import shanten  # noqa: E402
 from tools.ev_policy_fixed import constants_for_seat  # noqa: E402
 from tools.ev_policy_opponent import HierarchicalSoftmax, RoundFeatureState, _stratum_attributes_of  # noqa: E402
 
@@ -366,6 +372,100 @@ class ReferenceSmcAdapterTest(unittest.TestCase):
                     self.assertEqual(left.kind_features.tolist(), right.kind_features.tolist())
                     self.assertEqual(left.detail_features.tolist(), right.detail_features.tolist())
             public = PublicFeatureState(context.public_row())
+
+
+@unittest.skipUnless(HAS_DATA, "D.3.1の実データ（Git管理外）がない")
+class D33_03ConstructiveInitializationTest(unittest.TestCase):
+    def _initial_worlds(self, seeds: range, resolver=None):
+        for prefix in fixture()["prefixes"]:
+            context = context_of(prefix)
+            for seed in seeds:
+                yield prefix, context, construct_initial_world(context, random.Random(seed), resolver=resolver)
+
+    def test_initial_worlds_satisfy_tenpai_inventory_and_discard_consistency(self) -> None:
+        resolver = model_resolver(fixture()["model"])
+        for prefix, context, initial in self._initial_worlds(range(2), resolver):
+            with self.subTest(decision=prefix["decisionId"]):
+                self.assertEqual(initial.status, "ok")
+                initial.world.validate()  # 136枚をちょうど1回ずつ使う（牌在庫）
+                riichi = initial.world.hypotheses[context.riichi_seat]
+                final = _hand_at(context, riichi, len(context.events) - 1)
+                self.assertEqual(shanten(counts34(final), 0), 0)
+                for seat, hypothesis in initial.world.hypotheses.items():
+                    evaluation = evaluate_seat(context, hypothesis, resolver)
+                    self.assertIsNone(evaluation.violation)
+                    self.assertTrue(math.isfinite(evaluation.log_likelihood))
+                    self.assertAlmostEqual(evaluation.log_likelihood, initial.log_likelihood[seat], places=12)
+
+    def test_furiten_riichi_is_accepted(self) -> None:
+        # 待ちがリーチ者自身の河にある形（フリテンリーチ）も出発点として受け入れる。
+        for prefix, context, initial in self._initial_worlds(range(40)):
+            evaluation = evaluate_seat(context, initial.world.hypotheses[context.riichi_seat], None)
+            responses = [w for w in evaluation.windows if w.kind == "response"]
+            if initial.status == "ok" and responses and "own_discard" in responses[-1].furiten:
+                return
+        self.fail("フリテンリーチの出発点が見つからない")
+
+    def test_passing_a_winning_tile_after_riichi_sets_riichi_furiten_and_removes_ron(self) -> None:
+        found = False
+        for prefix, context, initial in self._initial_worlds(range(40)):
+            evaluation = evaluate_seat(context, initial.world.hypotheses[context.riichi_seat], None)
+            if not evaluation.riichi_furiten:
+                continue
+            responses = [w for w in evaluation.windows if w.kind == "response"]
+            first = next(i for i, w in enumerate(responses) if "riichi_pass" in w.furiten)
+            # 見送った窓ではロンが合法だった（またはフリテン前の待ち牌が出た）。以後はロンが合法集合から消える。
+            for window in responses[first:]:
+                self.assertNotIn("ron", {a["kind"] for a in window.legal_actions})
+            found = True
+            break
+        self.assertTrue(found, "リーチ後の見逃しがある出発点が見つからない")
+
+    def test_initialization_reads_only_the_decision_context(self) -> None:
+        prefix = fixture()["prefixes"][1]
+        context = context_of(prefix)
+        swapped = copy.deepcopy(fixture()["private"][prefix["roundId"]])
+        for seat, row in swapped.items():
+            if seat != int(prefix["seat"]):
+                row["initialHand"] = list(reversed(row["initialHand"]))
+                for item in row["events"]:
+                    if item["type"] == "draw_observation":
+                        item["tile"] = {"tile34": 0, "isRed": False}
+        other = DecisionContext.from_records(prefix, fixture()["public"][prefix["roundId"]], swapped[int(prefix["seat"])])
+        first = construct_initial_world(context, random.Random(9))
+        second = construct_initial_world(other, random.Random(9))
+        self.assertEqual(first.world, second.world)
+
+    def test_budget_exhaustion_is_init_failed(self) -> None:
+        context = context_of(fixture()["prefixes"][0])
+        for options in ({"max_attempts": 0}, {"max_seconds": 0.0}):
+            with self.subTest(options=options):
+                result = construct_initial_world(context, random.Random(1), **options)
+                self.assertEqual(result.status, "init_failed")
+                self.assertIsNone(result.world)
+
+
+class TenpaiGeneratorTest(unittest.TestCase):
+    def test_family_probabilities_must_all_be_positive(self) -> None:
+        with self.assertRaises(ValueError):
+            validate_family_probabilities((("regular", 0.95), ("chiitoi", 0.05), ("kokushi", 0.0)))
+
+    def test_each_family_produces_tenpai_shapes(self) -> None:
+        rng = random.Random(4)
+        for family in ("regular", "chiitoi", "kokushi"):
+            probabilities = tuple((name, 0.98 if name == family else 0.01) for name in ("regular", "chiitoi", "kokushi"))
+            seen = 0
+            for _ in range(300):
+                name, shape = sample_tenpai_shape(rng, probabilities)
+                counts = [shape.count(t) for t in range(34)]
+                self.assertEqual(len(shape), 13)
+                if name != family or max(counts) > 4:
+                    continue  # 5枚以上の形は在庫の段で除く
+                seen += 1
+                self.assertEqual(shanten(tuple(counts), 0), 0)
+                if family == "kokushi":
+                    self.assertGreaterEqual(sum(counts[t] > 0 for t in YAOCHUU), 12)
+            self.assertGreater(seen, 100)
 
 
 def _hand_at(context: DecisionContext, hypothesis, position: int) -> list[int]:
