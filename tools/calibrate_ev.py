@@ -2150,7 +2150,8 @@ def _parser() -> argparse.ArgumentParser:
         "probe-policy-belief", help="D.3.3の事後分布推定の検査（現在は工程1の履歴評価器の照合だけ）"
     )
     probe_policy_belief.add_argument(
-        "--stage", choices=("evaluator", "pilot-manifest", "reference-smc", "initialization", "mcmc"), default="evaluator"
+        "--stage", choices=("evaluator", "pilot-manifest", "reference-smc", "initialization", "mcmc", "theta-variant-manifest", "theta-variant"),
+        default="evaluator"
     )
     probe_policy_belief.add_argument("--manifest", type=Path, default=DEFAULT_BELIEF_PILOT_DIR / "manifest.json")
     probe_policy_belief.add_argument("--processes", type=int, default=3, help="並列数。設計12.3節の上限は3")
@@ -2170,6 +2171,11 @@ def _parser() -> argparse.ArgumentParser:
     probe_policy_belief.add_argument("--cache-capacity", type=int, default=200_000)
     probe_policy_belief.add_argument("--scenario", action="append", default=[], help="走らせるシナリオ（既定は22件すべて）")
     probe_policy_belief.add_argument("--decision-limit", type=int, default=None, help="manifestの先頭から何判断を使うか（検査用）")
+    # --stage theta-variant-manifest / theta-variant（工程6）：θ変種の較正。manifestを先に固定し、推定はそれに従う。
+    probe_policy_belief.add_argument("--feature-dir", type=Path, default=DEFAULT_OPPONENT_FEATURE_DIR)
+    probe_policy_belief.add_argument("--theta-variant-dir", type=Path, default=DEFAULT_BELIEF_PILOT_DIR / "theta-variant")
+    probe_policy_belief.add_argument("--theta-variant-result", type=Path, default=None,
+                                     help="--stage mcmcでθ変種のシナリオも走らせるときの較正結果")
     build_opponent_features = subparsers.add_parser(
         "build-opponent-features", help="D.3.1教師窓からD.3.2aの厳密特徴cacheを生成する"
     )
@@ -2509,6 +2515,34 @@ def main(argv: list[str] | None = None) -> int:
         report = record_pilot_initialization(args.dataset_dir.resolve(), args.model_dir.resolve(), args.manifest.resolve())
         print(json.dumps({key: report[key] for key in ("failed", "families", "maxAttempts", "maxSeconds")}, ensure_ascii=False))
         return 0 if report["failed"] == 0 else 1
+    if args.command == "probe-policy-belief" and args.stage in ("theta-variant-manifest", "theta-variant"):
+        from tools.ev_policy_belief import (
+            HierarchicalSoftmax, build_theta_variant_manifest, calibrate_theta_variant, load_theta_variant_targets,
+        )
+        variant_dir = args.theta_variant_dir.resolve()
+        manifest_path = variant_dir / "manifest.json"
+        model_path = args.model_dir.resolve() / "model.json"
+        model = HierarchicalSoftmax.from_dict(json.loads(model_path.read_text(encoding="utf-8")))
+        targets, identity = load_theta_variant_targets(args.dataset_dir.resolve(), args.feature_dir.resolve())
+        if args.stage == "theta-variant-manifest":
+            if manifest_path.exists():
+                print(json.dumps({"error": f"manifestは作成済みで上書きしない: {manifest_path}"}, ensure_ascii=False), file=sys.stderr)
+                return 2
+            manifest = build_theta_variant_manifest(model_path, targets, identity)
+            variant_dir.mkdir(parents=True, exist_ok=True)
+            manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            print(json.dumps({"manifest": str(manifest_path), "support": manifest["support"]}, ensure_ascii=False))
+            return 0
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if manifest["data"] != identity:
+            print(json.dumps({"error": "特徴cacheがmanifest作成時と違う"}, ensure_ascii=False), file=sys.stderr)
+            return 2
+        result = calibrate_theta_variant(model, targets, manifest, hashlib.sha256(manifest_path.read_bytes()).hexdigest())
+        output = args.output_dir.resolve() if args.output_dir != DEFAULT_BELIEF_EVALUATOR_PROBE_DIR else variant_dir
+        output.mkdir(parents=True, exist_ok=True)
+        (output / "result.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(json.dumps({key: result.get(key) for key in ("status", "bias", "holdReasons", "nll", "baselineNll")}, ensure_ascii=False))
+        return 0 if result["status"] == "estimated" else 1
     if args.command == "probe-policy-belief" and args.stage == "mcmc":
         if not 1 <= args.processes <= 3:
             print(json.dumps({"error": "processesは1〜3（設計12.3節）"}, ensure_ascii=False), file=sys.stderr)
@@ -2521,6 +2555,8 @@ def main(argv: list[str] | None = None) -> int:
             ChainSettings(args.iterations, args.burn_in, args.thin, tuple(args.checkpoint)),
             chains=args.chains, seed=args.seed, processes=args.processes, cache_capacity=args.cache_capacity,
             wall_clock_seconds=args.wall_clock_seconds, scenario_ids=args.scenario or None,
+            theta_variant=(json.loads(args.theta_variant_result.resolve().read_text(encoding="utf-8"))
+                           if args.theta_variant_result else None),
         )
         print(json.dumps({key: report[key] for key in ("held", "wallClockSeconds")}, ensure_ascii=False))
         return 0 if report["held"] == 0 else 1

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "ev-policy-belief-theta-variant-manifest/v1",
+  "variantId": "theta_riichi_response_recalibrated",
+  "baseModelSha256": "caaf921f75415344f1c42bd9d372ce13139eb8e81b658982d84b4dc6abd21cdb",
+  "period": {
+    "split": "calibration",
+    "seasons": [
+      "2024-25"
+    ],
+    "note": "温度の選択と共用するため独立な検証ではない。開発確認期間を後で独立な採用判定に使い直さない"
+  },
+  "phase": "discard_response",
+  "condition": "responder_opponent_riichi_count_at_least_1",
+  "kinds": [
+    "chi",
+    "pon"
+  ],
+  "applicationOrder": "added_to_kind_score_before_temperature",
+  "fixedConstants": "base_model_fixed_constants",
+  "objective": "joint_public_resolution_negative_log_likelihood_over_target_windows",
+  "search": {
+    "min": -6.0,
+    "max": 3.0,
+    "gridSteps": [
+      0.5,
+      0.1,
+      0.02
+    ],
+    "regularization": null
+  },
+  "minimumSupport": {
+    "legalResponderWindows": 200,
+    "observedCalls": 20
+  },
+  "holdConditions": [
+    "insufficient_support",
+    "boundary_optimum",
+    "non_finite_likelihood",
+    "support_mismatch"
+  ],
+  "support": {
+    "targetWindows": 7662,
+    "legalResponderWindows": {
+      "chi": 5684,
+      "pon": 2434
+    },
+    "observedCalls": {
+      "chi": 473,
+      "pon": 199
+    }
+  },
+  "data": {
+    "featureManifestHash": "22433203ba701e3ee5618773432ece4ba85823aa9ec463440677fb9ddacbbbd8",
+    "calibrationResponseWindows": 139212
+  },
+  "adoption": "diagnostic_only_not_adopted"
+}

@@ -545,6 +545,9 @@ def model_identity(model: HierarchicalSoftmax) -> str:
         "detailWeights": np.asarray(model.detail_weights).tolist(),
         "temperatures": dict(sorted(model.temperatures.items())),
     }
+    bias = getattr(model, "riichi_response_bias", None)
+    if bias:  # θ変種（9.3節）は別の識別子を持ち、キャッシュの学習分布を共有しない
+        payload["riichiResponseBias"] = dict(sorted(bias.items()))
     return hashlib.sha256(_canonical_json(payload).encode("utf-8")).hexdigest()
 
 
@@ -3812,10 +3815,12 @@ def run_decision_scenarios(
     init_attempts: int = 10_000,
     init_seconds: float = 60.0,
     metadata: Mapping[str, Any] | None = None,
+    scenario_models: Mapping[str, HierarchicalSoftmax] | None = None,
 ) -> dict[str, Any]:
     """判断1件について、シナリオごとに独立な鎖を走らせる（9.1節）。窓キャッシュは全シナリオ・全鎖で共有する。
 
     必要なシナリオのどれかの鎖が欠ければ、判断全体をfixed_component_sensitivity_missingでheldにする。
+    scenario_modelsはシナリオごとに別のθを使う場合（θ変種、9.3節）。モデル識別子が違うので学習分布は共有しない。
     """
     import time
 
@@ -3835,7 +3840,7 @@ def run_decision_scenarios(
     mismatches = reconstruction_mismatches(context)
     outputs = []
     for scenario in scenarios:
-        resolver = model_resolver(model, scenario)
+        resolver = model_resolver((scenario_models or {}).get(str(scenario["id"]), model), scenario)
         record = {**base_record, "scenarioId": scenario["id"], "thetaId": resolver.model_id}
         if mismatches:
             record.update({"status": "held", "holdReasons": ["state_reconstruction_mismatch"],
@@ -3928,9 +3933,17 @@ def _belief_worker_run(decision_id: str) -> dict[str, Any]:
         scenarios = [s for s in scenarios if s["id"] in set(options["scenarioIds"])]
     settings = ChainSettings(**options["settings"])
     model = _BELIEF_WORKER["model"]
+    required = [s["id"] for s in belief_scenarios(_BELIEF_WORKER["fixed"])]
+    scenario_models = {}
+    if options.get("thetaVariant") is not None:
+        variant = load_theta_variant(model, options["thetaVariant"])
+        scenario_models[THETA_VARIANT_ID] = variant
+        required.append(THETA_VARIANT_ID)
+        if not options.get("scenarioIds") or THETA_VARIANT_ID in options["scenarioIds"]:
+            scenarios.append(theta_variant_scenario(belief_scenarios(_BELIEF_WORKER["fixed"]), variant))
     result = run_decision_scenarios(
         _WORKER["contexts"][decision_id], model, scenarios, settings,
-        required_scenarios=[s["id"] for s in belief_scenarios(_BELIEF_WORKER["fixed"])],
+        required_scenarios=required, scenario_models=scenario_models,
         chains=int(options["chains"]), seed=int(options["seed"]), cache_capacity=int(options["cacheCapacity"]),
         thresholds=DisagreementThresholds(**options.get("thresholds", {})), deadline=options.get("deadline"),
         metadata={"modelVersion": model.to_dict()["modelVersion"], "fixedComponentsHash": _BELIEF_WORKER["fixedHash"]},
@@ -3959,6 +3972,7 @@ def run_belief_decisions(
     wall_clock_seconds: float = 86_400.0,
     scenario_ids: Sequence[str] | None = None,
     thresholds: DisagreementThresholds = DisagreementThresholds(),
+    theta_variant: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """判断単位で並列に実行する（P≤3、12.3節）。同じ判断の全シナリオは同じプロセスでキャッシュを共有する。"""
     import multiprocessing
@@ -3975,6 +3989,7 @@ def run_belief_decisions(
                      "checkpoints": tuple(settings.checkpoints), "moves": tuple(settings.moves)},
         "chains": chains, "seed": seed, "cacheCapacity": cache_capacity, "outputDir": str(output_dir),
         "deadline": start + wall_clock_seconds, "scenarioIds": list(scenario_ids or []),
+        "thetaVariant": dict(theta_variant) if theta_variant is not None else None,
         "thresholds": {"max_rhat": thresholds.max_rhat, "min_shape_overlap": thresholds.min_shape_overlap,
                        "require_supported_families_visited": thresholds.require_supported_families_visited},
     }
@@ -3992,6 +4007,7 @@ def run_belief_decisions(
         "chains": chains, "seed": seed, "processes": processes, "cacheCapacity": cache_capacity,
         "scenarioIds": list(scenario_ids) if scenario_ids else "all",
         "thresholds": thresholds.to_dict(),
+        "thetaVariant": None if theta_variant is None else {k: theta_variant.get(k) for k in ("thetaId", "bias", "manifestSha256")},
         "decisions": rows,
         "held": sum(row["status"] != "ok" for row in rows),
         "wallClockSeconds": round(time.time() - start, 1),
@@ -3999,3 +4015,304 @@ def run_belief_decisions(
     (output_dir / "run-summary.json").write_text(json.dumps(_json_safe(report), ensure_ascii=False, indent=2) + "\n",
                                                  encoding="utf-8")
     return report
+
+
+# ===========================================================================
+# 工程6：θ変種 theta_riichi_response_recalibrated の較正（PHASE_D33_DESIGN.md 9.3節）
+# ===========================================================================
+#
+# v3モデルはリーチ中の応答窓でポンを2〜4倍に過大予測する（D.3.2bレポート8節）。その偏りが
+# 事後分布へ与える影響を測るための診断専用の変種。採用はしない。較正期間は温度の選択と共用する
+# ので、較正期間での適合は独立な検証にならず、補正後の適合を性能改善の証拠と呼ばない。
+
+THETA_VARIANT_ID = "theta_riichi_response_recalibrated"
+THETA_VARIANT_MANIFEST_SCHEMA = "ev-policy-belief-theta-variant-manifest/v1"
+THETA_VARIANT_RESULT_SCHEMA = "ev-policy-belief-theta-variant/v1"
+THETA_VARIANT_KINDS = ("chi", "pon")
+# 探索の設定（manifestへ写して固定する）。推定値を見る前に決めた値で、変えるときはmanifestを作り直す。
+THETA_VARIANT_SEARCH = {
+    "min": -6.0,
+    "max": 3.0,
+    "gridSteps": [0.5, 0.1, 0.02],  # 粗い格子の最良点の周り±1段の範囲を、次の細かさで探し直す
+    "regularization": None,
+}
+THETA_VARIANT_MINIMUM_SUPPORT = {"legalResponderWindows": 200, "observedCalls": 20}  # 種別ごと
+THETA_VARIANT_HOLD_CONDITIONS = (
+    "insufficient_support",  # どちらかの種別で合法な応答者窓または観測した鳴きが最小件数未満
+    "boundary_optimum",  # 最良点が探索範囲の境界
+    "non_finite_likelihood",  # 尤度が0または非有限になる対象窓がある
+    "support_mismatch",  # 推定時に数え直した支持件数がmanifestと一致しない
+)
+
+
+def _opponent_riichi_index() -> int:
+    from tools.ev_policy_opponent import KIND_FEATURE_NAMES
+
+    return KIND_FEATURE_NAMES.index("opponent_riichi_count")
+
+
+@dataclass
+class RiichiResponseBiasSoftmax(HierarchicalSoftmax):
+    """discard_responseで、応答者から見たリーチ人数が1以上の窓に限り、種別スコアにβを加えるθ変種。
+
+    βは温度で割る前のスコアに加える：種別ロジット = (w_k·f + β_k) / T。
+    """
+
+    riichi_response_bias: dict[str, float] = field(default_factory=dict)
+
+    def copy(self) -> "RiichiResponseBiasSoftmax":
+        return RiichiResponseBiasSoftmax(self.kind_weights.copy(), self.detail_weights.copy(), dict(self.temperatures),
+                                         self.fixed, dict(self.riichi_response_bias))
+
+    def with_fixed(self, fixed: Any) -> "RiichiResponseBiasSoftmax":
+        return RiichiResponseBiasSoftmax(self.kind_weights, self.detail_weights, dict(self.temperatures), fixed,
+                                         dict(self.riichi_response_bias))
+
+    def applies(self, candidates: Sequence[Any], phase: str) -> bool:
+        return (
+            phase == "discard_response"
+            and bool(self.riichi_response_bias)
+            and float(candidates[0].kind_features[_opponent_riichi_index()]) > 0.0
+        )
+
+    def base_probabilities(self, candidates: Sequence[Any], phase: str) -> np.ndarray:
+        if not candidates or not self.applies(candidates, phase):
+            return super().base_probabilities(candidates, phase)
+        from tools.ev_policy_opponent import KIND_INDEX, _softmax
+
+        temperature = float(self.temperatures.get(phase, 1.0))
+        if not math.isfinite(temperature) or temperature <= 0:
+            raise ValueError(f"不正な温度: {phase}={temperature}")
+        groups: dict[str, list[int]] = {}
+        for index, candidate in enumerate(candidates):
+            groups.setdefault(candidate.kind, []).append(index)
+        kinds = list(groups)
+        kind_logits = np.asarray([
+            float(self.kind_weights[KIND_INDEX[kind]] @ candidates[groups[kind][0]].kind_features)
+            + float(self.riichi_response_bias.get(kind, 0.0))
+            for kind in kinds
+        ]) / temperature
+        kind_probability = _softmax(kind_logits)
+        result = np.zeros(len(candidates), dtype=float)
+        for group_index, kind in enumerate(kinds):
+            indices = groups[kind]
+            detail_logits = np.asarray(
+                [self.detail_weights[KIND_INDEX[kind]] @ candidates[index].detail_features for index in indices]
+            ) / temperature
+            result[indices] = kind_probability[group_index] * _softmax(detail_logits)
+        return result
+
+
+def theta_variant_model(model: HierarchicalSoftmax, bias: Mapping[str, float]) -> RiichiResponseBiasSoftmax:
+    return RiichiResponseBiasSoftmax(model.kind_weights, model.detail_weights, dict(model.temperatures), model.fixed,
+                                     {kind: float(bias[kind]) for kind in THETA_VARIANT_KINDS})
+
+
+def _responder_targeted(candidates: Sequence[Any]) -> bool:
+    """βが効く応答者窓：リーチ人数≥1で、チーかポンが合法。"""
+    return float(candidates[0].kind_features[_opponent_riichi_index()]) > 0.0 and any(
+        c.kind in THETA_VARIANT_KINDS for c in candidates)
+
+
+def theta_variant_targets(windows: Any) -> list[dict[str, Any]]:
+    """共同応答の窓のうち、βで尤度が変わるもの（少なくとも1人の応答者がβの対象）だけを残す。"""
+    targets = []
+    for encoded in windows:
+        window = encoded.get("window", {})
+        if "perSeat" not in encoded or window.get("phase") != "discard_response":
+            continue
+        if not window.get("learningMask", {}).get("jointKind", False):
+            continue
+        if any(_responder_targeted(candidates) for candidates in encoded["perSeat"].values()):
+            targets.append(encoded)
+    return targets
+
+
+def theta_variant_support(targets: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
+    """対象窓の支持件数：窓数、種別ごとの合法な応答者窓と、対象の応答者が鳴いた観測数。"""
+    legal: Counter = Counter()
+    observed: Counter = Counter()
+    for encoded in targets:
+        resolution = encoded["window"]["observation"]["resolution"]
+        for seat, candidates in encoded["perSeat"].items():
+            if not _responder_targeted(candidates):
+                continue
+            kinds = {c.kind for c in candidates}
+            for kind in THETA_VARIANT_KINDS:
+                legal[kind] += int(kind in kinds)
+            if resolution.get("kind") in THETA_VARIANT_KINDS and int(resolution.get("seat", -1)) == int(seat):
+                observed[resolution["kind"]] += 1
+    return {
+        "targetWindows": len(targets),
+        "legalResponderWindows": {kind: legal[kind] for kind in THETA_VARIANT_KINDS},
+        "observedCalls": {kind: observed[kind] for kind in THETA_VARIANT_KINDS},
+    }
+
+
+def theta_variant_nll(model: HierarchicalSoftmax, targets: Sequence[Mapping[str, Any]], bias: Mapping[str, float]) -> float:
+    """対象窓の共同応答の負の対数尤度（公開結果と両立する全希望の和、D.3.2と同じ尤度）。"""
+    from tools.ev_policy_opponent import joint_resolution_likelihood
+
+    variant = theta_variant_model(model, bias)
+    total = []
+    for encoded in targets:
+        window = encoded["window"]
+        try:
+            likelihood, _ = joint_resolution_likelihood(
+                variant, int(window["actorSeat"]), encoded["perSeat"], window["observation"]["resolution"], str(window["phase"]))
+        except ValueError:
+            return math.inf
+        total.append(-math.log(likelihood))
+    value = math.fsum(total)
+    return value if math.isfinite(value) else math.inf
+
+
+def _grid(low: float, high: float, step: float) -> list[float]:
+    count = int(round((high - low) / step))
+    return [round(low + k * step, 10) for k in range(count + 1)]
+
+
+def estimate_theta_variant(
+    model: HierarchicalSoftmax, targets: Sequence[Mapping[str, Any]], manifest: Mapping[str, Any]
+) -> dict[str, Any]:
+    """manifestの探索設定で、βを決定的な格子探索で推定する。失敗はholdとして返し、値を返さない。"""
+    support = theta_variant_support(targets)
+    holds = []
+    if support != manifest["support"]:
+        holds.append("support_mismatch")
+    minimum = manifest["minimumSupport"]
+    for kind in THETA_VARIANT_KINDS:
+        if (support["legalResponderWindows"][kind] < minimum["legalResponderWindows"]
+                or support["observedCalls"][kind] < minimum["observedCalls"]):
+            holds.append("insufficient_support")
+            break
+    result: dict[str, Any] = {"support": support, "holdReasons": holds}
+    if holds:
+        return {**result, "status": "held", "bias": None}
+    search = manifest["search"]
+    low, high = float(search["min"]), float(search["max"])
+    baseline = theta_variant_nll(model, targets, {"chi": 0.0, "pon": 0.0})
+    best: tuple[float, float, float] | None = None
+    path = []
+    window_low = {kind: low for kind in THETA_VARIANT_KINDS}
+    window_high = {kind: high for kind in THETA_VARIANT_KINDS}
+    for step in search["gridSteps"]:
+        evaluated = []
+        for chi in _grid(window_low["chi"], window_high["chi"], step):
+            for pon in _grid(window_low["pon"], window_high["pon"], step):
+                evaluated.append((theta_variant_nll(model, targets, {"chi": chi, "pon": pon}), chi, pon))
+        # 同値は小さいβ（chi、ponの順）を選ぶ：並べ方によらない決定的な選択
+        value, chi, pon = min(evaluated)
+        if not math.isfinite(value):
+            return {**result, "status": "held", "bias": None, "holdReasons": ["non_finite_likelihood"]}
+        best = (value, chi, pon)
+        path.append({"step": step, "bias": {"chi": chi, "pon": pon}, "nll": value, "points": len(evaluated)})
+        for kind, center in (("chi", chi), ("pon", pon)):
+            window_low[kind] = max(low, round(center - step, 10))
+            window_high[kind] = min(high, round(center + step, 10))
+    assert best is not None
+    value, chi, pon = best
+    bias = {"chi": chi, "pon": pon}
+    if any(abs(v - low) < 1e-9 or abs(v - high) < 1e-9 for v in bias.values()):
+        return {**result, "status": "held", "bias": None, "holdReasons": ["boundary_optimum"], "searchPath": path}
+    return {**result, "status": "estimated", "bias": bias, "nll": value, "baselineNll": baseline, "searchPath": path}
+
+
+def theta_variant_rates(model: HierarchicalSoftmax, targets: Sequence[Mapping[str, Any]], bias: Mapping[str, float]) -> dict[str, Any]:
+    """対象窓の公開結果の種別率：観測と予測（記録用。性能改善の証拠とは呼ばない）。"""
+    from tools.ev_policy_opponent import _public_resolution_kind_probabilities
+
+    variant = theta_variant_model(model, bias)
+    predicted: Counter = Counter()
+    observed: Counter = Counter()
+    for encoded in targets:
+        predicted.update(_public_resolution_kind_probabilities(variant, encoded))
+        observed[str(encoded["window"]["observation"]["resolution"]["kind"])] += 1
+    count = len(targets)
+    kinds = sorted(set(predicted) | set(observed))
+    return {kind: {"observed": observed[kind] / count, "predicted": predicted[kind] / count} for kind in kinds}
+
+
+def load_theta_variant_targets(dataset_dir: Any, feature_dir: Any, seasons: Sequence[str] = ("2024-25",)) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """特徴cacheから較正期間の応答窓だけを読み、βの対象窓を返す（cacheの検証を通す）。"""
+    from pathlib import Path
+
+    from tools.ev_policy_opponent import _deserialize_encoded, iter_feature_shard, verify_opponent_feature_cache
+
+    dataset_dir, feature_dir = Path(dataset_dir), Path(feature_dir)
+    manifest = verify_opponent_feature_cache(dataset_dir, feature_dir)
+    selected = []
+    for shard in manifest["shards"]:
+        for record in iter_feature_shard(feature_dir / shard["path"]):
+            window = record.get("teacherWindow") or {}
+            if window.get("developmentSplit") != "calibration" or window.get("phase") != "discard_response":
+                continue
+            if str(window["roundId"]).split(":")[1] not in seasons:
+                raise ValueError("較正期間の窓が想定のシーズンでない")
+            selected.append(_deserialize_encoded(record, window))
+    identity = {"featureManifestHash": hashlib.sha256(_canonical_json(manifest).encode("utf-8")).hexdigest(),
+                "calibrationResponseWindows": len(selected)}
+    return theta_variant_targets(selected), identity
+
+
+def build_theta_variant_manifest(
+    model_path: Any, targets: Sequence[Mapping[str, Any]], identity: Mapping[str, Any]
+) -> dict[str, Any]:
+    """推定の前に固定するmanifest（9.3節）。"""
+    return {
+        "schemaVersion": THETA_VARIANT_MANIFEST_SCHEMA,
+        "variantId": THETA_VARIANT_ID,
+        "baseModelSha256": _sha256_file(model_path),
+        "period": {"split": "calibration", "seasons": ["2024-25"],
+                   "note": "温度の選択と共用するため独立な検証ではない。開発確認期間を後で独立な採用判定に使い直さない"},
+        "phase": "discard_response",
+        "condition": "responder_opponent_riichi_count_at_least_1",
+        "kinds": list(THETA_VARIANT_KINDS),
+        "applicationOrder": "added_to_kind_score_before_temperature",
+        "fixedConstants": "base_model_fixed_constants",
+        "objective": "joint_public_resolution_negative_log_likelihood_over_target_windows",
+        "search": dict(THETA_VARIANT_SEARCH),
+        "minimumSupport": dict(THETA_VARIANT_MINIMUM_SUPPORT),
+        "holdConditions": list(THETA_VARIANT_HOLD_CONDITIONS),
+        "support": theta_variant_support(targets),
+        "data": dict(identity),
+        "adoption": "diagnostic_only_not_adopted",
+    }
+
+
+def calibrate_theta_variant(
+    model: HierarchicalSoftmax, targets: Sequence[Mapping[str, Any]], manifest: Mapping[str, Any], manifest_sha256: str
+) -> dict[str, Any]:
+    estimate = estimate_theta_variant(model, targets, manifest)
+    record = {
+        "schemaVersion": THETA_VARIANT_RESULT_SCHEMA,
+        "variantId": THETA_VARIANT_ID,
+        "manifestSha256": manifest_sha256,
+        "baseThetaId": model_identity(model),
+        **estimate,
+    }
+    if estimate["status"] == "estimated":
+        variant = theta_variant_model(model, estimate["bias"])
+        record["thetaId"] = model_identity(variant)
+        record["rates"] = {"base": theta_variant_rates(model, targets, {"chi": 0.0, "pon": 0.0}),
+                           "variant": theta_variant_rates(model, targets, estimate["bias"])}
+        record["note"] = "較正期間での適合。温度の選択と共用するため、性能改善の証拠ではない（9.3節）"
+    return record
+
+
+def load_theta_variant(model: HierarchicalSoftmax, result: Mapping[str, Any]) -> RiichiResponseBiasSoftmax:
+    """推定済みの結果からθ変種を作る。heldの結果や、別の基準モデルの結果は使わない。"""
+    if result.get("status") != "estimated":
+        raise ValueError("θ変種の較正がheld（変種のシナリオは実行できない）")
+    if result["baseThetaId"] != model_identity(model):
+        raise ValueError("θ変種の基準モデルが一致しない")
+    variant = theta_variant_model(model, result["bias"])
+    if model_identity(variant) != result["thetaId"]:
+        raise ValueError("θ変種の識別子が一致しない")
+    return variant
+
+
+def theta_variant_scenario(scenarios: Sequence[Mapping[str, Any]], variant: HierarchicalSoftmax) -> dict[str, Any]:
+    """変種のシナリオ：baseの固定定数で1シナリオ（9.3節）。thetaIdは変種のもの。"""
+    base = next(s for s in scenarios if s["id"] == "base")
+    return {**dict(base), "id": THETA_VARIANT_ID, "posteriorId": THETA_VARIANT_ID, "thetaId": model_identity(variant)}

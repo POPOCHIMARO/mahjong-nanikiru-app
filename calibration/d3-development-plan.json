@@ -7,7 +7,7 @@
   "designPath": "PHASE_D3_DESIGN.md",
   "reservationPath": "future-evaluation-reservation.json",
   "doesNotAmendFutureReservation": true,
-  "nextPhase": "D.3.3_step6_theta_riichi_response_recalibrated",
+  "nextPhase": "D.3.3_step7_benchmark_budget_pilot_report",
   "models": {
     "designRecommendation": "Astra/high",
     "implementationRecommendation": "Sol/high",
@@ -477,7 +477,7 @@
     },
     {
       "id": "D.3.3",
-      "status": "step5_complete",
+      "status": "step6_complete",
       "focus": "reference_smc_measurement_then_constrained_mcmc_pilot",
       "step1": {
         "status": "complete",
@@ -645,6 +645,42 @@
           "processes",
           "disagreement thresholds (null until after pilot)"
         ]
+      },
+      "step6": {
+        "status": "complete",
+        "variantId": "theta_riichi_response_recalibrated",
+        "definition": "discard_response windows where the responder sees >=1 opponent riichi: beta added to chi/pon kind scores before temperature; base model fixed constants",
+        "manifest": "probes/d33-pilot/theta-variant/manifest.json",
+        "result": "probes/d33-pilot/theta-variant/result.json",
+        "support": {
+          "targetWindows": 7662,
+          "legalResponderWindows": {
+            "chi": 5684,
+            "pon": 2434
+          },
+          "observedCalls": {
+            "chi": 473,
+            "pon": 199
+          }
+        },
+        "bias": {
+          "chi": -0.16,
+          "pon": -1.08
+        },
+        "thetaId": "527199e1f00eb49935250463d4d7eb0aafc1ec69d49747f281686dbdaf15a520",
+        "nll": {
+          "baseline": 2430.0646052567613,
+          "variant": 2340.5161763022875
+        },
+        "ponRate": {
+          "observed": 0.025972330984077266,
+          "basePredicted": 0.05487814922259448,
+          "variantPredicted": 0.025948055510061106
+        },
+        "reproducibility": "two independent runs from the same manifest produced byte-identical result.json (about 13 minutes each)",
+        "adoption": "diagnostic_only_not_adopted; calibration period shared with temperature selection, not independent evidence",
+        "targetWindowNote": "7,662 target windows counted per responder perspective (responder sees >=1 opponent riichi); D.3.2b report section 8 stratified 3,593 calibration windows by a different riichi count definition",
+        "mcmcIntegration": "run_decision_scenarios(scenario_models=...) and probe-policy-belief --stage mcmc --theta-variant-result; variant becomes a required scenario"
       }
     },
     {

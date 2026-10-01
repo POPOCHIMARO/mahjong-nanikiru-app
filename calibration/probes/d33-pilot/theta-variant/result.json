@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "ev-policy-belief-theta-variant/v1",
+  "variantId": "theta_riichi_response_recalibrated",
+  "manifestSha256": "ba2dfc16ecc88376951adf767fe5c7c1b952885a13dab150a699d6c867e56472",
+  "baseThetaId": "f830e65a3240cb3ee814fd3605eb506ab93c4294031306305e53c3e364dd7b3e",
+  "support": {
+    "targetWindows": 7662,
+    "legalResponderWindows": {
+      "chi": 5684,
+      "pon": 2434
+    },
+    "observedCalls": {
+      "chi": 473,
+      "pon": 199
+    }
+  },
+  "holdReasons": [],
+  "status": "estimated",
+  "bias": {
+    "chi": -0.16,
+    "pon": -1.08
+  },
+  "nll": 2340.5161763022875,
+  "baselineNll": 2430.0646052567613,
+  "searchPath": [
+    {
+      "step": 0.5,
+      "bias": {
+        "chi": 0.0,
+        "pon": -1.0
+      },
+      "nll": 2344.8637225766597,
+      "points": 361
+    },
+    {
+      "step": 0.1,
+      "bias": {
+        "chi": -0.2,
+        "pon": -1.1
+      },
+      "nll": 2340.681911515484,
+      "points": 121
+    },
+    {
+      "step": 0.02,
+      "bias": {
+        "chi": -0.16,
+        "pon": -1.08
+      },
+      "nll": 2340.5161763022875,
+      "points": 121
+    }
+  ],
+  "thetaId": "527199e1f00eb49935250463d4d7eb0aafc1ec69d49747f281686dbdaf15a520",
+  "rates": {
+    "base": {
+      "chi": {
+        "observed": 0.061733228921952495,
+        "predicted": 0.06902871400727725
+      },
+      "daiminkan": {
+        "observed": 0.0,
+        "predicted": 0.00013595055953847046
+      },
+      "pass": {
+        "observed": 0.8707909162098669,
+        "predicted": 0.8345423878480905
+      },
+      "pon": {
+        "observed": 0.025972330984077266,
+        "predicted": 0.05487814922259448
+      },
+      "ron": {
+        "observed": 0.04150352388410337,
+        "predicted": 0.041414798362498825
+      }
+    },
+    "variant": {
+      "chi": {
+        "observed": 0.061733228921952495,
+        "predicted": 0.06193312038557414
+      },
+      "daiminkan": {
+        "observed": 0.0,
+        "predicted": 0.00013595055953847046
+      },
+      "pass": {
+        "observed": 0.8707909162098669,
+        "predicted": 0.8705680751823267
+      },
+      "pon": {
+        "observed": 0.025972330984077266,
+        "predicted": 0.025948055510061106
+      },
+      "ron": {
+        "observed": 0.04150352388410337,
+        "predicted": 0.041414798362498825
+      }
+    }
+  },
+  "note": "較正期間での適合。温度の選択と共用するため、性能改善の証拠ではない（9.3節）"
+}

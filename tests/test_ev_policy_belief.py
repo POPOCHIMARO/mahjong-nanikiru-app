@@ -1538,5 +1538,190 @@ class D33_07WindowCacheTest(unittest.TestCase):
         self.assertEqual(cache.statistics()["evictions"], 1)
 
 
+# ===========================================================================
+# 工程6：θ変種 theta_riichi_response_recalibrated（9.3節）
+# ===========================================================================
+
+from tools.ev_policy_belief import (  # noqa: E402
+    THETA_VARIANT_ID,
+    RiichiResponseBiasSoftmax,
+    estimate_theta_variant,
+    model_identity,
+    theta_variant_model,
+    theta_variant_support,
+    theta_variant_targets,
+)
+from tools.ev_policy_opponent import (  # noqa: E402
+    DETAIL_FEATURE_NAMES,
+    KIND_FEATURE_NAMES,
+    EncodedCandidate,
+    joint_resolution_likelihood,
+)
+
+RIICHI_INDEX = KIND_FEATURE_NAMES.index("opponent_riichi_count")
+
+
+def _candidate(kind: str, riichi: float, extra: dict | None = None) -> EncodedCandidate:
+    kind_features = np.zeros(len(KIND_FEATURE_NAMES))
+    kind_features[0] = 1.0
+    kind_features[RIICHI_INDEX] = riichi
+    action = {"kind": kind, **(extra or {})}
+    return EncodedCandidate(action, kind_features, np.zeros(len(DETAIL_FEATURE_NAMES)))
+
+
+def synthetic_response_windows(bias, count: int, seed: int) -> list:
+    """2人の応答者（下家はチーとポン、対面はポンだけ）。リーチ人数1の窓で、biasのθ変種から公開結果を引く。"""
+    rng = random.Random(seed)
+    base = HierarchicalSoftmax.zeros()
+    model = theta_variant_model(base, bias)
+    windows = []
+    for _ in range(count):
+        riichi = 1 / 3 if rng.random() < 0.8 else 0.0
+        per_seat = {
+            1: [_candidate("pass", riichi), _candidate("chi", riichi, {"consumed": "a"}), _candidate("pon", riichi, {"consumed": "b"})],
+            2: [_candidate("pass", riichi), _candidate("pon", riichi, {"consumed": "c"})],
+        }
+        choices = {}
+        for seat, candidates in per_seat.items():
+            probabilities = model.probabilities(candidates, "discard_response")
+            pick = rng.random()
+            cumulative = 0.0
+            for candidate, probability in zip(candidates, probabilities):
+                cumulative += probability
+                if pick < cumulative:
+                    choices[seat] = dict(candidate.action)
+                    break
+            else:
+                choices[seat] = dict(candidates[-1].action)
+        from tools.ev_policy_observation import resolve_joint_response
+        resolution = resolve_joint_response(0, choices)
+        windows.append({"window": {"phase": "discard_response", "actorSeat": 0, "learningMask": {"jointKind": True},
+                                   "observation": {"resolution": resolution}}, "perSeat": per_seat})
+    return windows
+
+
+def _manifest(targets, **overrides):
+    manifest = {"search": dict(belief.THETA_VARIANT_SEARCH), "minimumSupport": dict(belief.THETA_VARIANT_MINIMUM_SUPPORT),
+                "support": theta_variant_support(targets)}
+    manifest.update(overrides)
+    return manifest
+
+
+class ThetaVariantModelTest(unittest.TestCase):
+    def test_bias_is_added_to_the_kind_score_before_temperature_only_with_riichi(self) -> None:
+        base = HierarchicalSoftmax.zeros()
+        base.temperatures["discard_response"] = 2.0
+        variant = theta_variant_model(base, {"chi": -1.0, "pon": 0.6})
+        with_riichi = [_candidate("pass", 1 / 3), _candidate("pon", 1 / 3, {"consumed": "x"}), _candidate("chi", 1 / 3, {"consumed": "y"})]
+        expected = np.exp(np.array([0.0, 0.6, -1.0]) / 2.0)
+        np.testing.assert_allclose(variant.base_probabilities(with_riichi, "discard_response"), expected / expected.sum(), rtol=0, atol=1e-15)
+        without = [_candidate("pass", 0.0), _candidate("pon", 0.0, {"consumed": "x"})]
+        np.testing.assert_array_equal(variant.base_probabilities(without, "discard_response"),
+                                      base.base_probabilities(without, "discard_response"))
+        # 自己行動の窓では効かない
+        np.testing.assert_array_equal(variant.base_probabilities(with_riichi, "self_action_after_live"),
+                                      base.base_probabilities(with_riichi, "self_action_after_live"))
+        zero = theta_variant_model(base, {"chi": 0.0, "pon": 0.0})
+        np.testing.assert_allclose(zero.base_probabilities(with_riichi, "discard_response"),
+                                   base.base_probabilities(with_riichi, "discard_response"), rtol=0, atol=1e-15)
+
+    def test_variant_keeps_bias_through_copy_and_fixed_constants_and_has_its_own_identity(self) -> None:
+        base = HierarchicalSoftmax.zeros()
+        variant = theta_variant_model(base, {"chi": -0.5, "pon": -1.0})
+        for derived in (variant.copy(), variant.with_fixed(None)):
+            self.assertIsInstance(derived, RiichiResponseBiasSoftmax)
+            self.assertEqual(derived.riichi_response_bias, {"chi": -0.5, "pon": -1.0})
+        self.assertNotEqual(model_identity(base), model_identity(variant))
+        self.assertNotEqual(model_identity(variant), model_identity(theta_variant_model(base, {"chi": -0.5, "pon": -1.02})))
+
+
+class ThetaVariantCalibrationTest(unittest.TestCase):
+    TRUE_BIAS = {"chi": -0.8, "pon": -1.4}
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.targets = theta_variant_targets(synthetic_response_windows(cls.TRUE_BIAS, 1_500, seed=17))
+        # 実データのmanifestより狭い範囲・粗い格子で、同じ推定の手順を検査する（時間の短縮）
+        cls.manifest = _manifest(cls.targets, minimumSupport={"legalResponderWindows": 50, "observedCalls": 20},
+                                 search={**belief.THETA_VARIANT_SEARCH, "min": -3.0, "max": 1.0, "gridSteps": [0.5, 0.1]})
+
+    def test_targets_keep_only_windows_where_the_bias_applies(self) -> None:
+        self.assertGreater(len(self.targets), 1_000)
+        self.assertTrue(all(any(c.kind_features[RIICHI_INDEX] > 0 for c in cands) for w in self.targets
+                            for cands in w["perSeat"].values()))
+
+    def test_recovers_the_true_bias_and_is_deterministic(self) -> None:
+        first = estimate_theta_variant(HierarchicalSoftmax.zeros(), self.targets, self.manifest)
+        second = estimate_theta_variant(HierarchicalSoftmax.zeros(), list(self.targets), self.manifest)
+        self.assertEqual(first, second)
+        self.assertEqual(first["status"], "estimated")
+        for kind, value in self.TRUE_BIAS.items():
+            self.assertLess(abs(first["bias"][kind] - value), 0.35, first["bias"])
+        self.assertLess(first["nll"], first["baselineNll"])
+        # 最良点は格子上で対数尤度の最小
+        zero = HierarchicalSoftmax.zeros()
+        variant = theta_variant_model(zero, first["bias"])
+        nll = -math.fsum(math.log(joint_resolution_likelihood(variant, 0, w["perSeat"], w["window"]["observation"]["resolution"],
+                                                              "discard_response")[0]) for w in self.targets)
+        self.assertAlmostEqual(nll, first["nll"], places=8)
+
+    def test_boundary_optimum_is_held(self) -> None:
+        narrow = {**self.manifest, "search": {**self.manifest["search"], "min": -1.0, "max": 1.0, "gridSteps": [0.5]}}
+        result = estimate_theta_variant(HierarchicalSoftmax.zeros(), self.targets, narrow)
+        self.assertEqual(result["status"], "held")
+        self.assertEqual(result["holdReasons"], ["boundary_optimum"])
+        self.assertIsNone(result["bias"])
+
+    def test_insufficient_or_mismatched_support_is_held(self) -> None:
+        strict = {**self.manifest, "minimumSupport": {"legalResponderWindows": 50, "observedCalls": 10_000}}
+        result = estimate_theta_variant(HierarchicalSoftmax.zeros(), self.targets, strict)
+        self.assertEqual(result["holdReasons"], ["insufficient_support"])
+        self.assertIsNone(result["bias"])
+        shifted = estimate_theta_variant(HierarchicalSoftmax.zeros(), self.targets[:-1], self.manifest)
+        self.assertIn("support_mismatch", shifted["holdReasons"])
+
+    def test_held_or_foreign_results_cannot_build_a_variant(self) -> None:
+        zero = HierarchicalSoftmax.zeros()
+        with self.assertRaises(ValueError):
+            belief.load_theta_variant(zero, {"status": "held"})
+        other = zero.copy()
+        other.kind_weights = other.kind_weights + 0.1
+        with self.assertRaises(ValueError):
+            belief.load_theta_variant(zero, {"status": "estimated", "baseThetaId": model_identity(other),
+                                             "bias": {"chi": 0.0, "pon": 0.0}, "thetaId": "x"})
+
+    def test_variant_scenario_uses_base_constants_and_its_own_theta(self) -> None:
+        zero = HierarchicalSoftmax.zeros()
+        variant = theta_variant_model(zero, {"chi": -0.5, "pon": -1.0})
+        scenarios = [{"id": "base", "constants": {"epsRon": 0.1}, "stratumOverrides": [], "thetaId": "t"}, {"id": "oat"}]
+        scenario = belief.theta_variant_scenario(scenarios, variant)
+        self.assertEqual(scenario["id"], THETA_VARIANT_ID)
+        self.assertEqual(scenario["constants"], {"epsRon": 0.1})
+        self.assertEqual(scenario["thetaId"], model_identity(variant))
+
+
+@unittest.skipUnless(HAS_DATA, "D.3.1の実データ（Git管理外）がない")
+class ThetaVariantScenarioTest(unittest.TestCase):
+    def test_variant_scenario_runs_with_its_own_theta_and_is_required(self) -> None:
+        model = fixture()["model"]
+        variant = theta_variant_model(model, {"chi": -0.5, "pon": -1.0})
+        scenarios = [s for s in fixture()["scenarios"] if s["id"] == "base"]
+        scenarios.append(belief.theta_variant_scenario(fixture()["scenarios"], variant))
+        context = context_of(fixture()["prefixes"][0])
+        fake = {"status": "ok", "holdReasons": [], "samples": [], "diagnostics": {}}
+        with mock.patch.object(belief, "run_chain_group", return_value=fake):
+            result = belief.run_decision_scenarios(
+                context, model, scenarios, ChainSettings(2, 1, 1), required_scenarios=["base", THETA_VARIANT_ID],
+                chains=2, scenario_models={THETA_VARIANT_ID: variant})
+        self.assertEqual(result["status"], "ok")
+        theta = {record["scenarioId"]: record["thetaId"] for record in result["scenarios"]}
+        self.assertEqual(theta["base"], model_identity(model))
+        self.assertEqual(theta[THETA_VARIANT_ID], model_identity(variant))
+        with mock.patch.object(belief, "run_chain_group", return_value=fake):
+            missing = belief.run_decision_scenarios(
+                context, model, scenarios[:1], ChainSettings(2, 1, 1), required_scenarios=["base", THETA_VARIANT_ID], chains=2)
+        self.assertEqual(missing["missingScenarios"], [THETA_VARIANT_ID])
+
+
 if __name__ == "__main__":
     unittest.main()
