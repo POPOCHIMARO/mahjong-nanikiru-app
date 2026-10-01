@@ -7,7 +7,7 @@
   "designPath": "PHASE_D3_DESIGN.md",
   "reservationPath": "future-evaluation-reservation.json",
   "doesNotAmendFutureReservation": true,
-  "nextPhase": "D.3.3_step7_benchmark_budget_pilot_report",
+  "nextPhase": "D.3.3_return_to_design_resource_budget_exceeded",
   "models": {
     "designRecommendation": "Astra/high",
     "implementationRecommendation": "Sol/high",
@@ -477,7 +477,7 @@
     },
     {
       "id": "D.3.3",
-      "status": "step6_complete",
+      "status": "held_resource_budget_exceeded_return_to_design",
       "focus": "reference_smc_measurement_then_constrained_mcmc_pilot",
       "step1": {
         "status": "complete",
@@ -681,7 +681,50 @@
         "adoption": "diagnostic_only_not_adopted; calibration period shared with temperature selection, not independent evidence",
         "targetWindowNote": "7,662 target windows counted per responder perspective (responder sees >=1 opponent riichi); D.3.2b report section 8 stratified 3,593 calibration windows by a different riichi count definition",
         "mcmcIntegration": "run_decision_scenarios(scenario_models=...) and probe-policy-belief --stage mcmc --theta-variant-result; variant becomes a required scenario"
-      }
+      },
+      "step7": {
+        "status": "complete_gate_failed",
+        "report": "PHASE_D33_REPORT.md",
+        "benchmarkManifest": "probes/d33-pilot/benchmark/manifest.json",
+        "benchmark": "probes/d33-pilot/benchmark/benchmark.json",
+        "gate": {
+          "verdict": "resource_budget_exceeded",
+          "decisiveReachedIn": [
+            "mleague:2021-22:L001_S010_0029_01A:7:0:e35:s1",
+            "mleague:2021-22:L001_S010_0002_01A:5:0:e81:s0",
+            "mleague:2020-21:L001_S007_0044_01A:7:0:e87:s0"
+          ],
+          "perIterationBudgetSeconds": 0.00084814453125,
+          "observedSecondsPerIteration": 2.755283466367742,
+          "ratioToBudget": 3248.6013466442923,
+          "projectedMcmcSeconds": 216308120.6663102,
+          "projectedMcmcDays": 2503.566211415627,
+          "lowerBoundMcmcSeconds": 37217074.51721033,
+          "lowerBoundRatioToRemainingBudget": 558.940820262977,
+          "remainingBudgetSeconds": 66585.0
+        },
+        "pilot": "not_started (design 12.3: do not start the pilot when the benchmark estimate exceeds the budget)",
+        "d33_08": "not_applicable_pilot_not_started",
+        "observedSecondsPerIteration": {
+          "mleague:2021-22:L001_S010_0029_01A:7:0:e35:s1": 1.482,
+          "mleague:2021-22:L001_S010_0002_01A:5:0:e81:s0": 2.733,
+          "mleague:2020-21:L001_S007_0044_01A:7:0:e87:s0": 2.755
+        },
+        "cacheHitRate": {
+          "mleague:2021-22:L001_S010_0029_01A:7:0:e35:s1": 0.117,
+          "mleague:2021-22:L001_S010_0002_01A:5:0:e81:s0": 0.268,
+          "mleague:2020-21:L001_S007_0044_01A:7:0:e87:s0": 0.264
+        },
+        "designQuestions": [
+          "evaluation reuse (seat-level memo, prefix states)",
+          "proposals per iteration and iteration grid",
+          "grid and budget (requires design revision, no silent reduction)",
+          "estimator choice (guided SMC, block resample-move)"
+        ]
+      },
+      "holds": [
+        "resource_budget_exceeded"
+      ]
     },
     {
       "id": "D.3.4",

@@ -1,4 +1,18 @@
-# 作業リスト：D.3.3 工程6（θ変種 theta_riichi_response_recalibrated の較正）※完了
+# 作業リスト：D.3.3 工程7（マイクロベンチマーク、予算の固定、pilot、レポート）※完了（関門は予算超過）
+
+設計：[calibration/PHASE_D33_DESIGN.md](calibration/PHASE_D33_DESIGN.md) 12節、14節のD33-08。判定はOpus 5.5。
+実行：Claude（Opus 5.5）。再開時はこのファイルを先に読む。
+完了条件：ベンチマークを固定したmanifestどおりに測り、12.3節の関門を機械的に判定する。予算内ならpilotを走らせてD33-08を確かめ、予算超過なら`resource_budget_exceeded`としてpilotを始めずにレポート（`calibration/PHASE_D33_REPORT.md`）を書いて設計へ戻る。
+
+- [x] ベンチマークのmanifestを測定前に固定（pilotの先頭3判断、base、1鎖、10,000反復、観測上限20分、判定の確定時間8.48秒）
+- [x] ベンチマークの実行（3並列で約20分）：1反復1.45〜2.76秒、キャッシュ命中率12〜27%、評価器の呼び出し約45回/反復
+- [x] 関門：`resource_budget_exceeded`（3判断とも5反復目までに確定時間を超過。予算の約3,250倍、全格子の見積もり約2,500日、最速の反復でも残り予算の約560倍）
+- [x] pilotは始めない（12.3節）。D33-08は対象外
+- [x] レポート [calibration/PHASE_D33_REPORT.md](calibration/PHASE_D33_REPORT.md)、開発計画の更新、全テスト（Python 231件、JS 2本）
+- [x] コミット（pushは未実施）
+- 次：設計へ戻る。論点はレポート8節（評価の再利用、1反復の提案数、格子と予算、推定器の選び直し）。設計の再判断はユーザーとAstra/highの反証を含めて行う
+
+# 完了済み：D.3.3 工程6（θ変種 theta_riichi_response_recalibrated の較正）
 
 設計：[calibration/PHASE_D33_DESIGN.md](calibration/PHASE_D33_DESIGN.md) 9.3節、12.2節、13節の順序6。D.3.2bレポート8節。
 実行：Claude（Opus 5.5。開発計画の推奨はSol/high）。再開時はこのファイルを先に読む。

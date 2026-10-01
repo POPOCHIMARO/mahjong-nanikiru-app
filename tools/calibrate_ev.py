@@ -2150,7 +2150,8 @@ def _parser() -> argparse.ArgumentParser:
         "probe-policy-belief", help="D.3.3の事後分布推定の検査（現在は工程1の履歴評価器の照合だけ）"
     )
     probe_policy_belief.add_argument(
-        "--stage", choices=("evaluator", "pilot-manifest", "reference-smc", "initialization", "mcmc", "theta-variant-manifest", "theta-variant"),
+        "--stage", choices=("evaluator", "pilot-manifest", "reference-smc", "initialization", "mcmc", "theta-variant-manifest", "theta-variant",
+                 "benchmark-manifest", "benchmark"),
         default="evaluator"
     )
     probe_policy_belief.add_argument("--manifest", type=Path, default=DEFAULT_BELIEF_PILOT_DIR / "manifest.json")
@@ -2515,6 +2516,44 @@ def main(argv: list[str] | None = None) -> int:
         report = record_pilot_initialization(args.dataset_dir.resolve(), args.model_dir.resolve(), args.manifest.resolve())
         print(json.dumps({key: report[key] for key in ("failed", "families", "maxAttempts", "maxSeconds")}, ensure_ascii=False))
         return 0 if report["failed"] == 0 else 1
+    if args.command == "probe-policy-belief" and args.stage in ("benchmark-manifest", "benchmark"):
+        # 工程7（12.3節）：manifestを測定前に固定し、測定はそれに従う。
+        from tools.ev_policy_belief import BENCHMARK_MANIFEST_SCHEMA, benchmark_budget, run_benchmark
+        bench_dir = DEFAULT_BELIEF_PILOT_DIR / "benchmark"
+        bench_manifest_path = bench_dir / "manifest.json"
+        if args.stage == "benchmark-manifest":
+            if bench_manifest_path.exists():
+                print(json.dumps({"error": f"manifestは作成済みで上書きしない: {bench_manifest_path}"}, ensure_ascii=False), file=sys.stderr)
+                return 2
+            pilot = json.loads(args.manifest.resolve().read_text(encoding="utf-8"))
+            smc = json.loads((DEFAULT_BELIEF_PILOT_DIR / "reference-smc-summary.json").read_text(encoding="utf-8"))
+            manifest = {
+                "schemaVersion": BENCHMARK_MANIFEST_SCHEMA,
+                "pilotManifestSha256": hashlib.sha256(args.manifest.resolve().read_bytes()).hexdigest(),
+                "decisions": [item["decisionId"] for item in pilot["decisions"]][:3],
+                "scenario": "base",
+                "chainsPerDecision": 1,
+                "iterations": 10_000,
+                "maxSeconds": 1_200.0,
+                "seed": 20261002,
+                "cacheCapacity": 200_000,
+                "processes": 3,
+                "budget": benchmark_budget(wall_clock_hours=24.0, processes=3, spent_seconds=float(smc["wallClockSeconds"]),
+                                           iterations=10_000),
+                "budgetWithoutSmc": benchmark_budget(wall_clock_hours=24.0, processes=3, spent_seconds=0.0, iterations=10_000),
+                "rule": "10,000反復の経過時間がdecisiveSecondsを超えた時点でresource_budget_exceededが確定する。"
+                        "観測はmaxSeconds（判断ごと）で打ち切り、見積もりの材料を記録する。予算超過ならpilotを始めない",
+            }
+            bench_dir.mkdir(parents=True, exist_ok=True)
+            bench_manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            print(json.dumps({"manifest": str(bench_manifest_path), "budget": manifest["budget"]}, ensure_ascii=False))
+            return 0
+        manifest = json.loads(bench_manifest_path.read_text(encoding="utf-8"))
+        report = run_benchmark(args.dataset_dir.resolve(), args.model_dir.resolve(), manifest)
+        report["manifestSha256"] = hashlib.sha256(bench_manifest_path.read_bytes()).hexdigest()
+        (bench_dir / "benchmark.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(json.dumps(report["gate"], ensure_ascii=False))
+        return 0 if report["gate"]["verdict"] == "within_budget" else 1
     if args.command == "probe-policy-belief" and args.stage in ("theta-variant-manifest", "theta-variant"):
         from tools.ev_policy_belief import (
             HierarchicalSoftmax, build_theta_variant_manifest, calibrate_theta_variant, load_theta_variant_targets,

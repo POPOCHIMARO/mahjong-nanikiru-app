@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "ev-policy-belief-benchmark-manifest/v1",
+  "pilotManifestSha256": "159f984a9309216b84ae9e31fe4bd5598a2aaa6af5a18680f1653254ce0c8e90",
+  "decisions": [
+    "mleague:2021-22:L001_S010_0029_01A:7:0:e35:s1",
+    "mleague:2021-22:L001_S010_0002_01A:5:0:e81:s0",
+    "mleague:2020-21:L001_S007_0044_01A:7:0:e87:s0"
+  ],
+  "scenario": "base",
+  "chainsPerDecision": 1,
+  "iterations": 10000,
+  "maxSeconds": 1200.0,
+  "seed": 20261002,
+  "cacheCapacity": 200000,
+  "processes": 3,
+  "budget": {
+    "wallClockHours": 24.0,
+    "processes": 3,
+    "spentSeconds": 19815.0,
+    "remainingSeconds": 66585.0,
+    "fullGridIterations": 235520000,
+    "perIterationBudgetSeconds": 0.00084814453125,
+    "benchmarkIterations": 10000,
+    "decisiveSeconds": 8.4814453125
+  },
+  "budgetWithoutSmc": {
+    "wallClockHours": 24.0,
+    "processes": 3,
+    "spentSeconds": 0.0,
+    "remainingSeconds": 86400.0,
+    "fullGridIterations": 235520000,
+    "perIterationBudgetSeconds": 0.0011005434782608695,
+    "benchmarkIterations": 10000,
+    "decisiveSeconds": 11.005434782608695
+  },
+  "rule": "10,000反復の経過時間がdecisiveSecondsを超えた時点でresource_budget_exceededが確定する。観測はmaxSeconds（判断ごと）で打ち切り、見積もりの材料を記録する。予算超過ならpilotを始めない"
+}

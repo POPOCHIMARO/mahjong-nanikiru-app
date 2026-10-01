@@ -4316,3 +4316,163 @@ def theta_variant_scenario(scenarios: Sequence[Mapping[str, Any]], variant: Hier
     """変種のシナリオ：baseの固定定数で1シナリオ（9.3節）。thetaIdは変種のもの。"""
     base = next(s for s in scenarios if s["id"] == "base")
     return {**dict(base), "id": THETA_VARIANT_ID, "posteriorId": THETA_VARIANT_ID, "thetaId": model_identity(variant)}
+
+
+# ===========================================================================
+# 工程7：マイクロベンチマークと予算の関門（PHASE_D33_DESIGN.md 12.3節）
+# ===========================================================================
+#
+# 12.3節：1判断・1シナリオ・1鎖・10,000反復を測り、全格子（基準SMC、初期化、MCMC）の見積もりが
+# 予算（24時間、P≤3）を超えればpilotを始めずにresource_budget_exceededとして設計へ戻る。
+# 10,000反復の経過時間が「1反復あたりの予算×10,000」を超えた時点で判定は確定する（その後どれだけ
+# 速くなっても覆らない）。そこで観測の上限時間をmanifestで固定し、判定の確定と見積もりの材料を記録する。
+
+BENCHMARK_MANIFEST_SCHEMA = "ev-policy-belief-benchmark-manifest/v1"
+BENCHMARK_SCHEMA = "ev-policy-belief-benchmark/v1"
+PILOT_FULL_GRID_ITERATIONS = 16 * 23 * 4 * 160_000  # 16判断×23シナリオ×4鎖×160,000反復（12.3節）
+
+
+def benchmark_budget(*, wall_clock_hours: float, processes: int, spent_seconds: float, iterations: int) -> dict[str, Any]:
+    """予算から1反復あたりの上限と、ベンチマークの判定が確定する時間を求める。"""
+    remaining = wall_clock_hours * 3600.0 - spent_seconds
+    per_iteration = remaining * processes / PILOT_FULL_GRID_ITERATIONS
+    return {
+        "wallClockHours": wall_clock_hours,
+        "processes": processes,
+        "spentSeconds": spent_seconds,
+        "remainingSeconds": remaining,
+        "fullGridIterations": PILOT_FULL_GRID_ITERATIONS,
+        "perIterationBudgetSeconds": per_iteration,
+        "benchmarkIterations": iterations,
+        "decisiveSeconds": per_iteration * iterations,
+    }
+
+
+def benchmark_chain(
+    context: DecisionContext,
+    model: HierarchicalSoftmax,
+    scenario: Mapping[str, Any],
+    *,
+    iterations: int,
+    max_seconds: float,
+    decisive_seconds: float,
+    seed: int,
+    cache_capacity: int,
+    probabilities: Sequence[tuple[str, float]] = TENPAI_FAMILY_PROBABILITIES,
+) -> dict[str, Any]:
+    """1判断・1シナリオ・1鎖を、iterationsかmax_secondsの早い方まで走らせ、反復ごとの時間を記録する。"""
+    import time
+
+    cache = WindowCache(cache_capacity)
+    resolver = model_resolver(model, scenario)
+    start = time.perf_counter()
+    initial = construct_initial_world(context, random.Random(seed), resolver=resolver, probabilities=probabilities, cache=cache)
+    init_seconds = time.perf_counter() - start
+    record: dict[str, Any] = {"decisionId": context.decision_id, "scenarioId": scenario["id"], "seed": seed,
+                              "initialization": {"status": initial.status, "family": initial.family,
+                                                 "attempts": initial.attempts, "seconds": round(init_seconds, 4)}}
+    if initial.world is None:
+        return {**record, "status": "init_failed"}
+    belief, state = mahjong_belief(context, initial.world, resolver, probabilities=probabilities, cache=cache)
+    model_counter = belief.problem.model
+    chooser = RandomChooser(random.Random(seed + 1))
+    stats = MoveStatistics()
+    seconds: list[float] = []
+    trace = []
+    decisive_at = None
+    begin = time.perf_counter()
+    for iteration in range(1, iterations + 1):
+        before = time.perf_counter()
+        mcmc_iteration(belief.problem, state, chooser, stats)
+        seconds.append(time.perf_counter() - before)
+        elapsed = time.perf_counter() - begin
+        if decisive_at is None and elapsed > decisive_seconds:
+            decisive_at = iteration
+        if iteration % 10 == 0 or iteration == 1:
+            trace.append({"iteration": iteration, "elapsed": round(elapsed, 3), **{
+                key: cache.statistics()[key] for key in ("entries", "hits", "misses", "hitRate")},
+                "evaluatorCalls": model_counter.evaluations})
+        if elapsed > max_seconds:
+            break
+    completed = len(seconds)
+    half = seconds[completed // 2:] or seconds
+    return {
+        **record,
+        "status": "complete" if completed == iterations else "stopped_at_observation_cap",
+        "iterationsCompleted": completed,
+        "elapsedSeconds": round(sum(seconds), 4),
+        "decisiveReachedAtIteration": decisive_at,
+        "secondsPerIteration": {
+            "mean": sum(seconds) / completed,
+            "meanSecondHalf": sum(half) / len(half),
+            "minimum": min(seconds),
+            "median": float(np.median(seconds)),
+        },
+        "iterationSeconds": [round(value, 4) for value in seconds],
+        "trace": trace,
+        "evaluatorCalls": model_counter.evaluations,
+        "cacheStatistics": cache.statistics(),
+        "moves": stats.as_dict(),
+    }
+
+
+def _benchmark_worker_run(task: tuple[str, Mapping[str, Any]]) -> dict[str, Any]:
+    decision_id, options = task
+    scenario = next(s for s in belief_scenarios(_BELIEF_WORKER["fixed"]) if s["id"] == options["scenario"])
+    return benchmark_chain(
+        _WORKER["contexts"][decision_id], _BELIEF_WORKER["model"], scenario,
+        iterations=int(options["iterations"]), max_seconds=float(options["maxSeconds"]),
+        decisive_seconds=float(options["decisiveSeconds"]),
+        seed=_chain_seed(int(options["seed"]), decision_id, options["scenario"], 0),
+        cache_capacity=int(options["cacheCapacity"]),
+    )
+
+
+def run_benchmark(dataset_dir: Any, model_dir: Any, manifest: Mapping[str, Any]) -> dict[str, Any]:
+    """固定したmanifestどおりにベンチマークを並列で測り、12.3節の関門を機械的に判定する。"""
+    import multiprocessing
+    import time
+
+    decisions = list(manifest["decisions"])
+    options = {key: manifest[key] for key in ("scenario", "iterations", "maxSeconds", "seed", "cacheCapacity")}
+    options["decisiveSeconds"] = manifest["budget"]["decisiveSeconds"]
+    start = time.time()
+    context = multiprocessing.get_context("spawn")
+    with context.Pool(len(decisions), initializer=_belief_worker_init,
+                      initargs=(str(dataset_dir), str(model_dir), decisions, {})) as pool:
+        runs = pool.map(_benchmark_worker_run, [(decision, options) for decision in decisions])
+    return {
+        "schemaVersion": BENCHMARK_SCHEMA,
+        "runs": runs,
+        "gate": benchmark_gate(runs, manifest["budget"]),
+        "wallClockSeconds": round(time.time() - start, 1),
+    }
+
+
+def benchmark_gate(runs: Sequence[Mapping[str, Any]], budget: Mapping[str, Any]) -> dict[str, Any]:
+    """12.3節の関門。どれかの判断で10,000反復が判定の確定時間を超えれば、全格子は予算に収まらない。
+
+    見積もりは、各判断の後半の1反復あたり平均（キャッシュが温まった側）を全格子に掛け、P並列で割る。
+    見積もりは参考値で、判定には「確定時間を超えたか」と「見積もりが残り予算を超えるか」を使う。
+    """
+    if any(run.get("status") == "init_failed" for run in runs):
+        return {"verdict": "init_failed_in_benchmark", "runs": len(runs)}
+    per_iteration = max(run["secondsPerIteration"]["meanSecondHalf"] for run in runs)
+    optimistic = min(run["secondsPerIteration"]["minimum"] for run in runs)
+    processes = int(budget["processes"])
+    projected = per_iteration * budget["fullGridIterations"] / processes
+    lower_bound = optimistic * budget["fullGridIterations"] / processes
+    decisive = [run["decisionId"] for run in runs if run["decisiveReachedAtIteration"] is not None]
+    exceeded = bool(decisive) or projected > budget["remainingSeconds"]
+    return {
+        "verdict": "resource_budget_exceeded" if exceeded else "within_budget",
+        "decisiveReachedIn": decisive,
+        "perIterationBudgetSeconds": budget["perIterationBudgetSeconds"],
+        "observedSecondsPerIteration": per_iteration,
+        "ratioToBudget": per_iteration / budget["perIterationBudgetSeconds"],
+        "projectedMcmcSeconds": projected,
+        "projectedMcmcDays": projected / 86_400.0,
+        "lowerBoundMcmcSeconds": lower_bound,
+        "lowerBoundRatioToRemainingBudget": lower_bound / budget["remainingSeconds"],
+        "remainingBudgetSeconds": budget["remainingSeconds"],
+    }

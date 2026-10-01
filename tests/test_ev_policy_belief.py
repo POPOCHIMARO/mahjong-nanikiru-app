@@ -1723,5 +1723,34 @@ class ThetaVariantScenarioTest(unittest.TestCase):
         self.assertEqual(missing["missingScenarios"], [THETA_VARIANT_ID])
 
 
+class BenchmarkGateTest(unittest.TestCase):
+    """12.3節の予算の換算と、ベンチマークの関門の機械的な判定。"""
+
+    def test_budget_conversion_matches_design_numbers(self) -> None:
+        budget = belief.benchmark_budget(wall_clock_hours=24.0, processes=3, spent_seconds=0.0, iterations=10_000)
+        self.assertEqual(budget["fullGridIterations"], 235_520_000)
+        self.assertAlmostEqual(budget["perIterationBudgetSeconds"] * 1000, 1.10054, places=4)  # 設計の約1.10ミリ秒
+        self.assertAlmostEqual(budget["perIterationBudgetSeconds"] * 10_000 / 3, 3.6685, places=3)  # 単一プロセス3.67秒
+        spent = belief.benchmark_budget(wall_clock_hours=24.0, processes=3, spent_seconds=19_815.0, iterations=10_000)
+        self.assertAlmostEqual(spent["decisiveSeconds"], 8.4814453125, places=9)
+
+    def _run(self, per_iteration, decisive_at=None):
+        return {"decisionId": "d", "status": "complete", "decisiveReachedAtIteration": decisive_at,
+                "secondsPerIteration": {"meanSecondHalf": per_iteration, "minimum": per_iteration * 0.8}}
+
+    def test_reaching_the_decisive_time_is_budget_exceeded(self) -> None:
+        budget = belief.benchmark_budget(wall_clock_hours=24.0, processes=3, spent_seconds=19_815.0, iterations=10_000)
+        gate = belief.benchmark_gate([self._run(0.0005), self._run(2.0, decisive_at=5)], budget)
+        self.assertEqual(gate["verdict"], "resource_budget_exceeded")
+        self.assertEqual(gate["decisiveReachedIn"], ["d"])
+        self.assertGreater(gate["ratioToBudget"], 1000)
+
+    def test_fast_runs_are_within_budget(self) -> None:
+        budget = belief.benchmark_budget(wall_clock_hours=24.0, processes=3, spent_seconds=19_815.0, iterations=10_000)
+        gate = belief.benchmark_gate([self._run(0.0005), self._run(0.0006)], budget)
+        self.assertEqual(gate["verdict"], "within_budget")
+        self.assertLess(gate["projectedMcmcSeconds"], budget["remainingSeconds"])
+
+
 if __name__ == "__main__":
     unittest.main()
