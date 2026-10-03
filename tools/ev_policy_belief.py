@@ -4627,3 +4627,204 @@ def uninstall_fast_shape() -> None:
     for name, function in _ORIGINAL_FEATURE_FUNCTIONS.items():
         setattr(features, name, function)
     _ORIGINAL_FEATURE_FUNCTIONS.clear()
+
+
+# ===========================================================================
+# 再判断の段階2：混合の測定（PHASE_D33_REDESIGN_PROPOSAL.md 5節）
+# ===========================================================================
+#
+# 鎖を一定時間だけ走らせ、主要な要約統計の実効標本数と、実効標本数1あたりに要した反復数を測る。
+# これは事後分布の推定値を出す実行ではなく、段階3で反復数と予算を決めるための測定である。
+# 判断・シナリオ・鎖・時間・burn-inの割合・統計の定義は、走らせる前にmanifestへ固定する。
+
+MIXING_MANIFEST_SCHEMA = "ev-policy-belief-mixing-manifest/v1"
+MIXING_SCHEMA = "ev-policy-belief-mixing/v1"
+
+
+def run_timed_chain(
+    problem: BeliefProblem,
+    state: ChainState,
+    chooser: Any,
+    seconds: float,
+    thin: int,
+    summarize: Callable[[ChainState], dict[str, Any]],
+) -> dict[str, Any]:
+    """secondsに達するまで反復し、thin反復ごとに要約統計を記録する（burn-inは集計時に割合で除く）。"""
+    import time
+
+    stats = MoveStatistics()
+    samples = []
+    begin = time.perf_counter()
+    iteration = 0
+    while time.perf_counter() - begin < seconds:
+        mcmc_iteration(problem, state, chooser, stats)
+        iteration += 1
+        if iteration % thin == 0:
+            sample = summarize(state)
+            samples.append({"iteration": iteration, "scalars": generic_scalars(sample),
+                            "shape": sample_shape(sample), "family": sample_family(sample)})
+    return {"iterations": iteration, "seconds": time.perf_counter() - begin, "samples": samples, "moves": stats.as_dict()}
+
+
+_MIXING_CACHES: dict[str, WindowCache] = {}
+
+
+def _mixing_worker_init(dataset_dir: str, model_dir: str, decision_ids: Sequence[str], variant_result: Mapping[str, Any]) -> None:
+    _belief_worker_init(dataset_dir, model_dir, decision_ids, {})
+    _BELIEF_WORKER["variant"] = load_theta_variant(_BELIEF_WORKER["model"], variant_result)
+
+
+def _mixing_worker_run(task: tuple[str, str, int, Mapping[str, Any]]) -> dict[str, Any]:
+    """判断・シナリオ・鎖1本を走らせる。窓キャッシュはプロセス内で判断ごとに持ち、シナリオと鎖で共有する。"""
+    import time
+
+    decision_id, scenario_id, chain, options = task
+    context = _WORKER["contexts"][decision_id]
+    model = _BELIEF_WORKER["model"]
+    scenarios = belief_scenarios(_BELIEF_WORKER["fixed"])
+    if scenario_id == THETA_VARIANT_ID:
+        model = _BELIEF_WORKER["variant"]
+        scenario = theta_variant_scenario(scenarios, model)
+    else:
+        scenario = next(s for s in scenarios if s["id"] == scenario_id)
+    cache = _MIXING_CACHES.setdefault(decision_id, WindowCache(int(options["cacheCapacityPerDecision"])))
+    resolver = model_resolver(model, scenario)
+    seed = _chain_seed(int(options["seed"]), decision_id, scenario_id, chain)
+    start = time.perf_counter()
+    initial = construct_initial_world(context, random.Random(seed), resolver=resolver, cache=cache,
+                                      max_attempts=int(options["initAttempts"]), max_seconds=float(options["initSeconds"]))
+    record: dict[str, Any] = {
+        "decisionId": decision_id, "scenarioId": scenario_id, "chain": chain, "seed": seed,
+        "thetaId": resolver.model_id,
+        "initialization": {"status": initial.status, "family": initial.family, "attempts": initial.attempts,
+                           "seconds": round(time.perf_counter() - start, 3)},
+    }
+    if initial.world is None:
+        return {**record, "status": "init_failed"}
+    belief, state = mahjong_belief(context, initial.world, resolver, cache=cache)
+    try:
+        run = run_timed_chain(belief.problem, state, RandomChooser(random.Random(seed + 1)), float(options["secondsPerChain"]),
+                              int(options["thin"]), lambda s: mahjong_summary(belief, s))
+    except RuleUnresolvedError as error:
+        return {**record, "status": "rule_unresolved", "detail": str(error)}
+    return {**record, "status": "ok", **run, "cacheStatistics": cache.statistics()}
+
+
+def mixing_main_statistics(names: Sequence[str], means: Mapping[str, float], band: Sequence[float]) -> list[str]:
+    """主要な統計：待ちの指示とフリテンは平均が帯の内側のもの、ドラ枚数は全家。系統の指示は含めない。"""
+    low, high = band
+    result = []
+    for name in names:
+        if name.startswith("dora:"):
+            result.append(name)
+        elif (name.startswith("wait:") or name == "furiten") and low <= means[name] <= high:
+            result.append(name)
+    return result
+
+
+def mixing_analysis(records: Sequence[Mapping[str, Any]], manifest: Mapping[str, Any]) -> dict[str, Any]:
+    """判断・シナリオごとに、burn-in後の標本から実効標本数とR̂を求め、目標に必要な反復数を見積もる。"""
+    groups: dict[tuple[str, str], list[Mapping[str, Any]]] = {}
+    for record in records:
+        groups.setdefault((record["decisionId"], record["scenarioId"]), []).append(record)
+    fraction = float(manifest["burnInFraction"])
+    target = float(manifest["essTarget"])
+    rows = []
+    for (decision, scenario), chains in sorted(groups.items()):
+        chains = sorted(chains, key=lambda r: r["chain"])
+        row: dict[str, Any] = {"decisionId": decision, "scenarioId": scenario, "chains": len(chains),
+                               "statuses": [c["status"] for c in chains]}
+        if any(c["status"] != "ok" for c in chains):
+            rows.append({**row, "status": "incomplete"})
+            continue
+        thin = int(manifest["thin"])
+        cut = [int(len(c["samples"]) * fraction) for c in chains]
+        kept = [c["samples"][k:] for c, k in zip(chains, cut)]
+        iterations = [c["iterations"] - k * thin for c, k in zip(chains, cut)]  # burn-in後の反復数
+        names = sorted({name for samples in kept for s in samples for name in s["scalars"]})
+        series = {name: [[s["scalars"].get(name, 0.0) for s in samples] for samples in kept] for name in names}
+        means = {name: float(np.mean([v for values in series[name] for v in values])) for name in names}
+        main = mixing_main_statistics(names, means, manifest["mainStatisticBand"])
+        per_statistic = {}
+        for name in main:
+            esses = [batch_means_ess(values) for values in series[name]]
+            ess = sum(v for v in esses if v is not None) if any(v is not None for v in esses) else None
+            per_iteration = sum(iterations) / ess if ess else None
+            per_statistic[name] = {"mean": means[name], "ess": ess, "rhat": split_rhat(series[name]),
+                                   "iterationsPerEss": per_iteration}
+        finite = [v["iterationsPerEss"] for v in per_statistic.values() if v["iterationsPerEss"] is not None]
+        undetermined = [name for name, v in per_statistic.items() if v["iterationsPerEss"] is None]
+        worst = max(finite) if finite else None
+        seconds = sum(c["seconds"] for c in chains) / sum(c["iterations"] for c in chains)
+        rhats = [v["rhat"] for v in per_statistic.values() if v["rhat"] is not None]
+        diagnostics = chain_diagnostics([[{"riichiShape": s["shape"], "riichiFamilies": s["family"].split("+")} for s in samples]
+                                         for samples in kept], [], {}, DisagreementThresholds(), scalars=lambda s: {})
+        rows.append({
+            **row, "status": "ok",
+            "iterationsPerChain": [c["iterations"] for c in chains],
+            "secondsPerIteration": seconds,
+            "mainStatistics": per_statistic,
+            "undeterminedStatistics": undetermined,
+            "worstIterationsPerEss": worst,
+            "requiredIterationsPerChain": None if worst is None else target * worst / len(chains),
+            "maxRhat": max(rhats) if rhats else None,
+            "shapes": diagnostics["shapes"],
+            "familyVisitsPerChain": diagnostics["families"]["visitsPerChain"],
+            "crossFamilyAccepted": dict(sum((Counter(c["moves"]["cross_family"]) for c in chains), Counter())),
+            "acceptanceRate": {
+                move: sum(c["moves"]["accepted"].get(move, 0) for c in chains) / total
+                for move in sorted({m for c in chains for m in c["moves"]["proposed"]})
+                if (total := sum(c["moves"]["proposed"].get(move, 0) for c in chains))
+            },
+        })
+    complete = [r for r in rows if r["status"] == "ok" and r["requiredIterationsPerChain"] is not None]
+    required = max((r["requiredIterationsPerChain"] for r in complete), default=None)
+    seconds = max((r["secondsPerIteration"] for r in complete), default=None)
+    estimate = None
+    if required is not None:
+        grid = manifest["fullGrid"]
+        iterations = grid["decisions"] * grid["scenarios"] * grid["chains"] * required
+        estimate = {
+            "requiredIterationsPerChain": required,
+            "secondsPerIteration": seconds,
+            "fullGridIterations": iterations,
+            "fullGridDays": iterations * seconds / grid["processes"] / 86_400.0,
+            "note": "最も遅い判断・シナリオの値で見積もる。目標の実効標本数を変えるときはiterationsPerEssから計算し直す",
+        }
+    return {"schemaVersion": MIXING_SCHEMA, "groups": rows,
+            "incompleteGroups": [(r["decisionId"], r["scenarioId"]) for r in rows if r["status"] != "ok"],
+            "stage3Estimate": estimate}
+
+
+def run_mixing(dataset_dir: Any, model_dir: Any, manifest: Mapping[str, Any], variant_result: Mapping[str, Any],
+               output_dir: Any) -> dict[str, Any]:
+    """manifestの全鎖を並列で走らせ、鎖ごとの結果を1行ずつ保存する（途中から再開できる）。"""
+    import gzip
+    import multiprocessing
+    import time
+    from pathlib import Path
+
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    path = output_dir / "chains.jsonl.gz"
+    done: dict[tuple[str, str, int], dict[str, Any]] = {}
+    if path.is_file():
+        with gzip.open(path, "rt", encoding="utf-8") as handle:
+            for line in handle:
+                row = json.loads(line)
+                done[(row["decisionId"], row["scenarioId"], int(row["chain"]))] = row
+    options = {key: manifest[key] for key in ("seed", "secondsPerChain", "thin", "initAttempts", "initSeconds")}
+    options["cacheCapacityPerDecision"] = int(manifest["cacheCapacity"]) // len(manifest["decisions"])
+    tasks = [(decision, scenario, chain, options) for decision in manifest["decisions"] for scenario in manifest["scenarios"]
+             for chain in range(int(manifest["chains"])) if (decision, scenario, chain) not in done]
+    start = time.time()
+    context = multiprocessing.get_context("spawn")
+    with context.Pool(int(manifest["processes"]), initializer=_mixing_worker_init,
+                      initargs=(str(dataset_dir), str(model_dir), list(manifest["decisions"]), dict(variant_result))) as pool:
+        for row in pool.imap_unordered(_mixing_worker_run, tasks):
+            with gzip.open(path, "at", encoding="utf-8") as handle:
+                handle.write(json.dumps(_json_safe(row), ensure_ascii=False) + "\n")
+            done[(row["decisionId"], row["scenarioId"], int(row["chain"]))] = row
+    summary = mixing_analysis(list(done.values()), manifest)
+    summary["wallClockSeconds"] = round(time.time() - start, 1)
+    return summary

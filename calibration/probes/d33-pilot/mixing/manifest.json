@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "ev-policy-belief-mixing-manifest/v1",
+  "purpose": "再判断の段階2：実効標本数1あたりの反復数を測る（事後分布の推定値は出さない）",
+  "pilotManifestSha256": "159f984a9309216b84ae9e31fe4bd5598a2aaa6af5a18680f1653254ce0c8e90",
+  "thetaVariantResultSha256": "c466c34e78fbd99da04c15eee34b34d06b63956e0e1dd61d333c44fec72b8c55",
+  "decisions": [
+    "mleague:2021-22:L001_S010_0029_01A:7:0:e35:s1",
+    "mleague:2021-22:L001_S010_0002_01A:5:0:e81:s0",
+    "mleague:2020-21:L001_S007_0044_01A:7:0:e87:s0",
+    "mleague:2021-22:L001_S010_0070_02A:3:0:e79:s1"
+  ],
+  "scenarios": [
+    "base",
+    "theta_riichi_response_recalibrated"
+  ],
+  "chains": 4,
+  "secondsPerChain": 3600.0,
+  "processes": 3,
+  "thin": 5,
+  "burnInFraction": 0.2,
+  "mainStatisticBand": [
+    0.05,
+    0.95
+  ],
+  "mainStatistics": "リーチ者の待ちの指示とフリテンは全鎖の平均が帯の内側のもの、他家のドラ枚数は全家",
+  "essTarget": 400,
+  "essTargetNote": "暫定。D.3.4は判断ごとに約1,024世界を使う想定（上位設計10節）。段階3ではiterationsPerEssから目標を変えて計算し直せる",
+  "seed": 20261003,
+  "cacheCapacity": 240000,
+  "initAttempts": 10000,
+  "initSeconds": 60.0,
+  "fastShape": true,
+  "fullGrid": {
+    "decisions": 16,
+    "scenarios": 23,
+    "chains": 4,
+    "processes": 3
+  },
+  "expectedWallClockHours": 11.5
+}

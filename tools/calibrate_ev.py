@@ -2151,7 +2151,7 @@ def _parser() -> argparse.ArgumentParser:
     )
     probe_policy_belief.add_argument(
         "--stage", choices=("evaluator", "pilot-manifest", "reference-smc", "initialization", "mcmc", "theta-variant-manifest", "theta-variant",
-                 "benchmark-manifest", "benchmark"),
+                 "benchmark-manifest", "benchmark", "mixing-manifest", "mixing"),
         default="evaluator"
     )
     probe_policy_belief.add_argument("--manifest", type=Path, default=DEFAULT_BELIEF_PILOT_DIR / "manifest.json")
@@ -2516,6 +2516,56 @@ def main(argv: list[str] | None = None) -> int:
         report = record_pilot_initialization(args.dataset_dir.resolve(), args.model_dir.resolve(), args.manifest.resolve())
         print(json.dumps({key: report[key] for key in ("failed", "families", "maxAttempts", "maxSeconds")}, ensure_ascii=False))
         return 0 if report["failed"] == 0 else 1
+    if args.command == "probe-policy-belief" and args.stage in ("mixing-manifest", "mixing"):
+        # 再判断の段階2：混合の測定。manifestを先に固定し、測定はそれに従う（途中から再開できる）。
+        from tools.ev_policy_belief import MIXING_MANIFEST_SCHEMA, THETA_VARIANT_ID, run_mixing
+        mixing_dir = DEFAULT_BELIEF_PILOT_DIR / "mixing"
+        mixing_manifest_path = mixing_dir / "manifest.json"
+        variant_path = DEFAULT_BELIEF_PILOT_DIR / "theta-variant" / "result.json"
+        if args.stage == "mixing-manifest":
+            if mixing_manifest_path.exists():
+                print(json.dumps({"error": f"manifestは作成済みで上書きしない: {mixing_manifest_path}"}, ensure_ascii=False), file=sys.stderr)
+                return 2
+            pilot = json.loads(args.manifest.resolve().read_text(encoding="utf-8"))
+            manifest = {
+                "schemaVersion": MIXING_MANIFEST_SCHEMA,
+                "purpose": "再判断の段階2：実効標本数1あたりの反復数を測る（事後分布の推定値は出さない）",
+                "pilotManifestSha256": hashlib.sha256(args.manifest.resolve().read_bytes()).hexdigest(),
+                "thetaVariantResultSha256": hashlib.sha256(variant_path.read_bytes()).hexdigest(),
+                "decisions": [item["decisionId"] for item in pilot["decisions"]][:4],
+                "scenarios": ["base", THETA_VARIANT_ID],
+                "chains": 4,
+                "secondsPerChain": 3_600.0,
+                "processes": 3,
+                "thin": 5,
+                "burnInFraction": 0.2,
+                "mainStatisticBand": [0.05, 0.95],
+                "mainStatistics": "リーチ者の待ちの指示とフリテンは全鎖の平均が帯の内側のもの、他家のドラ枚数は全家",
+                "essTarget": 400,
+                "essTargetNote": "暫定。D.3.4は判断ごとに約1,024世界を使う想定（上位設計10節）。段階3ではiterationsPerEssから目標を変えて計算し直せる",
+                "seed": 20261003,
+                "cacheCapacity": 240_000,
+                "initAttempts": 10_000,
+                "initSeconds": 60.0,
+                "fastShape": True,
+                "fullGrid": {"decisions": 16, "scenarios": 23, "chains": 4, "processes": 3},
+                "expectedWallClockHours": 11.5,
+            }
+            mixing_dir.mkdir(parents=True, exist_ok=True)
+            mixing_manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            print(json.dumps({"manifest": str(mixing_manifest_path)}, ensure_ascii=False))
+            return 0
+        manifest = json.loads(mixing_manifest_path.read_text(encoding="utf-8"))
+        if hashlib.sha256(variant_path.read_bytes()).hexdigest() != manifest["thetaVariantResultSha256"]:
+            print(json.dumps({"error": "θ変種の較正結果がmanifest作成時と違う"}, ensure_ascii=False), file=sys.stderr)
+            return 2
+        summary = run_mixing(args.dataset_dir.resolve(), args.model_dir.resolve(), manifest,
+                             json.loads(variant_path.read_text(encoding="utf-8")), mixing_dir)
+        summary["manifestSha256"] = hashlib.sha256(mixing_manifest_path.read_bytes()).hexdigest()
+        from tools.ev_policy_belief import _json_safe
+        (mixing_dir / "summary.json").write_text(json.dumps(_json_safe(summary), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(json.dumps(_json_safe({"incomplete": summary["incompleteGroups"], "stage3": summary["stage3Estimate"]}), ensure_ascii=False))
+        return 0 if not summary["incompleteGroups"] else 1
     if args.command == "probe-policy-belief" and args.stage in ("benchmark-manifest", "benchmark"):
         # 工程7（12.3節）：manifestを測定前に固定し、測定はそれに従う。
         from tools.ev_policy_belief import BENCHMARK_MANIFEST_SCHEMA, benchmark_budget, run_benchmark

@@ -1827,5 +1827,38 @@ class FastShapeTest(unittest.TestCase):
         self.assertEqual(trajectory(False), trajectory(True))
 
 
+class MixingAnalysisTest(unittest.TestCase):
+    """段階2の集計：burn-inを除き、主要な統計の実効標本数から必要な反復数を見積もる。"""
+
+    def _record(self, chain, values, scenario="base", status="ok"):
+        samples = [{"iteration": 5 * (k + 1), "scalars": {"wait:3": v, "furiten": 0.0, "dora:1": float(k % 2), "family:regular": 1.0},
+                    "shape": [1], "family": "regular"} for k, v in enumerate(values)]
+        return {"decisionId": "d", "scenarioId": scenario, "chain": chain, "status": status, "iterations": 5 * len(values),
+                "seconds": 2.0 * len(values), "samples": samples, "moves": {"proposed": {"m1": 10}, "accepted": {"m1": 3},
+                                                                           "cross_family": {}}}
+
+    def test_required_iterations_follow_from_ess(self) -> None:
+        rng = random.Random(5)
+        records = [self._record(c, [float(rng.random() < 0.4) for _ in range(500)]) for c in range(4)]
+        manifest = {"burnInFraction": 0.2, "thin": 5, "essTarget": 400, "mainStatisticBand": [0.05, 0.95],
+                    "fullGrid": {"decisions": 16, "scenarios": 23, "chains": 4, "processes": 3}}
+        summary = belief.mixing_analysis(records, manifest)
+        group = summary["groups"][0]
+        self.assertEqual(sorted(group["mainStatistics"]), ["dora:1", "wait:3"])  # furitenは帯の外、系統は対象外
+        wait = group["mainStatistics"]["wait:3"]
+        self.assertAlmostEqual(wait["iterationsPerEss"], 4 * 400 * 5 / wait["ess"], places=9)  # burn-in後400標本×5反復×4鎖
+        self.assertEqual(group["requiredIterationsPerChain"], 400 * group["worstIterationsPerEss"] / 4)
+        estimate = summary["stage3Estimate"]
+        self.assertAlmostEqual(estimate["fullGridIterations"], 16 * 23 * 4 * group["requiredIterationsPerChain"])
+        self.assertAlmostEqual(estimate["secondsPerIteration"], 0.4)
+
+    def test_failed_chain_marks_the_group_incomplete(self) -> None:
+        records = [self._record(c, [0.0, 1.0] * 50) for c in range(3)] + [self._record(3, [], status="init_failed")]
+        summary = belief.mixing_analysis(records, {"burnInFraction": 0.2, "thin": 5, "essTarget": 400,
+                                                   "mainStatisticBand": [0.05, 0.95], "fullGrid": {}})
+        self.assertEqual(summary["incompleteGroups"], [("d", "base")])
+        self.assertIsNone(summary["stage3Estimate"])
+
+
 if __name__ == "__main__":
     unittest.main()
