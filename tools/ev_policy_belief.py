@@ -3904,6 +3904,7 @@ def _belief_worker_init(dataset_dir: str, model_dir: str, decision_ids: Sequence
     from pathlib import Path
 
     _worker_init(dataset_dir, model_dir, decision_ids)
+    install_fast_shape()  # 推定器のプロセスでだけ、形の計算を同じ値の速い実装へ差し替える（段階1のA1）
     models = Path(model_dir)
     fixed_path = models / "fixed-components.json"
     fixed = json.loads(fixed_path.read_text(encoding="utf-8"))
@@ -4476,3 +4477,153 @@ def benchmark_gate(runs: Sequence[Mapping[str, Any]], budget: Mapping[str, Any])
         "lowerBoundRatioToRemainingBudget": lower_bound / budget["remainingSeconds"],
         "remainingBudgetSeconds": budget["remainingSeconds"],
     }
+
+
+# ===========================================================================
+# 再判断の段階1（A1）：手牌の形の計算を、同じ値のまま速くする
+# ===========================================================================
+#
+# 相手モデルの特徴（シャンテン数と改善牌mask）は ev_policy_features._exact_shape_cached が計算する。
+# 1枚足した34通りの手を調べるとき、変わるのは足した牌の色（萬子・筒子・索子・字牌）だけなのに、元の実装は
+# 毎回4色の組み合わせを最初から結合する。組み合わせの結合は和なので順序によらず、面子数の上限による
+# 絞り込みも途中で行っても最後に行っても同じ集合になる。そこで、残り3色の結合を先に作って使い回す。
+#
+# 特徴コードのファイルは特徴cacheの検証ハッシュに含まれる（D.3.2b）ため、書き換えない。推定器を走らせる
+# プロセスの中でだけ、同じ署名の関数へ差し替える（install_fast_shape）。値の一致はテストで確かめる。
+
+FAST_SHAPE_CACHE_ENTRIES = 1_000_000
+
+
+@lru_cache(maxsize=200_000)
+def _combine_shape_groups(groups: tuple[tuple[tuple[int, int, int], ...], ...], target_melds: int) -> tuple[tuple[int, int, int], ...]:
+    """色ごとの(面子, 塔子, 対子)の候補を足し合わせた状態の集合（面子数が上限以下のものだけ）。"""
+    states = {(0, 0, 0)}
+    for group in groups:
+        combined = set()
+        for left in states:
+            for right in group:
+                melds = left[0] + right[0]
+                if melds <= target_melds:
+                    combined.add((melds, left[1] + right[1], left[2] + right[2]))
+        states = combined
+    return tuple(sorted(states))
+
+
+def _best_standard_shanten(
+    states: Sequence[tuple[int, int, int]], group: Sequence[tuple[int, int, int]], fixed_melds: int,
+    stop_below: int | None = None,
+) -> int:
+    """残り3色の状態と1色の候補を結合したときの、面子手のシャンテン数（元の実装の最後の段と同じ式）。
+
+    stop_belowを渡すと、それより小さい値が見つかった時点で返す（改善牌の判定は「下がるか」だけで足りる）。
+    """
+    target_melds = 4 - fixed_melds
+    best = 8
+    for left_melds, left_taatsu, left_pairs in states:
+        for right_melds, right_taatsu, right_pairs in group:
+            melds = left_melds + right_melds
+            if melds > target_melds:
+                continue
+            pairs = left_pairs + right_pairs
+            taatsu = left_taatsu + right_taatsu + max(0, pairs - 1)
+            value = 8 - 2 * (fixed_melds + melds) - min(taatsu, max(0, target_melds - melds)) - int(pairs > 0)
+            if value < best:
+                best = value
+                if stop_below is not None and best < stop_below:
+                    return best
+    return best
+
+
+def _other_form_shanten(counts: Sequence[int]) -> int:
+    """七対子と国士のシャンテン数（元の実装と同じ式）。"""
+    from tools.ev_policy_features import TERMINAL_HONORS
+
+    pairs = sum(count >= 2 for count in counts)
+    unique = sum(count > 0 for count in counts)
+    chiitoi = 6 - pairs + max(0, 7 - unique)
+    terminal_unique = sum(counts[index] > 0 for index in TERMINAL_HONORS)
+    terminal_pair = any(counts[index] >= 2 for index in TERMINAL_HONORS)
+    return min(chiitoi, 13 - terminal_unique - int(terminal_pair))
+
+
+_GROUP_BOUNDS = ((0, 9, True), (9, 18, True), (18, 27, True), (27, 34, False))
+
+
+@lru_cache(maxsize=FAST_SHAPE_CACHE_ENTRIES)
+def fast_exact_shape_cached(counts: tuple[int, ...], fixed_melds: int) -> Any:
+    """ev_policy_features._exact_shape_cachedと同じShapeResultを返す。"""
+    from tools.ev_calibration_state import _group_shapes
+    from tools.ev_policy_features import ShapeResult
+
+    from tools.ev_policy_features import TERMINAL_HONORS
+
+    target = 4 - fixed_melds
+    groups = tuple(_group_shapes(counts[start:end], suited) for start, end, suited in _GROUP_BOUNDS)
+    rests = tuple(_combine_shape_groups(groups[:k] + groups[k + 1:], target) for k in range(4))
+    # 七対子・国士の数え上げ。1枚足した手では、対子・種類・么九の数が高々1つ増えるだけなので差分で求める。
+    pairs = sum(count >= 2 for count in counts)
+    unique = sum(count > 0 for count in counts)
+    terminal_unique = sum(counts[index] > 0 for index in TERMINAL_HONORS)
+    terminal_pair = any(counts[index] >= 2 for index in TERMINAL_HONORS)
+    honors = set(TERMINAL_HONORS)
+
+    def other_forms(p: int, u: int, tu: int, tp: bool) -> int:
+        return min(6 - p + max(0, 7 - u), 13 - tu - int(tp))
+
+    standard = _best_standard_shanten(rests[0], groups[0], fixed_melds)
+    current = min(standard, other_forms(pairs, unique, terminal_unique, terminal_pair)) if fixed_melds == 0 else standard
+    mask = 0
+    work = list(counts)
+    for tile34 in range(34):
+        before = work[tile34]
+        if before >= 4:
+            continue
+        work[tile34] += 1
+        improved = False
+        if fixed_melds == 0:
+            terminal = tile34 in honors
+            improved = other_forms(
+                pairs + int(before == 1), unique + int(before == 0),
+                terminal_unique + int(terminal and before == 0), terminal_pair or (terminal and before == 1)) < current
+        if not improved:
+            index = min(3, tile34 // 9)
+            start, end, suited = _GROUP_BOUNDS[index]
+            group = _group_shapes(tuple(work[start:end]), suited)
+            improved = _best_standard_shanten(rests[index], group, fixed_melds, stop_below=current) < current
+        if improved:
+            mask |= 1 << tile34
+        work[tile34] -= 1
+    return ShapeResult(current, mask)
+
+
+def _fast_counts34(values: Sequence[Any], label: str) -> tuple[int, ...]:
+    """ev_policy_features._counts34と同じ検査の速い版。0〜4のint（boolを除く）34個なら同じタプルを返し、
+    それ以外は元の関数へ渡して同じ例外を出させる。"""
+    if len(values) == 34:
+        counts = tuple(values)
+        if all(type(value) is int and 0 <= value <= 4 for value in counts):
+            return counts
+    return _ORIGINAL_FEATURE_FUNCTIONS["_counts34"](values, label)
+
+
+_ORIGINAL_FEATURE_FUNCTIONS: dict[str, Any] = {}
+
+
+def install_fast_shape() -> None:
+    """このプロセスの特徴計算で、形の計算と入力検査を速い実装へ差し替える（値と例外は同じ）。何度呼んでもよい。"""
+    import tools.ev_policy_features as features
+
+    if features._exact_shape_cached is fast_exact_shape_cached:
+        return
+    _ORIGINAL_FEATURE_FUNCTIONS["_exact_shape_cached"] = features._exact_shape_cached
+    _ORIGINAL_FEATURE_FUNCTIONS["_counts34"] = features._counts34
+    features._exact_shape_cached = fast_exact_shape_cached
+    features._counts34 = _fast_counts34
+
+
+def uninstall_fast_shape() -> None:
+    import tools.ev_policy_features as features
+
+    for name, function in _ORIGINAL_FEATURE_FUNCTIONS.items():
+        setattr(features, name, function)
+    _ORIGINAL_FEATURE_FUNCTIONS.clear()

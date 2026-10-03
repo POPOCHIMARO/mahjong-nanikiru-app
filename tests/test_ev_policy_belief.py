@@ -1752,5 +1752,80 @@ class BenchmarkGateTest(unittest.TestCase):
         self.assertLess(gate["projectedMcmcSeconds"], budget["remainingSeconds"])
 
 
+class FastShapeTest(unittest.TestCase):
+    """段階1のA1：形の計算と入力検査の速い実装が、元の特徴コードと同じ値と例外を返す。"""
+
+    def tearDown(self) -> None:
+        belief.uninstall_fast_shape()
+
+    def test_fast_shape_matches_original_on_random_and_tenpai_hands(self) -> None:
+        import tools.ev_policy_features as features
+
+        original = features._exact_shape_cached
+        rng = random.Random(31)
+        hands = []
+        for _ in range(1_500):
+            counts = [0] * 34
+            for tile_id in rng.sample(range(136), 13):
+                counts[tile_id // 4] += 1
+            hands.append(tuple(counts))
+        rules = MahjongTenpaiRules()
+        while len(hands) < 3_000:
+            shape = belief.sample_tenpai_classes(rules, RandomChooser(rng))
+            counts = tuple(shape.count(t) for t in range(34))
+            if max(counts) <= 4:
+                hands.append(counts)
+        for melds in (0, 1):
+            for counts in hands[:200] if melds else hands:
+                if melds:
+                    counts = list(counts)
+                    for _ in range(3):
+                        counts[counts.index(max(counts))] -= 1
+                    counts = tuple(counts)
+                self.assertEqual(belief.fast_exact_shape_cached.__wrapped__(counts, melds), original.__wrapped__(counts, melds))
+
+    def test_installed_functions_keep_values_and_errors(self) -> None:
+        import tools.ev_policy_features as features
+
+        original_counts = features._counts34
+        belief.install_fast_shape()
+        self.assertIs(features._exact_shape_cached, belief.fast_exact_shape_cached)
+        values = [1] * 13 + [0] * 21
+        self.assertEqual(features._counts34(values, "x"), original_counts(values, "x"))
+        for bad in ([1] * 33, [5] + [0] * 33, [True] + [0] * 33, [1.0] + [0] * 33):
+            with self.assertRaises(ValueError) as fast_error:
+                features._counts34(bad, "x")
+            with self.assertRaises(ValueError) as original_error:
+                original_counts(bad, "x")
+            self.assertEqual(str(fast_error.exception), str(original_error.exception))
+        belief.uninstall_fast_shape()
+        self.assertIs(features._counts34, original_counts)
+
+    @unittest.skipUnless(HAS_DATA, "D.3.1の実データ（Git管理外）がない")
+    def test_chain_trajectory_is_identical_with_and_without_fast_shape(self) -> None:
+        import tools.ev_policy_features as features
+
+        context = context_of(fixture()["prefixes"][1])
+        resolver = model_resolver(fixture()["model"], next(s for s in fixture()["scenarios"] if s["id"] == "base"))
+
+        def trajectory(fast: bool) -> list:
+            if fast:
+                belief.install_fast_shape()
+            else:
+                belief.uninstall_fast_shape()
+            features._exact_shape_cached.cache_clear()
+            cache = WindowCache()
+            initial = construct_initial_world(context, random.Random(3), resolver=resolver, cache=cache)
+            mahjong, state = mahjong_belief(context, initial.world, resolver, cache=cache)
+            chooser = RandomChooser(random.Random(4))
+            result = []
+            for _ in range(2):
+                belief.mcmc_iteration(mahjong.problem, state, chooser, MoveStatistics())
+                result.append((tuple(state.ids), tuple(state.log_factors)))
+            return result
+
+        self.assertEqual(trajectory(False), trajectory(True))
+
+
 if __name__ == "__main__":
     unittest.main()
