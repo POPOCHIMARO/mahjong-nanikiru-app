@@ -1,0 +1,1 @@
+{"incomplete": [], "stage3": {"requiredIterationsPerChain": 1575.3696142422525, "secondsPerIteration": 1.85132374728184, "fullGridIterations": 2318944.0721645956, "fullGridDays": 16.56294841595976, "note": "最も遅い判断・シナリオの値で見積もる。目標の実効標本数を変えるときはiterationsPerEssから計算し直す"}}
