@@ -2151,7 +2151,7 @@ def _parser() -> argparse.ArgumentParser:
     )
     probe_policy_belief.add_argument(
         "--stage", choices=("evaluator", "pilot-manifest", "reference-smc", "initialization", "mcmc", "theta-variant-manifest", "theta-variant",
-                 "benchmark-manifest", "benchmark", "mixing-manifest", "mixing"),
+                 "benchmark-manifest", "benchmark", "mixing-manifest", "mixing", "mixing-pooled"),
         default="evaluator"
     )
     probe_policy_belief.add_argument("--manifest", type=Path, default=DEFAULT_BELIEF_PILOT_DIR / "manifest.json")
@@ -2516,6 +2516,20 @@ def main(argv: list[str] | None = None) -> int:
         report = record_pilot_initialization(args.dataset_dir.resolve(), args.model_dir.resolve(), args.manifest.resolve())
         print(json.dumps({key: report[key] for key in ("failed", "families", "maxAttempts", "maxSeconds")}, ensure_ascii=False))
         return 0 if report["failed"] == 0 else 1
+    if args.command == "probe-policy-belief" and args.stage == "mixing-pooled":
+        # 段階2で保存した鎖を読み、統合平均に合わせた実効標本数で反復数の根拠を計算し直す（鎖は走らせない）。
+        import gzip
+        from tools.ev_policy_belief import _json_safe, mixing_pooled_analysis
+        mixing_dir = DEFAULT_BELIEF_PILOT_DIR / "mixing"
+        manifest_bytes = (mixing_dir / "manifest.json").read_bytes()
+        chains_bytes = (mixing_dir / "chains.jsonl.gz").read_bytes()
+        records = [json.loads(line) for line in gzip.decompress(chains_bytes).decode("utf-8").splitlines() if line]
+        pooled = mixing_pooled_analysis(records, json.loads(manifest_bytes.decode("utf-8")))
+        pooled["manifestSha256"] = hashlib.sha256(manifest_bytes).hexdigest()
+        pooled["chainsSha256"] = hashlib.sha256(chains_bytes).hexdigest()
+        (mixing_dir / "pooled-ess.json").write_text(json.dumps(_json_safe(pooled), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(json.dumps(_json_safe({"worstIterationsPerEss": pooled["worstIterationsPerEss"]}), ensure_ascii=False))
+        return 0
     if args.command == "probe-policy-belief" and args.stage in ("mixing-manifest", "mixing"):
         # 再判断の段階2：混合の測定。manifestを先に固定し、測定はそれに従う（途中から再開できる）。
         from tools.ev_policy_belief import MIXING_MANIFEST_SCHEMA, THETA_VARIANT_ID, run_mixing

@@ -3609,6 +3609,34 @@ def batch_means_ess(series: Sequence[float]) -> float | None:
     return n * variance / batch_variance
 
 
+def pooled_mean_ess(chains: Sequence[Sequence[float]], batch_scale: int = 1) -> float | None:
+    """全鎖の標本をまとめた平均（鎖の重みは標本数）の精度に見合う実効標本数。
+
+    鎖ごとの実効標本数を足すだけでは、鎖によって自己相関が違うときに統合平均の精度と合わない。
+    統合平均の分散を Σ w_i^2 × (鎖iの長期分散 / 標本数) で求め、全標本の分散をそれで割る。
+    バッチの大きさは√n×batch_scale。値が一定の鎖があるとき、鎖が短すぎるときはNone（定義できない）。
+    """
+    total = sum(len(c) for c in chains)
+    if not total:
+        return None
+    variance = float(np.asarray([v for c in chains for v in c], dtype=float).var(ddof=1)) if total > 1 else 0.0
+    if variance == 0.0:
+        return None
+    mean_variance = 0.0
+    for chain in chains:
+        n = len(chain)
+        size = int(math.sqrt(n)) * batch_scale
+        batches = n // size if size else 0
+        if batches < 2:
+            return None
+        values = np.asarray(chain[: batches * size], dtype=float)
+        long_run = size * float(values.reshape(batches, size).mean(axis=1).var(ddof=1))
+        if long_run == 0.0:
+            return None  # 鎖の中で動いていない。鎖の間の差はbatch meansでは測れない
+        mean_variance += (n / total) ** 2 * long_run / n
+    return variance / mean_variance
+
+
 def _jaccard(left: set, right: set) -> float:
     union = left | right
     return len(left & right) / len(union) if union else 1.0
@@ -4639,6 +4667,7 @@ def uninstall_fast_shape() -> None:
 
 MIXING_MANIFEST_SCHEMA = "ev-policy-belief-mixing-manifest/v1"
 MIXING_SCHEMA = "ev-policy-belief-mixing/v1"
+MIXING_POOLED_SCHEMA = "ev-policy-belief-mixing-pooled/v1"
 
 
 def run_timed_chain(
@@ -4794,6 +4823,58 @@ def mixing_analysis(records: Sequence[Mapping[str, Any]], manifest: Mapping[str,
     return {"schemaVersion": MIXING_SCHEMA, "groups": rows,
             "incompleteGroups": [(r["decisionId"], r["scenarioId"]) for r in rows if r["status"] != "ok"],
             "stage3Estimate": estimate}
+
+
+def mixing_pooled_analysis(records: Sequence[Mapping[str, Any]], manifest: Mapping[str, Any],
+                           batch_scales: Sequence[int] = (1, 2, 4)) -> dict[str, Any]:
+    """保存した鎖から、統合平均に合わせた実効標本数で「実効標本数1あたりの反復」を計算し直す。
+
+    主要な統計に系統の指示（平均が帯の内側のもの）を加え、バッチの大きさを変えたときの値も並べる。
+    """
+    groups: dict[tuple[str, str], list[Mapping[str, Any]]] = {}
+    for record in records:
+        groups.setdefault((record["decisionId"], record["scenarioId"]), []).append(record)
+    fraction, thin = float(manifest["burnInFraction"]), int(manifest["thin"])
+    low, high = manifest["mainStatisticBand"]
+    rows = []
+    for (decision, scenario), chains in sorted(groups.items()):
+        chains = sorted(chains, key=lambda r: r["chain"])
+        if any(c["status"] != "ok" for c in chains):
+            rows.append({"decisionId": decision, "scenarioId": scenario, "status": "incomplete"})
+            continue
+        cut = [int(len(c["samples"]) * fraction) for c in chains]
+        kept = [c["samples"][k:] for c, k in zip(chains, cut)]
+        iterations = sum(c["iterations"] - k * thin for c, k in zip(chains, cut))
+        families = sorted({part for samples in kept for s in samples for part in s["family"].split("+")})
+        series = {f"family:{name}": [[1.0 if name in s["family"].split("+") else 0.0 for s in samples] for samples in kept]
+                  for name in families}
+        for name in sorted({name for samples in kept for s in samples for name in s["scalars"]}):
+            if not name.startswith("family:"):
+                series[name] = [[s["scalars"].get(name, 0.0) for s in samples] for samples in kept]
+        means = {name: float(np.mean([v for values in chains_ for v in values])) for name, chains_ in series.items()}
+        main = mixing_main_statistics(sorted(series), means, (low, high))
+        main += [name for name in sorted(series) if name.startswith("family:") and low <= means[name] <= high]
+        per_scale = {}
+        for scale in batch_scales:
+            values = {name: pooled_mean_ess(series[name], scale) for name in main}
+            defined = {name: ess for name, ess in values.items() if ess is not None}
+            worst = min(defined, key=defined.get) if defined else None
+            per_scale[str(scale)] = {
+                "undeterminedStatistics": sorted(name for name, ess in values.items() if ess is None),
+                "worstStatistic": worst,
+                "pooledEss": None if worst is None else defined[worst],
+                "iterationsPerEss": None if worst is None else iterations / defined[worst],
+            }
+        rows.append({"decisionId": decision, "scenarioId": scenario, "status": "ok", "iterationsAfterBurnIn": iterations,
+                     "samplesPerChain": [len(samples) for samples in kept], "mainStatistics": main, "perBatchScale": per_scale})
+    worst = {}
+    for scale in batch_scales:
+        found = [r["perBatchScale"][str(scale)]["iterationsPerEss"] for r in rows if r["status"] == "ok"]
+        found = [value for value in found if value is not None]
+        worst[str(scale)] = max(found) if found else None
+    return {"schemaVersion": MIXING_POOLED_SCHEMA, "batchScales": list(batch_scales), "groups": rows,
+            "worstIterationsPerEss": worst,
+            "note": "計算予算を決めるための暫定値。バッチが少ない幅の値は誤差が大きく、混合が十分である証拠には使わない"}
 
 
 def run_mixing(dataset_dir: Any, model_dir: Any, manifest: Mapping[str, Any], variant_result: Mapping[str, Any],

@@ -1859,6 +1859,53 @@ class MixingAnalysisTest(unittest.TestCase):
         self.assertEqual(summary["incompleteGroups"], [("d", "base")])
         self.assertIsNone(summary["stage3Estimate"])
 
+    def test_pooled_ess_follows_the_variance_of_the_pooled_mean(self) -> None:
+        rng = random.Random(7)
+        independent = [[rng.random() for _ in range(6400)] for _ in range(4)]
+        summed = sum(belief.batch_means_ess(chain) for chain in independent)
+        # 同じ長さで同じように混ざる鎖では、単純合計に近い値になる（長期分散の推定誤差の分だけ小さく出る）
+        self.assertAlmostEqual(belief.pooled_mean_ess(independent) / summed, 1.0, delta=0.1)
+        self.assertLessEqual(belief.pooled_mean_ess(independent), summed * (1 + 1e-9))
+        # 1本だけ粘る鎖があると、統合平均の精度はその鎖に引きずられ、単純合計より小さくなる
+        sticky = [value for value in independent[0][:640] for _ in range(10)]
+        mixed = [sticky] + independent[1:]
+        self.assertLess(belief.pooled_mean_ess(mixed), 0.5 * sum(belief.batch_means_ess(chain) for chain in mixed))
+        # 定義どおり：全標本の分散 ÷ Σ w_i^2 ×（鎖の長期分散 ÷ 標本数）
+        two = [[0.0] * 4 + [1.0] * 4 + [0.0, 0.0, 1.0, 1.0] + [1.0] * 4, [0.0, 1.0] * 8]
+        long_run = [4 * float(np.asarray(chain).reshape(4, 4).mean(axis=1).var(ddof=1)) for chain in two]
+        self.assertGreater(long_run[0], 0.0)
+        self.assertEqual(long_run[1], 0.0)
+        self.assertIsNone(belief.pooled_mean_ess(two))  # バッチ平均が動かない鎖があれば定義しない
+        two[1] = [0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0] * 2
+        variance = float(np.asarray(two[0] + two[1]).var(ddof=1))
+        long_run = [4 * float(np.asarray(chain).reshape(4, 4).mean(axis=1).var(ddof=1)) for chain in two]
+        expected = variance / sum(0.25 * value / 16 for value in long_run)
+        self.assertAlmostEqual(belief.pooled_mean_ess(two), expected, places=9)
+        # 値が一定、鎖どうしで別の値に固まっている、鎖が短い場合はNone
+        self.assertIsNone(belief.pooled_mean_ess([[1.0] * 16, [1.0] * 16]))
+        self.assertIsNone(belief.pooled_mean_ess([[0.0] * 16, [1.0] * 16]))
+        self.assertIsNone(belief.pooled_mean_ess([[0.0], [1.0, 0.0, 1.0]]))
+
+    def test_pooled_analysis_includes_family_indicators(self) -> None:
+        rng = random.Random(9)
+        records = []
+        for chain in range(4):
+            record = self._record(chain, [float(rng.random() < 0.4) for _ in range(500)])
+            for k, sample in enumerate(record["samples"]):
+                sample["family"] = "chiitoi" if (k // 25) % 4 == chain % 4 else "regular"  # 25標本ずつ粘る
+            records.append(record)
+        manifest = {"burnInFraction": 0.2, "thin": 5, "mainStatisticBand": [0.05, 0.95]}
+        summary = belief.mixing_pooled_analysis(records, manifest, batch_scales=(1, 2))
+        group = summary["groups"][0]
+        self.assertEqual(group["mainStatistics"], ["dora:1", "wait:3", "family:chiitoi", "family:regular"])
+        self.assertEqual(group["iterationsAfterBurnIn"], 4 * 400 * 5)
+        worst = group["perBatchScale"]["1"]
+        self.assertIn(worst["worstStatistic"], ("family:chiitoi", "family:regular"))  # 粘る系統が最も遅い
+        self.assertAlmostEqual(worst["iterationsPerEss"], 8000 / worst["pooledEss"], places=9)
+        self.assertEqual(summary["worstIterationsPerEss"]["1"], worst["iterationsPerEss"])
+        failed = records[:3] + [self._record(3, [], status="init_failed")]
+        self.assertEqual(belief.mixing_pooled_analysis(failed, manifest)["groups"][0]["status"], "incomplete")
+
 
 if __name__ == "__main__":
     unittest.main()

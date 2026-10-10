@@ -1,0 +1,454 @@
+{
+  "schemaVersion": "ev-policy-belief-mixing-pooled/v1",
+  "batchScales": [
+    1,
+    2,
+    4
+  ],
+  "groups": [
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0044_01A:7:0:e87:s0",
+      "scenarioId": "base",
+      "status": "ok",
+      "iterationsAfterBurnIn": 10238,
+      "samplesPerChain": [
+        522,
+        520,
+        512,
+        492
+      ],
+      "mainStatistics": [
+        "dora:1",
+        "dora:2",
+        "dora:3",
+        "furiten",
+        "wait:11",
+        "wait:12",
+        "wait:14",
+        "wait:15",
+        "wait:19",
+        "wait:2",
+        "wait:20",
+        "wait:24",
+        "wait:4",
+        "wait:5",
+        "wait:6",
+        "wait:7",
+        "family:chiitoi",
+        "family:regular"
+      ],
+      "perBatchScale": {
+        "1": {
+          "undeterminedStatistics": [],
+          "worstStatistic": "family:chiitoi",
+          "pooledEss": 222.02286289024929,
+          "iterationsPerEss": 46.112368189130436
+        },
+        "2": {
+          "undeterminedStatistics": [],
+          "worstStatistic": "family:chiitoi",
+          "pooledEss": 165.39394676766466,
+          "iterationsPerEss": 61.900693466017344
+        },
+        "4": {
+          "undeterminedStatistics": [],
+          "worstStatistic": "family:regular",
+          "pooledEss": 180.91716879221084,
+          "iterationsPerEss": 56.58943298940672
+        }
+      }
+    },
+    {
+      "decisionId": "mleague:2020-21:L001_S007_0044_01A:7:0:e87:s0",
+      "scenarioId": "theta_riichi_response_recalibrated",
+      "status": "ok",
+      "iterationsAfterBurnIn": 8919,
+      "samplesPerChain": [
+        492,
+        437,
+        427,
+        426
+      ],
+      "mainStatistics": [
+        "dora:1",
+        "dora:2",
+        "dora:3",
+        "furiten",
+        "wait:11",
+        "wait:12",
+        "wait:14",
+        "wait:15",
+        "wait:19",
+        "wait:2",
+        "wait:20",
+        "wait:24",
+        "wait:4",
+        "wait:5",
+        "wait:6",
+        "wait:7",
+        "family:chiitoi",
+        "family:regular"
+      ],
+      "perBatchScale": {
+        "1": {
+          "undeterminedStatistics": [],
+          "worstStatistic": "family:chiitoi",
+          "pooledEss": 181.1801460278917,
+          "iterationsPerEss": 49.22724810381248
+        },
+        "2": {
+          "undeterminedStatistics": [],
+          "worstStatistic": "family:regular",
+          "pooledEss": 172.35272123195418,
+          "iterationsPerEss": 51.74853020160159
+        },
+        "4": {
+          "undeterminedStatistics": [],
+          "worstStatistic": "family:chiitoi",
+          "pooledEss": 108.64632037014016,
+          "iterationsPerEss": 82.09205769338926
+        }
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0002_01A:5:0:e81:s0",
+      "scenarioId": "base",
+      "status": "ok",
+      "iterationsAfterBurnIn": 6236,
+      "samplesPerChain": [
+        276,
+        327,
+        324,
+        318
+      ],
+      "mainStatistics": [
+        "dora:1",
+        "dora:2",
+        "dora:3",
+        "furiten",
+        "wait:0",
+        "wait:11",
+        "wait:12",
+        "wait:13",
+        "wait:14",
+        "wait:15",
+        "wait:16",
+        "wait:20",
+        "wait:21",
+        "wait:24",
+        "wait:3",
+        "wait:32",
+        "wait:6",
+        "family:chiitoi",
+        "family:regular"
+      ],
+      "perBatchScale": {
+        "1": {
+          "undeterminedStatistics": [
+            "dora:1"
+          ],
+          "worstStatistic": "family:chiitoi",
+          "pooledEss": 166.33702522706963,
+          "iterationsPerEss": 37.490149841787336
+        },
+        "2": {
+          "undeterminedStatistics": [
+            "dora:1"
+          ],
+          "worstStatistic": "family:chiitoi",
+          "pooledEss": 128.18725121484533,
+          "iterationsPerEss": 48.647583444536885
+        },
+        "4": {
+          "undeterminedStatistics": [
+            "dora:1"
+          ],
+          "worstStatistic": "family:regular",
+          "pooledEss": 101.22529851952834,
+          "iterationsPerEss": 61.60515297267268
+        }
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0002_01A:5:0:e81:s0",
+      "scenarioId": "theta_riichi_response_recalibrated",
+      "status": "ok",
+      "iterationsAfterBurnIn": 7465,
+      "samplesPerChain": [
+        328,
+        331,
+        324,
+        508
+      ],
+      "mainStatistics": [
+        "dora:1",
+        "dora:2",
+        "dora:3",
+        "furiten",
+        "wait:0",
+        "wait:11",
+        "wait:12",
+        "wait:13",
+        "wait:14",
+        "wait:15",
+        "wait:16",
+        "wait:20",
+        "wait:21",
+        "wait:24",
+        "wait:3",
+        "wait:6",
+        "family:chiitoi",
+        "family:regular"
+      ],
+      "perBatchScale": {
+        "1": {
+          "undeterminedStatistics": [
+            "dora:1"
+          ],
+          "worstStatistic": "family:chiitoi",
+          "pooledEss": 381.303172296481,
+          "iterationsPerEss": 19.577597414258108
+        },
+        "2": {
+          "undeterminedStatistics": [
+            "dora:1"
+          ],
+          "worstStatistic": "family:chiitoi",
+          "pooledEss": 260.2099699923082,
+          "iterationsPerEss": 28.688370396494285
+        },
+        "4": {
+          "undeterminedStatistics": [
+            "dora:1",
+            "wait:12"
+          ],
+          "worstStatistic": "family:chiitoi",
+          "pooledEss": 235.05934542189206,
+          "iterationsPerEss": 31.757937497024756
+        }
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0029_01A:7:0:e35:s1",
+      "scenarioId": "base",
+      "status": "ok",
+      "iterationsAfterBurnIn": 11562,
+      "samplesPerChain": [
+        579,
+        593,
+        584,
+        556
+      ],
+      "mainStatistics": [
+        "dora:0",
+        "dora:2",
+        "dora:3",
+        "wait:1",
+        "wait:10",
+        "wait:11",
+        "wait:12",
+        "wait:13",
+        "wait:14",
+        "wait:19",
+        "wait:2",
+        "wait:20",
+        "wait:22",
+        "wait:3",
+        "wait:4",
+        "wait:5",
+        "wait:6",
+        "family:chiitoi",
+        "family:regular"
+      ],
+      "perBatchScale": {
+        "1": {
+          "undeterminedStatistics": [],
+          "worstStatistic": "family:regular",
+          "pooledEss": 500.54878490540995,
+          "iterationsPerEss": 23.098647621699655
+        },
+        "2": {
+          "undeterminedStatistics": [],
+          "worstStatistic": "family:chiitoi",
+          "pooledEss": 446.66288443327056,
+          "iterationsPerEss": 25.88529381542404
+        },
+        "4": {
+          "undeterminedStatistics": [],
+          "worstStatistic": "family:chiitoi",
+          "pooledEss": 367.0541547549163,
+          "iterationsPerEss": 31.49943911606177
+        }
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0029_01A:7:0:e35:s1",
+      "scenarioId": "theta_riichi_response_recalibrated",
+      "status": "ok",
+      "iterationsAfterBurnIn": 11000,
+      "samplesPerChain": [
+        549,
+        558,
+        541,
+        550
+      ],
+      "mainStatistics": [
+        "dora:0",
+        "dora:2",
+        "dora:3",
+        "wait:1",
+        "wait:10",
+        "wait:11",
+        "wait:12",
+        "wait:13",
+        "wait:14",
+        "wait:15",
+        "wait:19",
+        "wait:2",
+        "wait:20",
+        "wait:21",
+        "wait:22",
+        "wait:3",
+        "wait:4",
+        "wait:5",
+        "wait:6",
+        "family:chiitoi",
+        "family:regular"
+      ],
+      "perBatchScale": {
+        "1": {
+          "undeterminedStatistics": [],
+          "worstStatistic": "family:regular",
+          "pooledEss": 484.7491291827553,
+          "iterationsPerEss": 22.692150099464932
+        },
+        "2": {
+          "undeterminedStatistics": [],
+          "worstStatistic": "family:regular",
+          "pooledEss": 452.51206570528325,
+          "iterationsPerEss": 24.308744083664266
+        },
+        "4": {
+          "undeterminedStatistics": [],
+          "worstStatistic": "family:chiitoi",
+          "pooledEss": 835.0817873466821,
+          "iterationsPerEss": 13.172362475956357
+        }
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0070_02A:3:0:e79:s1",
+      "scenarioId": "base",
+      "status": "ok",
+      "iterationsAfterBurnIn": 9652,
+      "samplesPerChain": [
+        478,
+        480,
+        479,
+        492
+      ],
+      "mainStatistics": [
+        "dora:0",
+        "dora:2",
+        "dora:3",
+        "furiten",
+        "wait:1",
+        "wait:10",
+        "wait:11",
+        "wait:12",
+        "wait:13",
+        "wait:14",
+        "wait:15",
+        "wait:16",
+        "wait:2",
+        "wait:23",
+        "wait:25",
+        "wait:3",
+        "wait:4",
+        "wait:5",
+        "family:chiitoi",
+        "family:regular"
+      ],
+      "perBatchScale": {
+        "1": {
+          "undeterminedStatistics": [],
+          "worstStatistic": "family:chiitoi",
+          "pooledEss": 357.64937693748084,
+          "iterationsPerEss": 26.987325079800783
+        },
+        "2": {
+          "undeterminedStatistics": [],
+          "worstStatistic": "family:chiitoi",
+          "pooledEss": 293.50393695656203,
+          "iterationsPerEss": 32.88541918750642
+        },
+        "4": {
+          "undeterminedStatistics": [],
+          "worstStatistic": "family:chiitoi",
+          "pooledEss": 261.1870269567124,
+          "iterationsPerEss": 36.954362214933695
+        }
+      }
+    },
+    {
+      "decisionId": "mleague:2021-22:L001_S010_0070_02A:3:0:e79:s1",
+      "scenarioId": "theta_riichi_response_recalibrated",
+      "status": "ok",
+      "iterationsAfterBurnIn": 10057,
+      "samplesPerChain": [
+        489,
+        488,
+        518,
+        515
+      ],
+      "mainStatistics": [
+        "dora:0",
+        "dora:2",
+        "dora:3",
+        "furiten",
+        "wait:1",
+        "wait:10",
+        "wait:11",
+        "wait:12",
+        "wait:13",
+        "wait:14",
+        "wait:15",
+        "wait:2",
+        "wait:25",
+        "wait:3",
+        "wait:4",
+        "wait:5",
+        "family:chiitoi",
+        "family:regular"
+      ],
+      "perBatchScale": {
+        "1": {
+          "undeterminedStatistics": [],
+          "worstStatistic": "family:chiitoi",
+          "pooledEss": 478.03586251057715,
+          "iterationsPerEss": 21.03817054055746
+        },
+        "2": {
+          "undeterminedStatistics": [],
+          "worstStatistic": "family:regular",
+          "pooledEss": 441.39222612432354,
+          "iterationsPerEss": 22.784723891279686
+        },
+        "4": {
+          "undeterminedStatistics": [],
+          "worstStatistic": "family:regular",
+          "pooledEss": 338.9685338168106,
+          "iterationsPerEss": 29.669420600069987
+        }
+      }
+    }
+  ],
+  "worstIterationsPerEss": {
+    "1": 49.22724810381248,
+    "2": 61.900693466017344,
+    "4": 82.09205769338926
+  },
+  "note": "計算予算を決めるための暫定値。バッチが少ない幅の値は誤差が大きく、混合が十分である証拠には使わない",
+  "manifestSha256": "c8ff0d1e8e13dc04b9e523a0cb466646e06aed7d3d2b11419845009aae5326e5",
+  "chainsSha256": "3d3c78d4c942f81ce09ca09f29e51c7b11d7d09e23c973782fc3cbc27f98a91e"
+}
