@@ -1345,10 +1345,122 @@ class D33_04DiagnosticsTest(unittest.TestCase):
         self.assertLess(diagnostics["maxRhat"], 1.2)
         self.assertEqual(diagnostics["families"]["support"], {"regular": True, "kokushi": True})
         self.assertEqual(diagnostics["families"]["unvisitedSupported"], ["kokushi"])
+        self.assertEqual(diagnostics["families"]["states"], {"regular": "visited", "kokushi": "unvisited"})
+        self.assertIn("family:kokushi", diagnostics["scalars"])  # 標本に現れなくても、支持から列挙する
         held = run_chain_group(toy_starts(problem, starts), [1, 2, 3, 4], settings,
                                DisagreementThresholds(require_supported_families_visited=True))
-        self.assertEqual(held["holdReasons"], ["chain_disagreement"])
-        self.assertEqual(held["holdDetails"]["chain_disagreement"], ["unvisited_supported_family"])
+        self.assertEqual(held["holdReasons"], ["family_mass_unknown"])  # 質量が分からない（18.2節）
+        self.assertEqual(held["holdDetails"]["family_mass_unknown"], ["kokushi"])
+        self.assertIsNone(held["samples"])
+        self.assertNotIn("departureChecks", held["diagnostics"]["families"])
+
+    def _departure(self, problem, state, seed=99):
+        return lambda family: (seed, ChainStart(problem, initial_chain_state(problem, state),
+                                                lambda s: generic_summary(problem, s), {"chain": f"departure:{family}"}))
+
+    def test_departure_check_that_stays_adds_chain_disagreement(self) -> None:
+        """M3・M4を外すと、国士から出発した検査鎖は国士に留まる。移動が届かない疑いも記録する。"""
+        chain = exact("kokushi")
+        problem = kokushi_example()
+        settings = dataclasses.replace(self.SETTINGS, moves=("m1", "m2"))
+        held = run_chain_group(toy_starts(problem, family_states(chain, ("regular",))[:4]), [1, 2, 3, 4], settings,
+                               DisagreementThresholds(require_supported_families_visited=True),
+                               departure=self._departure(problem, family_states(chain, ("kokushi",))[0]))
+        self.assertEqual(held["holdReasons"], ["chain_disagreement", "family_mass_unknown"])
+        self.assertEqual(held["holdDetails"]["chain_disagreement"], ["departure_stayed"])
+        check = held["diagnostics"]["families"]["departureChecks"][0]
+        self.assertEqual((check["status"], check["share"], check["iterations"]), ("stayed", 1.0, 60))  # 本体の10分の1
+
+    def test_family_mass_unknown_is_kept_when_the_check_chain_leaves(self) -> None:
+        """出発点の近くは質量が小さくてすぐ離れるが、同じ系統の質量が大きい領域には届かない例（第4回反証の反例）。
+
+        国士のうち、リーチ者の手出しの前の自摸が2の領域Aは質量がごく小さく、自摸が3の領域Bに質量のほぼ全部がある。
+        国士の生成確率を1e-9にすると、本体の鎖はBへ届かず、Aから出発した検査鎖はすぐ面子手へ離れる。
+        """
+        model = ToyModel([{0: 0.3, 1: -0.2, 11: 0.5, 2: 0.1, 3: -0.4}, {0: -0.1, 1: 0.2, 11: 0.6, 2: -0.5, 3: 0.3}],
+                         [{(0, 0): 0.2, (0, 11): -0.3, (0, 2): -40.0, (0, 3): 12.0}, {}])
+        problem = kokushi_example(model, families=(("regular", 1.0 - 1e-9), ("kokushi", 1e-9)))
+        chain = ExactChain(problem)
+        r = problem.layout.riichi_index
+        kokushi = [k for k, state in enumerate(chain.states) if family_of(chain, state) == ("kokushi",)]
+        region_a = [chain.states[k] for k in kokushi if seat_type_state(problem.layout, chain.states[k], r)[1][0] == 2]
+        self.assertGreater(float(chain.target[kokushi].sum()), 0.999)  # 国士の質量は小さくない
+        self.assertLess(sum(float(chain.target[chain.index[state]]) for state in region_a), 1e-20)
+        held = run_chain_group(toy_starts(problem, family_states(chain, ("regular",))[:4]), [1, 2, 3, 4], self.SETTINGS,
+                               DisagreementThresholds(require_supported_families_visited=True),
+                               departure=self._departure(problem, region_a[0]))
+        check = held["diagnostics"]["families"]["departureChecks"][0]
+        self.assertEqual((check["status"], check["startFamily"]), ("left", "kokushi"))
+        self.assertLess(check["share"], 0.05)
+        self.assertEqual(held["diagnostics"]["families"]["unvisitedSupported"], ["kokushi"])
+        self.assertEqual(held["holdReasons"], ["family_mass_unknown"])  # 検査鎖が離れても解除しない
+        self.assertIsNone(held["samples"])
+
+    def test_departure_check_from_another_family_is_not_established(self) -> None:
+        """対象でない系統から始まった検査鎖は「検査未成立」で、退出として数えない。"""
+        chain = exact("kokushi")
+        problem = kokushi_example()
+        settings = dataclasses.replace(self.SETTINGS, moves=("m1", "m2"))
+        regular = family_states(chain, ("regular",))
+        held = run_chain_group(toy_starts(problem, regular[:4]), [1, 2, 3, 4], settings,
+                               DisagreementThresholds(require_supported_families_visited=True),
+                               departure=self._departure(problem, regular[5]))
+        check = held["diagnostics"]["families"]["departureChecks"][0]
+        self.assertEqual((check["status"], check["reason"], check["startFamily"]),
+                         ("not_established", "started_in_other_family", "regular"))
+        self.assertNotIn("share", check)
+        self.assertEqual(held["holdReasons"], ["family_mass_unknown"])
+        failed = belief.family_departure_check(ChainStart(None, None, None, {"status": "init_failed"}), "kokushi", 1, settings)
+        self.assertEqual((failed["status"], failed["reason"]), ("not_established", "init_failed"))
+
+    REVISED = DisagreementThresholds(max_rhat=1.2, main_statistic_band=(0.05, 0.95), max_family_deviation=4.0,
+                                     require_supported_families_visited=True)
+
+    def test_revised_thresholds_pass_healthy_chains_and_hold_separated_ones(self) -> None:
+        """牌姿の重なりを使わず、R̂と系統の滞在割合の差で判定する（17.5節の1、18.5節の2）。"""
+        chain = exact("kokushi")
+        problem = kokushi_example()
+        starts = family_states(chain, ("regular",))[:2] + family_states(chain, ("kokushi",))[:2]
+        healthy = run_chain_group(toy_starts(problem, starts), [1, 2, 3, 4], self.SETTINGS, self.REVISED)
+        self.assertEqual(healthy["status"], "ok", healthy.get("holdDetails"))
+        self.assertIn("family:kokushi", healthy["diagnostics"]["mainStatistics"])
+        self.assertLessEqual(healthy["diagnostics"]["families"]["shareDeviation"]["kokushi"]["maxSigmas"], 4.0)
+        with mock.patch.object(belief, "RandomChooser", RejectAllChooser):  # 出発点に閉じ込めた鎖
+            stuck = run_chain_group(toy_starts(problem, starts), [1, 2, 3, 4], self.SETTINGS, self.REVISED)
+        separated = run_chain_group(toy_starts(problem, starts), [1, 2, 3, 4],  # 別の峰に留まる鎖
+                                    dataclasses.replace(self.SETTINGS, moves=("m1", "m2")), self.REVISED)
+        for held in (stuck, separated):
+            self.assertEqual(held["holdReasons"], ["chain_disagreement"])
+            self.assertEqual(held["holdDetails"]["chain_disagreement"], ["rhat", "family_share"])
+            self.assertIsNone(held["diagnostics"]["families"]["shareDeviation"]["kokushi"])  # 動かない鎖では定義しない
+            self.assertIsNone(held["samples"])
+
+    def _synthetic(self, rates, seed=11, size=400):
+        """系統の指標だけが鎖ごとの確率で独立に出る標本（診断の単体試験用）。"""
+        rng = random.Random(seed)
+        return [[{"riichiFamilies": ["kokushi" if rng.random() < rate else "regular"], "riichiShape": [k % 7],
+                  "doraCounts": {"1": k % 2}} for k in range(size)] for rate in rates]
+
+    def test_family_share_deviation_uses_the_variance_of_the_difference(self) -> None:
+        support = {"regular": True, "kokushi": True}
+        thresholds = DisagreementThresholds(max_family_deviation=4.0, main_statistic_band=(0.05, 0.95))
+        same = belief.chain_diagnostics(self._synthetic([0.3] * 4), [], support, thresholds)
+        self.assertNotIn("family_share", same["chainDisagreement"]["violations"])
+        apart = belief.chain_diagnostics(self._synthetic([0.3, 0.3, 0.3, 0.6]), [], support, thresholds)
+        self.assertIn("family_share", apart["chainDisagreement"]["violations"])
+        deviation = apart["families"]["shareDeviation"]["kokushi"]
+        self.assertEqual(deviation["perChain"].index(deviation["maxSigmas"]), 3)
+        pooled = belief.pooled_mean_statistics([[float(s["riichiFamilies"] == ["kokushi"]) for s in chain]
+                                                for chain in self._synthetic([0.3, 0.3, 0.3, 0.6])])
+        last = pooled["chainDeviations"][3]
+        self.assertAlmostEqual(deviation["maxSigmas"], abs(last["difference"]) / last["standardError"], places=12)
+
+    def test_single_supported_family_is_structurally_constant(self) -> None:
+        samples = self._synthetic([0.0] * 4)
+        diagnostics = belief.chain_diagnostics(samples, [], {"regular": True, "kokushi": False}, self.REVISED)
+        self.assertEqual(diagnostics["families"]["states"], {"regular": "structurally_constant"})
+        self.assertEqual(diagnostics["mainStatistics"], ["dora:1"])  # 系統の指標は主要な統計から除く
+        self.assertEqual(diagnostics["familyMassUnknown"], [])
 
     def test_rhat_and_batch_means_on_known_series(self) -> None:
         self.assertEqual(belief.split_rhat([[1.0] * 10, [1.0] * 10]), 1.0)
@@ -1421,6 +1533,94 @@ class D33_05HoldTest(unittest.TestCase):
                                      DisagreementThresholds(max_rhat=1.1))
         self.assertEqual(record["holdReasons"], ["chain_disagreement"])
         self.assertIsNone(record["samples"])
+
+    def test_ess_below_target_is_held_without_extending_the_chains(self) -> None:
+        """実効標本数が目標に届かない組はheldにし、反復を追加しない（17.4節）。"""
+        chain = exact("kokushi")
+        problem = kokushi_example()
+        starts = family_states(chain, ("regular",))[:2] + family_states(chain, ("kokushi",))[:2]
+        settings = ChainSettings(iterations=600, burn_in=100, thin=5)
+        thresholds = DisagreementThresholds(main_statistic_band=(0.05, 0.95), ess_target=1e9)
+        calls = []
+        original = belief.run_chain
+        with mock.patch.object(belief, "run_chain", side_effect=lambda *a, **k: calls.append(a[3]) or original(*a, **k)):
+            record = run_chain_group(toy_starts(problem, starts), [1, 2, 3, 4], settings, thresholds)
+        self.assertEqual(record["holdReasons"], ["ess_below_target"])
+        self.assertIsNone(record["samples"])
+        detail = record["holdDetails"]["ess_below_target"]
+        self.assertEqual(detail["target"], 1e9)
+        self.assertEqual(sorted(detail["below"]), record["diagnostics"]["mainStatistics"])
+        self.assertEqual(calls, [settings] * 4)  # 鎖は4本だけ、決めた反復数のまま
+        self.assertEqual(record["diagnostics"]["samplesPerChain"], [100] * 4)
+        passed = run_chain_group(toy_starts(problem, starts), [1, 2, 3, 4], settings,
+                                 dataclasses.replace(thresholds, ess_target=1.0))
+        self.assertEqual(passed["status"], "ok")
+
+    def test_undetermined_ess_is_held(self) -> None:
+        """主要な統計に実効標本数を定義できないものがあれば、合格にしない（18.3節）。"""
+        rng = random.Random(5)
+        samples = [[{"riichiFamilies": ["regular"], "riichiShape": [0],
+                     "doraCounts": {"1": int(rng.random() < 0.5) if chain else 0, "2": int(rng.random() < 0.5)}}
+                    for _ in range(400)] for chain in range(4)]  # 鎖0だけ、家1のドラ枚数が動かない
+        thresholds = DisagreementThresholds(main_statistic_band=(0.05, 0.95), ess_target=1.0, max_rhat=1.05)
+        diagnostics = belief.chain_diagnostics(samples, [], {"regular": True}, thresholds)
+        self.assertEqual(diagnostics["mainStatistics"], ["dora:1", "dora:2"])
+        self.assertEqual(diagnostics["essBelowTarget"], {"target": 1.0, "below": {}, "undetermined": ["dora:1"]})
+        self.assertIsNone(diagnostics["scalars"]["dora:1"]["ess"])
+        self.assertIn("ess_below_target", belief.HOLD_REASONS)
+        self.assertIn("family_mass_unknown", belief.HOLD_REASONS)
+
+
+class DepartureStartTest(unittest.TestCase):
+    """出発検査の出発点：系統の確率を寄せるのは初期化だけで、移動は本体と同じ確率を使う（18.2節）。"""
+
+    def test_departure_probabilities(self) -> None:
+        values = dict(belief.departure_probabilities("kokushi", belief.TENPAI_FAMILY_PROBABILITIES))
+        self.assertEqual(values["kokushi"], 0.98)
+        self.assertAlmostEqual(values["regular"], 0.01, places=15)
+        self.assertAlmostEqual(values["chiitoi"], 0.01, places=15)
+        belief.validate_family_probabilities(tuple(values.items()))
+        with self.assertRaises(ValueError):
+            belief.departure_probabilities("unknown", belief.TENPAI_FAMILY_PROBABILITIES)
+
+    def test_chain_start_keeps_initialization_and_move_probabilities_apart(self) -> None:
+        world = object()
+        initial = belief.InitialWorld("ok", world, "kokushi", 3, 0.1, {})
+        fake_belief = mock.Mock()
+        with mock.patch.object(belief, "construct_initial_world", return_value=initial) as construct, \
+                mock.patch.object(belief, "mahjong_belief", return_value=(fake_belief, "state")) as build:
+            start = belief.mahjong_chain_start("context", "resolver", "cache", "departure:kokushi", 7,
+                                               init_probabilities="INIT", move_probabilities="MOVE",
+                                               init_attempts=5, init_seconds=1.0)
+        self.assertEqual(construct.call_args.kwargs["probabilities"], "INIT")
+        self.assertEqual(build.call_args.kwargs["probabilities"], "MOVE")
+        self.assertEqual((start.problem, start.state, start.info["family"]), (fake_belief.problem, "state", "kokushi"))
+
+    def test_decision_run_passes_body_probabilities_to_the_check_chain_moves(self) -> None:
+        context = mock.Mock(decision_id="d", information_state_hash="h")
+        context.target_private_row.return_value = {}
+        context.input_hash.return_value = "i"
+        seen = {}
+
+        def fake_group(start, seeds, settings, thresholds, *, deadline=None, departure=None):
+            seen["seed"], seen["start"] = departure("kokushi")
+            start(0, seeds[0])
+            return {"status": "ok", "holdReasons": [], "samples": []}
+
+        with mock.patch.object(belief, "reconstruction_mismatches", return_value=[]), \
+                mock.patch.object(belief, "model_resolver", return_value=mock.Mock(model_id="m")), \
+                mock.patch.object(belief, "run_chain_group", side_effect=fake_group), \
+                mock.patch.object(belief, "mahjong_chain_start", return_value="START") as start:
+            belief.run_decision_scenarios(context, None, [{"id": "base"}], ChainSettings(2, 1, 1),
+                                          required_scenarios=["base"], chains=2)
+        check, body = start.call_args_list
+        self.assertEqual(check.kwargs["init_probabilities"],
+                         belief.departure_probabilities("kokushi", belief.TENPAI_FAMILY_PROBABILITIES))
+        self.assertEqual(check.kwargs["move_probabilities"], belief.TENPAI_FAMILY_PROBABILITIES)
+        self.assertEqual(body.kwargs["init_probabilities"], belief.TENPAI_FAMILY_PROBABILITIES)
+        self.assertEqual(body.kwargs["move_probabilities"], belief.TENPAI_FAMILY_PROBABILITIES)
+        self.assertEqual(seen["start"], "START")
+        self.assertNotIn(seen["seed"], [call.args[4] for call in (body,)])  # 検査鎖は本体と別の乱数系列
 
 
 @unittest.skipUnless(HAS_DATA, "D.3.1の実データ（Git管理外）がない")
@@ -1881,6 +2081,18 @@ class MixingAnalysisTest(unittest.TestCase):
         long_run = [4 * float(np.asarray(chain).reshape(4, 4).mean(axis=1).var(ddof=1)) for chain in two]
         expected = variance / sum(0.25 * value / 16 for value in long_run)
         self.assertAlmostEqual(belief.pooled_mean_ess(two), expected, places=9)
+        # 鎖の平均と統合平均の差：分散は (1−w_i)^2 V_i + Σ_{j≠i} w_j^2 V_j（ここでは w=1/2、V_i=長期分散/16）
+        statistics = belief.pooled_mean_statistics(two)
+        self.assertAlmostEqual(statistics["standardError"], math.sqrt(sum(0.25 * value / 16 for value in long_run)), places=12)
+        for chain, deviation in zip(two, statistics["chainDeviations"]):
+            self.assertAlmostEqual(deviation["difference"], sum(chain) / 16 - sum(two[0] + two[1]) / 32, places=12)
+            self.assertAlmostEqual(deviation["standardError"], math.sqrt(0.25 * long_run[0] / 16 + 0.25 * long_run[1] / 16), places=12)
+        uneven = [([0.0] * 3 + [1.0] * 9 + [0.0] * 6) * 2, two[1]]  # 標本数が違う鎖：w=36/52と16/52
+        v = [6 * float(np.asarray(uneven[0]).reshape(6, 6).mean(axis=1).var(ddof=1)) / 36, long_run[1] / 16]
+        w = [36 / 52, 16 / 52]
+        deviations = belief.pooled_mean_statistics(uneven)["chainDeviations"]
+        self.assertAlmostEqual(deviations[0]["standardError"], math.sqrt((1 - w[0]) ** 2 * v[0] + w[1] ** 2 * v[1]), places=12)
+        self.assertAlmostEqual(deviations[1]["standardError"], math.sqrt((1 - w[1]) ** 2 * v[1] + w[0] ** 2 * v[0]), places=12)
         # 値が一定、鎖どうしで別の値に固まっている、鎖が短い場合はNone
         self.assertIsNone(belief.pooled_mean_ess([[1.0] * 16, [1.0] * 16]))
         self.assertIsNone(belief.pooled_mean_ess([[0.0] * 16, [1.0] * 16]))

@@ -3371,6 +3371,8 @@ HOLD_REASONS = (
     "fixed_component_sensitivity_missing",
     "rule_unresolved",
     "state_reconstruction_mismatch",
+    "ess_below_target",  # 17.4節、18.3節
+    "family_mass_unknown",  # 18.2節
 )
 
 
@@ -3399,15 +3401,31 @@ class ChainSettings:
 
 @dataclass(frozen=True)
 class DisagreementThresholds:
-    """chain_disagreementの閾値。pilot後に固定する（10.2節）。Noneの間は数値を報告するだけ。"""
+    """診断の閾値（10.2節、17節、18節）。Noneの間は数値を報告するだけ。
+
+    main_statistic_bandを与えると、R̂と実効標本数の判定を主要な統計（17.2節）に限る。
+    require_supported_families_visitedは、支持があり未訪問の系統をfamily_mass_unknownでheldにする（18.2節）。
+    """
 
     max_rhat: float | None = None
     min_shape_overlap: float | None = None
     require_supported_families_visited: bool | None = None
+    main_statistic_band: tuple[float, float] | None = None
+    ess_target: float | None = None
+    max_family_deviation: float | None = None  # 系統の滞在割合の鎖間の差（差の標準誤差の何倍まで、18.5節）
 
     def to_dict(self) -> dict[str, Any]:
         return {"maxRhat": self.max_rhat, "minShapeOverlap": self.min_shape_overlap,
-                "requireSupportedFamiliesVisited": self.require_supported_families_visited}
+                "requireSupportedFamiliesVisited": self.require_supported_families_visited,
+                "mainStatisticBand": None if self.main_statistic_band is None else list(self.main_statistic_band),
+                "essTarget": self.ess_target, "maxFamilyDeviation": self.max_family_deviation}
+
+    def options(self) -> dict[str, Any]:
+        """別プロセスへ渡して同じ閾値を作り直すための引数。"""
+        return {"max_rhat": self.max_rhat, "min_shape_overlap": self.min_shape_overlap,
+                "require_supported_families_visited": self.require_supported_families_visited,
+                "main_statistic_band": None if self.main_statistic_band is None else tuple(self.main_statistic_band),
+                "ess_target": self.ess_target, "max_family_deviation": self.max_family_deviation}
 
 
 class BudgetExceeded(RuntimeError):
@@ -3616,13 +3634,23 @@ def pooled_mean_ess(chains: Sequence[Sequence[float]], batch_scale: int = 1) -> 
     統合平均の分散を Σ w_i^2 × (鎖iの長期分散 / 標本数) で求め、全標本の分散をそれで割る。
     バッチの大きさは√n×batch_scale。値が一定の鎖があるとき、鎖が短すぎるときはNone（定義できない）。
     """
+    result = pooled_mean_statistics(chains, batch_scale)
+    return None if result is None else result["ess"]
+
+
+def pooled_mean_statistics(chains: Sequence[Sequence[float]], batch_scale: int = 1) -> dict[str, Any] | None:
+    """統合平均の実効標本数、標準誤差、鎖ごとの「鎖の平均−統合平均」とその標準誤差（設計18.3節）。
+
+    差の分散は (1−w_i)^2 V_i + Σ_{j≠i} w_j^2 V_j（V_iは鎖iの平均の分散）。定義できないときはNone。
+    """
     total = sum(len(c) for c in chains)
     if not total:
         return None
-    variance = float(np.asarray([v for c in chains for v in c], dtype=float).var(ddof=1)) if total > 1 else 0.0
+    pooled = np.asarray([v for c in chains for v in c], dtype=float)
+    variance = float(pooled.var(ddof=1)) if total > 1 else 0.0
     if variance == 0.0:
         return None
-    mean_variance = 0.0
+    weights, means, mean_variances, parts = [], [], [], []
     for chain in chains:
         n = len(chain)
         size = int(math.sqrt(n)) * batch_scale
@@ -3633,8 +3661,18 @@ def pooled_mean_ess(chains: Sequence[Sequence[float]], batch_scale: int = 1) -> 
         long_run = size * float(values.reshape(batches, size).mean(axis=1).var(ddof=1))
         if long_run == 0.0:
             return None  # 鎖の中で動いていない。鎖の間の差はbatch meansでは測れない
-        mean_variance += (n / total) ** 2 * long_run / n
-    return variance / mean_variance
+        weights.append(n / total)
+        means.append(float(np.mean(np.asarray(chain, dtype=float))))
+        mean_variances.append(long_run / n)
+        parts.append((n / total) ** 2 * long_run / n)  # w_i^2 × V_i
+    mean_variance = 0.0
+    for part in parts:
+        mean_variance += part
+    mean = float(pooled.mean())
+    deviations = []
+    for w, m, v, part in zip(weights, means, mean_variances, parts):
+        deviations.append({"difference": m - mean, "standardError": math.sqrt((1 - w) ** 2 * v + mean_variance - part)})
+    return {"ess": variance / mean_variance, "mean": mean, "standardError": math.sqrt(mean_variance), "chainDeviations": deviations}
 
 
 def _jaccard(left: set, right: set) -> float:
@@ -3652,18 +3690,21 @@ def chain_diagnostics(
     family: Callable[[Mapping[str, Any]], str] = sample_family,
 ) -> dict[str, Any]:
     """鎖ごとの標本と移動の統計から、10.1節の診断とchain_disagreementの判定を作る。"""
-    names = sorted({name for chain in chains for sample in chain for name in scalars(sample)})
+    # 系統の指標は、標本に現れたキーからではなく支持から列挙する（18.2節）。未訪問の系統は全部0の系列になる。
+    supported = sorted(name for name, ok in support.items() if ok)
+    names = sorted({name for chain in chains for sample in chain for name in scalars(sample)}
+                   | {f"family:{name}" for name in supported})
     series = {name: [[scalars(sample).get(name, 0.0) for sample in chain] for chain in chains] for name in names}
     summary: dict[str, Any] = {}
-    rhats = []
+    pooled_statistics = {}
     for name in names:
-        rhat = split_rhat(series[name])
-        esses = [batch_means_ess(values) for values in series[name]]
-        ess = sum(value for value in esses if value is not None) if any(v is not None for v in esses) else None
-        mean = float(np.mean([v for values in series[name] for v in values])) if any(series[name]) else None
-        summary[name] = {"rhat": rhat, "ess": ess, "mean": mean}
-        if rhat is not None:
-            rhats.append(rhat)
+        # 実効標本数は、全鎖をまとめた平均の分散に合わせて求める（18.3節）。定義できなければNone。
+        pooled = pooled_statistics[name] = pooled_mean_statistics(series[name])
+        values = [v for chain_values in series[name] for v in chain_values]
+        summary[name] = {"rhat": split_rhat(series[name]), "ess": None if pooled is None else pooled["ess"],
+                         "standardError": None if pooled is None else pooled["standardError"],
+                         "mean": float(np.mean(values)) if values else None,
+                         "constant": len(set(values)) <= 1}
     shape_sets = [{shape(sample) for sample in chain} for chain in chains]
     pairs = [_jaccard(a, b) for k, a in enumerate(shape_sets) for b in shape_sets[k + 1:]]
     union = set().union(*shape_sets) if shape_sets else set()
@@ -3673,6 +3714,42 @@ def chain_diagnostics(
         visits.append({label: count / len(chain) for label, count in sorted(labels.items())} if chain else {})
     visited = {part for chain in chains for sample in chain for part in family(sample).split("+")}
     unvisited = sorted(name for name, ok in support.items() if ok and name not in visited)
+    family_states = {name: "structurally_constant" if len(supported) == 1 else "unvisited" if name in unvisited else "visited"
+                     for name in supported}
+    # 主要な統計（17.2節）。帯を与えないときは、従来どおり全部の統計でR̂を見る。
+    band = thresholds.main_statistic_band
+    if band is None:
+        main = list(names)
+    else:
+        main = []
+        for name in names:
+            item = summary[name]
+            if name.startswith("family:"):
+                keep = family_states.get(name[len("family:"):]) == "visited"
+            elif name.startswith("dora:"):
+                keep = not item["constant"]
+            else:
+                keep = item["mean"] is not None and band[0] <= item["mean"] <= band[1]
+            if keep:
+                main.append(name)
+    rhats = [summary[name]["rhat"] for name in main if summary[name]["rhat"] is not None]
+    rhat_undetermined = [name for name in main if summary[name]["rhat"] is None]
+    ess_undetermined = [name for name in main if summary[name]["ess"] is None]
+    ess_below = {name: summary[name]["ess"] for name in main
+                 if thresholds.ess_target is not None and summary[name]["ess"] is not None
+                 and summary[name]["ess"] < thresholds.ess_target}
+    # 訪問済みの系統の滞在割合：鎖の割合と統合平均の差を、その差自身の標準誤差で割る（18.5節の2）。
+    family_deviation: dict[str, Any] = {}
+    for name, state in family_states.items():
+        if state != "visited":
+            continue
+        pooled = pooled_statistics[f"family:{name}"]
+        if pooled is None:
+            family_deviation[name] = None
+            continue
+        ratios = [0.0 if d["difference"] == 0.0 else math.inf if d["standardError"] == 0.0
+                  else abs(d["difference"]) / d["standardError"] for d in pooled["chainDeviations"]]
+        family_deviation[name] = {"maxSigmas": max(ratios), "perChain": ratios}
     total = MoveStatistics()
     for item in stats:
         for field_name in ("proposed", "accepted", "rejected", "null_moves", "cross_family"):
@@ -3691,19 +3768,30 @@ def chain_diagnostics(
             "meanPairwiseOverlap": float(np.mean(pairs)) if pairs else None,
         },
         "families": {"support": dict(support), "visitsPerChain": visits, "unvisitedSupported": unvisited,
+                     "states": family_states, "shareDeviation": family_deviation,
                      "crossFamilyAccepted": moves["cross_family"]},
         "moves": moves,
+        "mainStatistics": main,
     }
     violations = []
     if thresholds.max_rhat is not None and (result["maxRhat"] is None or result["maxRhat"] > thresholds.max_rhat):
         violations.append("rhat")
+    if thresholds.max_rhat is not None and band is not None and rhat_undetermined:
+        violations.append("rhat_undetermined")  # 計算できないR̂を合格として数えない（18.5節の1）
     overlap = result["shapes"]["minPairwiseOverlap"]
     if thresholds.min_shape_overlap is not None and (overlap is None or overlap < thresholds.min_shape_overlap):
         violations.append("shape_overlap")
-    if thresholds.require_supported_families_visited and unvisited:
-        violations.append("unvisited_supported_family")
+    if thresholds.max_family_deviation is not None and any(
+            item is None or item["maxSigmas"] > thresholds.max_family_deviation for item in family_deviation.values()):
+        violations.append("family_share")
     result["chainDisagreement"] = {"thresholds": thresholds.to_dict(), "violations": violations,
                                    "judged": any(v is not None for v in thresholds.to_dict().values())}
+    # 実効標本数の不足（17.4節）と、定義できない場合（18.3節）。どちらも反復を追加せずheldにする。
+    result["essBelowTarget"] = None
+    if thresholds.ess_target is not None and (ess_below or ess_undetermined):
+        result["essBelowTarget"] = {"target": thresholds.ess_target, "below": ess_below, "undetermined": ess_undetermined}
+    # 支持があり未訪問の系統は、質量が分からない（18.2節）。出発検査の結果では解除しない。
+    result["familyMassUnknown"] = unvisited if thresholds.require_supported_families_visited and unvisited else []
     return result
 
 
@@ -3722,6 +3810,39 @@ class ChainStart:
     info: dict[str, Any]
 
 
+def family_departure_check(
+    start: ChainStart,
+    family: str,
+    seed: int,
+    settings: ChainSettings,
+    *,
+    deadline: float | None = None,
+    family_of: Callable[[Mapping[str, Any]], str] = sample_family,
+) -> dict[str, Any]:
+    """系統の出発検査（18.2節）。その系統から出発した鎖が留まるかを見る、補助の診断。
+
+    出発点は系統の中の事後分布からの標本ではないので、鎖が離れても系統の質量が小さいとは言えない。
+    結果はholdの解除に使わない。出発点が対象の系統に属さないときは「検査未成立」とし、退出として数えない。
+    """
+    record: dict[str, Any] = {"family": family, "seed": seed, "initialization": start.info}
+    if start.state is None:
+        return {**record, "status": "not_established", "reason": "init_failed"}
+    try:
+        origin = family_of(start.summarize(start.state))  # type: ignore[misc]
+        if family not in origin.split("+"):
+            return {**record, "status": "not_established", "reason": "started_in_other_family", "startFamily": origin}
+        iterations = max(1, settings.iterations // 10)
+        check = ChainSettings(iterations, 0, min(settings.thin, iterations), moves=settings.moves)
+        run = run_chain(start.problem, start.state, RandomChooser(random.Random(seed + 1)),  # type: ignore[arg-type]
+                        check, start.summarize, deadline)  # type: ignore[arg-type]
+    except RuleUnresolvedError as error:
+        return {**record, "status": "not_established", "reason": "rule_unresolved", "detail": str(error)}
+    share = sum(family in family_of(sample).split("+") for sample in run.samples) / len(run.samples)
+    status = "stayed" if share >= 0.5 else "left" if share < 0.05 else "intermediate"
+    return {**record, "status": status, "startFamily": origin, "iterations": iterations, "samples": len(run.samples),
+            "share": share, "crossFamilyAccepted": dict(run.stats.cross_family), "seconds": round(run.seconds, 4)}
+
+
 def run_chain_group(
     starts: Callable[[int, int], ChainStart],
     seeds: Sequence[int],
@@ -3730,8 +3851,12 @@ def run_chain_group(
     *,
     deadline: float | None = None,
     scalars: Callable[[Mapping[str, Any]], dict[str, float]] = generic_scalars,
+    departure: Callable[[str], tuple[int, ChainStart]] | None = None,
 ) -> dict[str, Any]:
-    """同じ目標の独立な鎖を走らせ、診断とholdをまとめる。heldなら標本を返さない。"""
+    """同じ目標の独立な鎖を走らせ、診断とholdをまとめる。heldなら標本を返さない。
+
+    departure(系統)は、その系統から出発する検査鎖のseedと出発点を返す（18.2節）。未訪問の系統があるときだけ使う。
+    """
     import time
 
     begin = time.perf_counter()
@@ -3776,9 +3901,31 @@ def run_chain_group(
                                       thresholds, scalars)
         for point in settings.checkpoints
     }
+    diagnostics = record["diagnostics"]
+    violations = list(diagnostics["chainDisagreement"]["violations"])
+    unknown = diagnostics["familyMassUnknown"]
+    if unknown and departure is not None:
+        checks = []
+        try:
+            for name in unknown:
+                check_seed, check_start = departure(name)
+                checks.append(family_departure_check(check_start, name, check_seed, settings, deadline=deadline))
+        except RuleUnresolvedError as error:
+            return held("rule_unresolved", str(error))
+        except BudgetExceeded as error:
+            return held("resource_budget_exceeded", {"completedChains": len(runs), "at": f"departure check: {error}"})
+        diagnostics["families"]["departureChecks"] = checks
+        if any(check["status"] == "stayed" for check in checks):
+            violations.append("departure_stayed")  # 留まり続けるなら、移動が届いていない疑いも記録する
     record["runtime"] = {"seconds": round(time.perf_counter() - begin, 4), "chainSeconds": [round(r.seconds, 4) for r in runs]}
-    if record["diagnostics"]["chainDisagreement"]["violations"]:
-        return held("chain_disagreement", record["diagnostics"]["chainDisagreement"]["violations"])
+    # 併存するhold理由はすべて記録する（18.7節の報告に使う）。
+    holds = [("chain_disagreement", violations), ("ess_below_target", diagnostics["essBelowTarget"]),
+             ("family_mass_unknown", unknown)]
+    holds = [(reason, detail) for reason, detail in holds if detail]
+    for reason, detail in holds:
+        held(reason, detail)
+    if holds:
+        return record
     record["samples"] = [{"chain": chain, **sample} for chain, run in enumerate(runs) for sample in run.samples]
     return record
 
@@ -3820,6 +3967,39 @@ def mahjong_summary(belief: MahjongBelief, state: ChainState) -> dict[str, Any]:
     sample["doraCounts"] = {seat: sum(1 for t in hand if t % 34 == dora) for seat, hand in sample["hands"].items()}
     sample["redCounts"] = {seat: sum(1 for t in hand if t >= 34) for seat, hand in sample["hands"].items()}
     return sample
+
+
+def departure_probabilities(family: str, probabilities: Sequence[tuple[str, float]]) -> tuple[tuple[str, float], ...]:
+    """出発検査の初期化だけに使う系統の確率：対象を0.98、残りを等分する（18.2節）。"""
+    others = sum(name != family for name, _ in probabilities)
+    if others == len(probabilities):
+        raise ValueError(f"未知の系統: {family}")
+    return tuple((name, 0.98 if name == family else 0.02 / others) for name, _ in probabilities)
+
+
+def mahjong_chain_start(
+    context: DecisionContext,
+    resolver: ModelResolver,
+    cache: WindowCache,
+    chain: Any,
+    chain_seed: int,
+    *,
+    init_probabilities: Sequence[tuple[str, float]],
+    move_probabilities: Sequence[tuple[str, float]],
+    init_attempts: int,
+    init_seconds: float,
+) -> ChainStart:
+    """実局面の鎖1本の出発点。初期化が使う系統の確率と、移動（M3・M4）が使う系統の確率は別に受け取る。"""
+    initial = construct_initial_world(context, random.Random(chain_seed), resolver=resolver,
+                                      probabilities=init_probabilities, max_attempts=init_attempts,
+                                      max_seconds=init_seconds, cache=cache)
+    info = {"chain": chain, "seed": chain_seed, "status": initial.status, "family": initial.family,
+            "attempts": initial.attempts, "seconds": round(initial.seconds, 4),
+            "failureReasons": initial.failure_reasons}
+    if initial.world is None:
+        return ChainStart(None, None, None, info)
+    belief, state = mahjong_belief(context, initial.world, resolver, probabilities=move_probabilities, cache=cache)
+    return ChainStart(belief.problem, state, lambda s, belief=belief: mahjong_summary(belief, s), info)
 
 
 def _chain_seed(base: int, decision_id: str, scenario_id: str, chain: int) -> int:
@@ -3877,19 +4057,20 @@ def run_decision_scenarios(
             continue
 
         def start(chain: int, chain_seed: int, resolver: ScenarioResolver = resolver) -> ChainStart:
-            initial = construct_initial_world(context, random.Random(chain_seed), resolver=resolver,
-                                              probabilities=probabilities, max_attempts=init_attempts,
-                                              max_seconds=init_seconds, cache=cache)
-            info = {"chain": chain, "seed": chain_seed, "status": initial.status, "family": initial.family,
-                    "attempts": initial.attempts, "seconds": round(initial.seconds, 4),
-                    "failureReasons": initial.failure_reasons}
-            if initial.world is None:
-                return ChainStart(None, None, None, info)
-            belief, state = mahjong_belief(context, initial.world, resolver, probabilities=probabilities, cache=cache)
-            return ChainStart(belief.problem, state, lambda s, belief=belief: mahjong_summary(belief, s), info)
+            return mahjong_chain_start(context, resolver, cache, chain, chain_seed, init_probabilities=probabilities,
+                                       move_probabilities=probabilities, init_attempts=init_attempts, init_seconds=init_seconds)
+
+        def departure(family: str, resolver: ScenarioResolver = resolver,
+                      scenario_id: str = str(scenario["id"])) -> tuple[int, ChainStart]:
+            # 系統の確率を寄せるのは初期化だけ。検査鎖の移動は本体と同じ確率を使う（18.2節）。
+            check_seed = _chain_seed(seed, context.decision_id, f"{scenario_id}:departure:{family}", 0)
+            return check_seed, mahjong_chain_start(
+                context, resolver, cache, f"departure:{family}", check_seed,
+                init_probabilities=departure_probabilities(family, probabilities), move_probabilities=probabilities,
+                init_attempts=init_attempts, init_seconds=init_seconds)
 
         seeds = [_chain_seed(seed, context.decision_id, str(scenario["id"]), chain) for chain in range(chains)]
-        record.update(run_chain_group(start, seeds, settings, thresholds, deadline=deadline))
+        record.update(run_chain_group(start, seeds, settings, thresholds, deadline=deadline, departure=departure))
         outputs.append(record)
         if "resource_budget_exceeded" in record["holdReasons"]:
             break  # 予算を超えたら残りのシナリオを走らせない（減らして続けない）
@@ -4019,8 +4200,7 @@ def run_belief_decisions(
         "chains": chains, "seed": seed, "cacheCapacity": cache_capacity, "outputDir": str(output_dir),
         "deadline": start + wall_clock_seconds, "scenarioIds": list(scenario_ids or []),
         "thetaVariant": dict(theta_variant) if theta_variant is not None else None,
-        "thresholds": {"max_rhat": thresholds.max_rhat, "min_shape_overlap": thresholds.min_shape_overlap,
-                       "require_supported_families_visited": thresholds.require_supported_families_visited},
+        "thresholds": thresholds.options(),
     }
     rows = []
     context = multiprocessing.get_context("spawn")
