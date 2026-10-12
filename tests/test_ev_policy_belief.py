@@ -2119,5 +2119,170 @@ class MixingAnalysisTest(unittest.TestCase):
         self.assertEqual(belief.mixing_pooled_analysis(failed, manifest)["groups"][0]["status"], "incomplete")
 
 
+def _roundtrip(value):
+    """保存して読み直した形（JSON）にそろえる。"""
+    return json.loads(json.dumps(belief._json_safe(value), ensure_ascii=False))
+
+
+class StageATest(unittest.TestCase):
+    """段階A（設計17.8節、18.6〜18.7節）：manifestの固定（D33-08）、鎖ごとに保存した結果の集計、報告。"""
+
+    SETTINGS = ChainSettings(iterations=600, burn_in=100, thin=5)
+    THRESHOLDS = DisagreementThresholds(max_rhat=1.2, main_statistic_band=(0.05, 0.95), max_family_deviation=4.0,
+                                        ess_target=20.0, require_supported_families_visited=True)
+
+    def _manifest(self, **overrides):
+        pilot = {"decisions": [{"decisionId": f"d{k}", "stratum": {"timing": k // 3, "dealer": k % 3}} for k in range(9)]
+                 + [{"decisionId": "d9", "stratum": {"timing": 0, "dealer": 0}}]}
+        pooled = {"worstIterationsPerEss": {"1": 49.22724810381248, "2": 61.900693466017344, "4": 82.09205769338926}}
+        mixing = [{"decisionId": "a", "scenarioId": "base", "status": "ok", "seconds": 1000.0, "iterations": 1000},
+                  {"decisionId": "a", "scenarioId": "theta", "status": "ok", "seconds": 3000.0, "iterations": 2000},
+                  {"decisionId": "b", "scenarioId": "base", "status": "init_failed"}]
+        return belief.build_stage_a_manifest(overrides.pop("pilot", pilot), pooled, mixing, seed=20261013, mixing_seed=20261003)
+
+    def test_d33_08_manifest_fixes_the_run_before_it_starts(self) -> None:
+        manifest = self._manifest()
+        self.assertEqual(manifest["decisions"], [f"d{k}" for k in range(9)])  # 先頭9件（9層から1件ずつ）
+        self.assertEqual(manifest["scenarios"], ["base", belief.THETA_VARIANT_ID])
+        self.assertEqual(manifest["iterationsPerEss"], 82.09205769338926)  # 丸める前の値、3つの最大
+        self.assertEqual((manifest["sampleIterations"], manifest["iterations"], manifest["burnIn"]), (12_314, 13_314, 1_000))
+        self.assertEqual((manifest["chains"], manifest["processes"], manifest["thin"], manifest["safetyFactor"],
+                          manifest["essTarget"], manifest["fastShape"]), (4, 3, 5, 1.5, 400, True))
+        self.assertEqual(manifest["departureIterations"], 1_331)
+        self.assertAlmostEqual(manifest["secondsPerIteration"], 4000.0 / 3000.0)  # 済んだ鎖の秒数÷反復数
+        self.assertAlmostEqual(manifest["slowestSecondsPerIteration"], 1.5)
+        estimate = 9 * 2 * 4 * 13_314 * (4000.0 / 3000.0) / 3
+        self.assertAlmostEqual(manifest["estimatedWallClockSeconds"], estimate)
+        self.assertAlmostEqual(manifest["wallClockLimitSeconds"], 1.5 * estimate)
+        self.assertEqual(manifest["thresholds"], {
+            "max_rhat": 1.05, "min_shape_overlap": None, "require_supported_families_visited": True,
+            "main_statistic_band": [0.05, 0.95], "ess_target": 400.0, "max_family_deviation": 4.0})
+        belief.validate_stage_a_manifest(_roundtrip(manifest))
+        changes = [
+            {"processes": 4}, {"fastShape": False}, {"iterations": manifest["iterations"] + 1},
+            {"sampleIterations": manifest["sampleIterations"] - 1}, {"iterationsPerEss": 49.2},
+            {"wallClockLimitSeconds": 2.0 * estimate}, {"estimatedWallClockSeconds": estimate / 2},
+            {"seed": manifest["mixingSeed"]}, {"decisions": ["d0", "d0"]}, {"schemaVersion": "other"},
+            {"thresholds": {**manifest["thresholds"], "ess_target": None}},
+            {"thresholds": {**manifest["thresholds"], "ess_target": 100.0}},
+            {"thresholds": {**manifest["thresholds"], "require_supported_families_visited": None}},
+        ]
+        for change in changes:
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                belief.validate_stage_a_manifest({**manifest, **change})
+        for key in belief.STAGE_A_REQUIRED_KEYS:
+            with self.subTest(missing=key), self.assertRaises(ValueError):
+                belief.validate_stage_a_manifest({k: v for k, v in manifest.items() if k != key})
+        duplicated = {"decisions": [{"decisionId": f"d{k}", "stratum": {"timing": 0}} for k in range(9)]}
+        with self.assertRaises(ValueError):
+            self._manifest(pilot=duplicated)
+
+    def _chain_records(self, problem, states, seeds, settings):
+        """段階Aのworkerと同じ手順で、鎖ごとの保存結果を作る（seedとchooserのseedはrun_chain_groupと同じ）。"""
+        records = []
+        for chain, seed in enumerate(seeds):
+            start = toy_starts(problem, states)(chain, seed)
+            support = belief.family_support(problem, start.state.ids)
+            run = belief.run_chain(problem, start.state, RandomChooser(random.Random(seed + 1)), settings, start.summarize)
+            records.append(_roundtrip({"status": "ok", "seed": seed, "initialization": start.info, "support": support,
+                                       "samples": run.samples, "moves": run.stats.as_dict(), "seconds": run.seconds}))
+        return records
+
+    def test_chainwise_aggregation_matches_run_chain_group(self) -> None:
+        chain = exact("kokushi")
+        problem = kokushi_example()
+        seeds = [1, 2, 3, 4]
+        mixed = family_states(chain, ("regular",))[:2] + family_states(chain, ("kokushi",))[:2]
+        regular = family_states(chain, ("regular",))[:4]
+        swaps_only = dataclasses.replace(self.SETTINGS, moves=("m1", "m2"))
+        cases = [("healthy", mixed, self.SETTINGS, self.THRESHOLDS, "ok"),
+                 ("ess", mixed, self.SETTINGS, dataclasses.replace(self.THRESHOLDS, ess_target=1e9), "held"),
+                 ("separated", mixed, swaps_only, self.THRESHOLDS, "held")]
+        for name, states, settings, thresholds, status in cases:
+            with self.subTest(case=name):
+                expected = _roundtrip(run_chain_group(toy_starts(problem, states), seeds, settings, thresholds))
+                actual = _roundtrip(belief.stage_a_group(self._chain_records(problem, states, seeds, settings), {}, settings, thresholds))
+                self.assertEqual(actual["status"], status)
+                for key in ("status", "holdReasons", "diagnostics", "samples", "seeds", "settings"):
+                    self.assertEqual(actual[key], expected[key], key)
+                self.assertEqual(actual.get("holdDetails"), expected.get("holdDetails"))
+                self.assertEqual(actual["pendingDepartures"], [])
+        # 未訪問の系統：出発検査の結果がそろうまでは、検査待ちとして返す
+        kokushi_state = family_states(chain, ("kokushi",))[0]
+
+        def departure(family):
+            return 99, ChainStart(problem, initial_chain_state(problem, kokushi_state),
+                                  lambda s: generic_summary(problem, s), {"chain": f"departure:{family}"})
+
+        expected = _roundtrip(run_chain_group(toy_starts(problem, regular), seeds, swaps_only, self.THRESHOLDS, departure=departure))
+        records = self._chain_records(problem, regular, seeds, swaps_only)
+        waiting = belief.stage_a_group(records, {}, swaps_only, self.THRESHOLDS)
+        self.assertEqual(waiting["pendingDepartures"], ["kokushi"])
+        self.assertIn("family_mass_unknown", waiting["holdReasons"])  # 検査の前でも標本は返さない
+        self.assertIsNone(waiting["samples"])
+        check = _roundtrip(belief.family_departure_check(departure("kokushi")[1], "kokushi", 99, swaps_only))
+        actual = _roundtrip(belief.stage_a_group(records, {"kokushi": check}, swaps_only, self.THRESHOLDS))
+        self.assertEqual(actual["pendingDepartures"], [])
+        self.assertIn("chain_disagreement", actual["holdReasons"])
+        self.assertIn("family_mass_unknown", actual["holdReasons"])
+        for key in ("status", "holdReasons", "holdDetails", "samples"):
+            self.assertEqual(actual[key], expected[key], key)
+        for check_row in actual["diagnostics"]["families"]["departureChecks"] + expected["diagnostics"]["families"]["departureChecks"]:
+            check_row.pop("seconds")  # 実時間だけは実行ごとに違う
+        self.assertEqual(actual["diagnostics"], expected["diagnostics"])
+
+    def test_unfinished_and_failed_chains_are_held_without_numbers(self) -> None:
+        chain = exact("kokushi")
+        problem = kokushi_example()
+        records = self._chain_records(problem, chain.states[:4], [1, 2, 3, 4], ChainSettings(50, 10, 5))
+        unfinished = belief.stage_a_group(records[:3] + [None], {}, self.SETTINGS, self.THRESHOLDS)
+        self.assertEqual(unfinished["holdReasons"], ["resource_budget_exceeded"])  # 済んだ鎖だけで集計しない
+        self.assertEqual(unfinished["holdDetails"]["resource_budget_exceeded"], {"completedChains": 3})
+        failed = belief.stage_a_group(records[:3] + [{"status": "init_failed", "initialization": {"status": "init_failed"}}],
+                                      {}, self.SETTINGS, self.THRESHOLDS)
+        self.assertEqual(failed["holdReasons"], ["init_failed"])
+        unresolved = belief.stage_a_group(records[:3] + [{"status": "rule_unresolved", "detail": "x"}], {}, self.SETTINGS, self.THRESHOLDS)
+        self.assertEqual(unresolved["holdReasons"], ["rule_unresolved"])
+        for record in (unfinished, failed, unresolved):
+            self.assertIsNone(record["samples"])
+            self.assertNotIn("diagnostics", record)
+
+    def test_summary_separates_the_two_pass_rates(self) -> None:
+        chain = exact("kokushi")
+        problem = kokushi_example()
+        seeds = [1, 2, 3, 4]
+        mixed = family_states(chain, ("regular",))[:2] + family_states(chain, ("kokushi",))[:2]
+        swaps_only = dataclasses.replace(self.SETTINGS, moves=("m1", "m2"))
+        passed = belief.stage_a_group(self._chain_records(problem, mixed, seeds, self.SETTINGS), {}, self.SETTINGS, self.THRESHOLDS)
+        check = {"family": "kokushi", "status": "left", "share": 0.0}
+        unknown = belief.stage_a_group(self._chain_records(problem, family_states(chain, ("regular",))[:4], seeds, swaps_only),
+                                       {"kokushi": check}, swaps_only,
+                                       DisagreementThresholds(main_statistic_band=(0.05, 0.95), require_supported_families_visited=True))
+        self.assertEqual((passed["holdReasons"], unknown["holdReasons"]), ([], ["family_mass_unknown"]))
+
+        def decision(name, groups):
+            holds = sorted({reason for group in groups for reason in group["holdReasons"]} | {"fixed_component_sensitivity_missing"})
+            return {"decisionId": name, "status": "held", "holdReasons": holds,
+                    "scenarios": [{"scenarioId": f"s{k}", **group} for k, group in enumerate(groups)]}
+
+        manifest = {"essTarget": 20.0, "thresholds": self.THRESHOLDS.options(), "sampleIterations": 500, "chains": 4,
+                    "iterations": 600, "usage": "接続の確認だけ"}
+        summary = belief.stage_a_summary([decision("A", [passed, passed]), decision("B", [passed, unknown])], manifest)
+        self.assertEqual((summary["mixingDiagnosticsPass"]["passed"], summary["mixingDiagnosticsPass"]["of"]), (1, 2))
+        self.assertEqual(summary["d33Eligible"]["passed"], 0)  # 感度シナリオがそろわないので全件held
+        self.assertEqual(summary["familyMassUnknown"]["decisions"], 1)
+        self.assertEqual(summary["familyMassUnknown"]["coexistingHoldReasons"], {"B": ["fixed_component_sensitivity_missing"]})
+        self.assertEqual(summary["familyMassUnknown"]["passedExceptFamilyMassUnknown"], 2)
+        self.assertEqual(summary["holdReasonCounts"], {"family_mass_unknown": 1, "fixed_component_sensitivity_missing": 2})
+        group = summary["decisions"][0]["scenarios"][0]
+        ess = passed["diagnostics"]["scalars"][group["minEssStatistic"]]["ess"]
+        self.assertEqual(group["minEss"], min(passed["diagnostics"]["scalars"][name]["ess"]
+                                              for name in passed["diagnostics"]["mainStatistics"]))
+        self.assertAlmostEqual(group["iterationsPerEss"], 4 * 500 / ess)
+        self.assertEqual(summary["decisions"][1]["scenarios"][1]["departureChecks"],
+                         [{"family": "kokushi", "status": "left", "reason": None, "share": 0.0}])
+        self.assertEqual(summary["usage"], "接続の確認だけ")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -2151,7 +2151,8 @@ def _parser() -> argparse.ArgumentParser:
     )
     probe_policy_belief.add_argument(
         "--stage", choices=("evaluator", "pilot-manifest", "reference-smc", "initialization", "mcmc", "theta-variant-manifest", "theta-variant",
-                 "benchmark-manifest", "benchmark", "mixing-manifest", "mixing", "mixing-pooled"),
+                 "benchmark-manifest", "benchmark", "mixing-manifest", "mixing", "mixing-pooled",
+                 "stage-a-manifest", "stage-a"),
         default="evaluator"
     )
     probe_policy_belief.add_argument("--manifest", type=Path, default=DEFAULT_BELIEF_PILOT_DIR / "manifest.json")
@@ -2516,6 +2517,54 @@ def main(argv: list[str] | None = None) -> int:
         report = record_pilot_initialization(args.dataset_dir.resolve(), args.model_dir.resolve(), args.manifest.resolve())
         print(json.dumps({key: report[key] for key in ("failed", "families", "maxAttempts", "maxSeconds")}, ensure_ascii=False))
         return 0 if report["failed"] == 0 else 1
+    if args.command == "probe-policy-belief" and args.stage in ("stage-a-manifest", "stage-a"):
+        # 改訂4.1の段階A（設計17.8節、18.6節）：manifestを先に固定し、実行はそれに従う（止めても同じmanifestで再開できる）。
+        import gzip
+        from tools.ev_policy_belief import _json_safe, build_stage_a_manifest, run_stage_a, validate_stage_a_manifest
+        mixing_dir = DEFAULT_BELIEF_PILOT_DIR / "mixing"
+        stage_dir = DEFAULT_BELIEF_PILOT_DIR / "stage-a"
+        stage_manifest_path = stage_dir / "manifest.json"
+        variant_path = DEFAULT_BELIEF_PILOT_DIR / "theta-variant" / "result.json"
+        inputs = {"pilotManifestSha256": args.manifest.resolve(), "pooledEssSha256": mixing_dir / "pooled-ess.json",
+                  "mixingChainsSha256": mixing_dir / "chains.jsonl.gz", "thetaVariantResultSha256": variant_path}
+        hashes = {key: hashlib.sha256(path.read_bytes()).hexdigest() for key, path in inputs.items()}
+        if args.stage == "stage-a-manifest":
+            if stage_manifest_path.exists():
+                print(json.dumps({"error": f"manifestは作成済みで上書きしない: {stage_manifest_path}"}, ensure_ascii=False), file=sys.stderr)
+                return 2
+            records = [json.loads(line) for line in
+                       gzip.decompress(inputs["mixingChainsSha256"].read_bytes()).decode("utf-8").splitlines() if line]
+            mixing_manifest = json.loads((mixing_dir / "manifest.json").read_text(encoding="utf-8"))
+            manifest = build_stage_a_manifest(
+                json.loads(inputs["pilotManifestSha256"].read_text(encoding="utf-8")),
+                json.loads(inputs["pooledEssSha256"].read_text(encoding="utf-8")), records,
+                seed=20261013, mixing_seed=int(mixing_manifest["seed"]))
+            manifest.update(hashes)
+            stage_dir.mkdir(parents=True, exist_ok=True)
+            stage_manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+            print(json.dumps({"manifest": str(stage_manifest_path), "iterations": manifest["iterations"],
+                              "estimatedDays": round(manifest["estimatedWallClockSeconds"] / 86_400, 2),
+                              "limitDays": round(manifest["wallClockLimitSeconds"] / 86_400, 2)}, ensure_ascii=False))
+            return 0
+        manifest = json.loads(stage_manifest_path.read_text(encoding="utf-8"))
+        try:
+            validate_stage_a_manifest(manifest)
+        except ValueError as error:
+            print(json.dumps({"error": str(error)}, ensure_ascii=False), file=sys.stderr)
+            return 2
+        changed = [key for key, value in hashes.items() if manifest.get(key) != value]
+        if changed:
+            print(json.dumps({"error": f"入力がmanifest作成時と違う: {changed}"}, ensure_ascii=False), file=sys.stderr)
+            return 2
+        summary = run_stage_a(args.dataset_dir.resolve(), args.model_dir.resolve(), manifest,
+                              json.loads(variant_path.read_text(encoding="utf-8")), stage_dir,
+                              log=lambda line: print(line, flush=True))
+        summary["manifestSha256"] = hashlib.sha256(stage_manifest_path.read_bytes()).hexdigest()
+        (stage_dir / "summary.json").write_text(json.dumps(_json_safe(summary), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(json.dumps(_json_safe({key: summary[key] for key in (
+            "complete", "resourceBudgetExceeded", "mixingDiagnosticsPass", "familyMassUnknown", "holdReasonCounts",
+            "elapsedSeconds")}), ensure_ascii=False))
+        return 0 if summary["complete"] else 1
     if args.command == "probe-policy-belief" and args.stage == "mixing-pooled":
         # 段階2で保存した鎖を読み、統合平均に合わせた実効標本数で反復数の根拠を計算し直す（鎖は走らせない）。
         import gzip

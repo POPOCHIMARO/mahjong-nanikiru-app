@@ -2807,6 +2807,12 @@ class MoveStatistics:
         return {name: dict(sorted(getattr(self, name).items())) for name in
                 ("proposed", "accepted", "rejected", "null_moves", "cross_family")}
 
+    @classmethod
+    def from_dict(cls, values: Mapping[str, Mapping[str, int]]) -> "MoveStatistics":
+        """as_dictで保存した値から作り直す（鎖ごとに保存した結果の集計用）。"""
+        return cls(**{name: Counter(values.get(name, {})) for name in
+                      ("proposed", "accepted", "rejected", "null_moves", "cross_family")})
+
 
 # ---------------------------------------------------------------------------
 # M1：物理牌の交換（7.1節）
@@ -3843,6 +3849,18 @@ def family_departure_check(
             "share": share, "crossFamilyAccepted": dict(run.stats.cross_family), "seconds": round(run.seconds, 4)}
 
 
+def chain_group_holds(diagnostics: dict[str, Any], checks: Sequence[Mapping[str, Any]] | None) -> list[tuple[str, Any]]:
+    """診断と出発検査の結果から、鎖の組のhold理由と詳細を作る。併存する理由はすべて返す（18.7節の報告に使う）。"""
+    violations = list(diagnostics["chainDisagreement"]["violations"])
+    if checks is not None:
+        diagnostics["families"]["departureChecks"] = list(checks)
+        if any(check["status"] == "stayed" for check in checks):
+            violations.append("departure_stayed")  # 留まり続けるなら、移動が届いていない疑いも記録する
+    holds = [("chain_disagreement", violations), ("ess_below_target", diagnostics["essBelowTarget"]),
+             ("family_mass_unknown", diagnostics["familyMassUnknown"])]
+    return [(reason, detail) for reason, detail in holds if detail]
+
+
 def run_chain_group(
     starts: Callable[[int, int], ChainStart],
     seeds: Sequence[int],
@@ -3902,8 +3920,8 @@ def run_chain_group(
         for point in settings.checkpoints
     }
     diagnostics = record["diagnostics"]
-    violations = list(diagnostics["chainDisagreement"]["violations"])
     unknown = diagnostics["familyMassUnknown"]
+    checks = None
     if unknown and departure is not None:
         checks = []
         try:
@@ -3914,14 +3932,8 @@ def run_chain_group(
             return held("rule_unresolved", str(error))
         except BudgetExceeded as error:
             return held("resource_budget_exceeded", {"completedChains": len(runs), "at": f"departure check: {error}"})
-        diagnostics["families"]["departureChecks"] = checks
-        if any(check["status"] == "stayed" for check in checks):
-            violations.append("departure_stayed")  # 留まり続けるなら、移動が届いていない疑いも記録する
     record["runtime"] = {"seconds": round(time.perf_counter() - begin, 4), "chainSeconds": [round(r.seconds, 4) for r in runs]}
-    # 併存するhold理由はすべて記録する（18.7節の報告に使う）。
-    holds = [("chain_disagreement", violations), ("ess_below_target", diagnostics["essBelowTarget"]),
-             ("family_mass_unknown", unknown)]
-    holds = [(reason, detail) for reason, detail in holds if detail]
+    holds = chain_group_holds(diagnostics, checks)
     for reason, detail in holds:
         held(reason, detail)
     if holds:
@@ -5088,4 +5100,434 @@ def run_mixing(dataset_dir: Any, model_dir: Any, manifest: Mapping[str, Any], va
             done[(row["decisionId"], row["scenarioId"], int(row["chain"]))] = row
     summary = mixing_analysis(list(done.values()), manifest)
     summary["wallClockSeconds"] = round(time.time() - start, 1)
+    return summary
+
+
+# ===========================================================================
+# 段階A：固定した反復数での実行（PHASE_D33_DESIGN.md 17.8節、18.6〜18.7節）
+# ===========================================================================
+#
+# 鎖1本を1つの仕事として並列に走らせ、済んだ鎖から1行ずつ保存する。止めても同じmanifestで再開できる。
+# 鎖のseedと乱数の使い方はrun_decision_scenariosと同じで、集計の規則もrun_chain_groupと同じものを使う。
+# 段階Aの出力は感度シナリオがそろわないので全判断がheldになる。使い道は入出力の接続、実行器の動作確認、
+# 性能の測定に限る（18.6節）。
+
+STAGE_A_MANIFEST_SCHEMA = "ev-policy-belief-stage-a-manifest/v1"
+STAGE_A_SCHEMA = "ev-policy-belief-stage-a/v1"
+STAGE_A_REQUIRED_KEYS = (
+    "decisions", "scenarios", "chains", "processes", "iterations", "burnIn", "thin", "sampleIterations",
+    "essTarget", "iterationsPerEss", "safetyFactor", "seed", "thresholds", "secondsPerIteration",
+    "estimatedWallClockSeconds", "wallClockLimitSeconds", "fastShape", "cacheCapacityPerDecision",
+    "initAttempts", "initSeconds",
+)
+
+
+def stage_a_sample_iterations(ess_target: float, iterations_per_ess: float, safety_factor: float, chains: int) -> int:
+    """burn-in後の1鎖の反復数 N = ceil(目標の実効標本数 × r × 安全係数 / 鎖数)（17.3節）。"""
+    return math.ceil(ess_target * iterations_per_ess * safety_factor / chains)
+
+
+def stage_a_wall_clock_estimate(manifest: Mapping[str, Any]) -> float:
+    """本体の鎖の見積もり（秒）：鎖の総数 × 1鎖の反復 × 1反復の秒数 ÷ 並列数。"""
+    chains = len(manifest["decisions"]) * len(manifest["scenarios"]) * int(manifest["chains"])
+    return chains * int(manifest["iterations"]) * float(manifest["secondsPerIteration"]) / int(manifest["processes"])
+
+
+def validate_stage_a_manifest(manifest: Mapping[str, Any]) -> None:
+    """実行前に固定する項目がそろい、互いに矛盾しないことを確かめる（17.8節、D33-08）。"""
+    missing = [key for key in STAGE_A_REQUIRED_KEYS if key not in manifest]
+    if missing:
+        raise ValueError(f"manifestに項目がない: {missing}")
+    if manifest.get("schemaVersion") != STAGE_A_MANIFEST_SCHEMA:
+        raise ValueError("manifestの版が違う")
+    if int(manifest["processes"]) != 3:
+        raise ValueError("並列数は3（17.8節）")
+    if manifest["fastShape"] is not True:
+        raise ValueError("段階1の高速化を使う（17.8節）")
+    if len(set(manifest["decisions"])) != len(manifest["decisions"]) or not manifest["decisions"] or not manifest["scenarios"]:
+        raise ValueError("判断かシナリオが空、または重複している")
+    expected = stage_a_sample_iterations(manifest["essTarget"], manifest["iterationsPerEss"], manifest["safetyFactor"],
+                                         int(manifest["chains"]))
+    if int(manifest["sampleIterations"]) != expected or int(manifest["iterations"]) != int(manifest["burnIn"]) + expected:
+        raise ValueError("反復数が、目標の実効標本数・r・安全係数・鎖数から決まる値と合わない")
+    estimate = stage_a_wall_clock_estimate(manifest)
+    if abs(float(manifest["estimatedWallClockSeconds"]) - estimate) > 1e-6 * estimate:
+        raise ValueError("見積もりの実時間が、反復数と1反復の秒数から決まる値と合わない")
+    if abs(float(manifest["wallClockLimitSeconds"]) - 1.5 * estimate) > 1e-6 * estimate:
+        raise ValueError("上限は見積もりの1.5倍（17.8節）")
+    if manifest.get("mixingSeed") is not None and int(manifest["seed"]) == int(manifest["mixingSeed"]):
+        raise ValueError("段階2と同じ乱数系列を使わない（18.4節）")
+    thresholds = DisagreementThresholds(**manifest["thresholds"])
+    if None in (thresholds.max_rhat, thresholds.main_statistic_band, thresholds.ess_target, thresholds.max_family_deviation) \
+            or thresholds.require_supported_families_visited is not True:
+        raise ValueError("診断の閾値がそろっていない（18.2〜18.5節）")
+    if float(thresholds.ess_target) != float(manifest["essTarget"]):
+        raise ValueError("閾値の実効標本数が目標と違う")
+
+
+def build_stage_a_manifest(
+    pilot: Mapping[str, Any],
+    pooled: Mapping[str, Any],
+    mixing_records: Sequence[Mapping[str, Any]],
+    *,
+    seed: int,
+    mixing_seed: int | None = None,
+    decision_count: int = 9,
+) -> dict[str, Any]:
+    """段階Aのmanifest（18.6節）。判断はpilotのmanifestの先頭9件（9層から1件ずつ）、rは再計算の3つの値の最大。"""
+    chosen = list(pilot["decisions"])[:decision_count]
+    strata = {json.dumps(item["stratum"], sort_keys=True) for item in chosen}
+    if len(chosen) != decision_count or len(strata) != decision_count:
+        raise ValueError("先頭の判断が、層ごとに1件ずつになっていない")
+    rates = [value for value in pooled["worstIterationsPerEss"].values() if value is not None]
+    if len(rates) != len(pooled["worstIterationsPerEss"]):
+        raise ValueError("再計算のrに、定義できないバッチの大きさがある")
+    done = [record for record in mixing_records if record["status"] == "ok"]
+    groups: dict[tuple[str, str], list[Mapping[str, Any]]] = {}
+    for record in done:
+        groups.setdefault((record["decisionId"], record["scenarioId"]), []).append(record)
+    per_iteration = sum(r["seconds"] for r in done) / sum(r["iterations"] for r in done)
+    slowest = max(sum(r["seconds"] for r in rows) / sum(r["iterations"] for r in rows) for rows in groups.values())
+    chains, ess_target, safety_factor, burn_in, thin = 4, 400, 1.5, 1_000, 5
+    iterations_per_ess = max(rates)
+    sample_iterations = stage_a_sample_iterations(ess_target, iterations_per_ess, safety_factor, chains)
+    thresholds = DisagreementThresholds(max_rhat=1.05, main_statistic_band=(0.05, 0.95), ess_target=float(ess_target),
+                                        max_family_deviation=4.0, require_supported_families_visited=True)
+    manifest: dict[str, Any] = {
+        "schemaVersion": STAGE_A_MANIFEST_SCHEMA,
+        "purpose": "改訂4.1の段階A：固定した反復数で事後分布の標本を作り、診断の通過率と計算量を測る",
+        "design": "calibration/PHASE_D33_DESIGN.md 17.8節、18.2〜18.7節",
+        "usage": "全判断がfixed_component_sensitivity_missingでheldになる。入出力の接続、実行器の動作確認、"
+                 "性能の測定にだけ使い、EVの差を使った方策の調整や閾値の選択には使わない（18.6節）",
+        "decisions": [item["decisionId"] for item in chosen],
+        "decisionRule": "pilotのmanifestの先頭9件（リーチの時期3区分×親子3区分の9層から1件ずつ）",
+        "scenarios": ["base", THETA_VARIANT_ID],
+        "chains": chains,
+        "processes": 3,
+        "burnIn": burn_in,
+        "sampleIterations": sample_iterations,
+        "iterations": burn_in + sample_iterations,
+        "thin": thin,
+        "departureIterations": (burn_in + sample_iterations) // 10,
+        "essTarget": ess_target,
+        "iterationsPerEss": iterations_per_ess,
+        "iterationsPerEssByBatchScale": dict(pooled["worstIterationsPerEss"]),
+        "iterationsPerEssNote": "計算予算を決めるための暫定値（3つのバッチの大きさの最大）。混合が十分である証拠ではない",
+        "safetyFactor": safety_factor,
+        "seed": seed,
+        "mixingSeed": mixing_seed,
+        "seedNote": "段階2とは別の乱数系列。段階2の鎖は事後分布の標本に使わない（18.4節）",
+        "familyProbabilities": dict(TENPAI_FAMILY_PROBABILITIES),
+        "thresholds": thresholds.options(),
+        "secondsPerIteration": per_iteration,
+        "slowestSecondsPerIteration": slowest,
+        "fastShape": True,
+        "cacheCapacityPerDecision": 60_000,
+        "initAttempts": 10_000,
+        "initSeconds": 60.0,
+    }
+    manifest["thresholds"]["main_statistic_band"] = list(thresholds.main_statistic_band)  # type: ignore[arg-type]
+    estimate = stage_a_wall_clock_estimate(manifest)
+    manifest["estimatedWallClockSeconds"] = estimate
+    manifest["estimatedWallClockSecondsAtSlowest"] = estimate * slowest / per_iteration
+    manifest["wallClockLimitSeconds"] = 1.5 * estimate
+    manifest["wallClockNote"] = "上限は見積もりの1.5倍。出発検査（未訪問の系統ごとに1本）の時間も上限に含めて数える"
+    validate_stage_a_manifest(manifest)
+    return manifest
+
+
+def _context_header(context: DecisionContext) -> dict[str, Any]:
+    return {
+        "decisionId": context.decision_id,
+        "informationStateHash": context.information_state_hash,
+        "privatePrefixHash": hashlib.sha256(_canonical_json(context.target_private_row()).encode("utf-8")).hexdigest(),
+        "inputHash": context.input_hash(),
+    }
+
+
+def _stage_a_worker_run(task: tuple[str, str, Any, Mapping[str, Any]]) -> dict[str, Any]:
+    """判断・シナリオについて、本体の鎖1本（kindが鎖の番号）か出発検査1本（kindが"departure:系統"）を走らせる。"""
+    decision_id, scenario_id, kind, options = task
+    context = _WORKER["contexts"][decision_id]
+    model = _BELIEF_WORKER["model"]
+    scenarios = belief_scenarios(_BELIEF_WORKER["fixed"])
+    if scenario_id == THETA_VARIANT_ID:
+        model = _BELIEF_WORKER["variant"]
+        scenario = theta_variant_scenario(scenarios, model)
+    else:
+        scenario = next(s for s in scenarios if s["id"] == scenario_id)
+    for other in [key for key in _MIXING_CACHES if key != decision_id]:
+        del _MIXING_CACHES[other]  # 別の判断の窓キャッシュは捨てる（数日の実行でメモリを増やさない）
+    cache = _MIXING_CACHES.setdefault(decision_id, WindowCache(int(options["cacheCapacityPerDecision"])))
+    resolver = model_resolver(model, scenario)
+    settings = ChainSettings(int(options["iterations"]), int(options["burnIn"]), int(options["thin"]))
+    record: dict[str, Any] = {**_context_header(context), "scenarioId": scenario_id, "kind": kind, "thetaId": resolver.model_id}
+    start_options = {"move_probabilities": TENPAI_FAMILY_PROBABILITIES, "init_attempts": int(options["initAttempts"]),
+                     "init_seconds": float(options["initSeconds"])}
+    try:
+        if isinstance(kind, str):
+            family = kind.split(":", 1)[1]
+            seed = _chain_seed(int(options["seed"]), decision_id, f"{scenario_id}:departure:{family}", 0)
+            start = mahjong_chain_start(context, resolver, cache, kind, seed, **start_options,
+                                        init_probabilities=departure_probabilities(family, TENPAI_FAMILY_PROBABILITIES))
+            check = family_departure_check(start, family, seed, settings, deadline=options["deadline"])
+            return {**record, "status": "ok", "check": check}
+        seed = _chain_seed(int(options["seed"]), decision_id, scenario_id, int(kind))
+        start = mahjong_chain_start(context, resolver, cache, int(kind), seed, **start_options,
+                                    init_probabilities=TENPAI_FAMILY_PROBABILITIES)
+        record.update({"seed": seed, "initialization": start.info})
+        if start.state is None:
+            return {**record, "status": "init_failed"}
+        support = family_support(start.problem, start.state.ids)  # type: ignore[arg-type]
+        run = run_chain(start.problem, start.state, RandomChooser(random.Random(seed + 1)),  # type: ignore[arg-type]
+                        settings, start.summarize, options["deadline"])  # type: ignore[arg-type]
+    except RuleUnresolvedError as error:
+        return {**record, "status": "rule_unresolved", "detail": str(error)}
+    except BudgetExceeded as error:
+        return {**record, "status": "resource_budget_exceeded", "detail": str(error)}
+    return {**record, "status": "ok", "support": support, "samples": run.samples, "moves": run.stats.as_dict(),
+            "seconds": run.seconds, "cacheStatistics": cache.statistics()}
+
+
+def stage_a_group(
+    chains: Sequence[Mapping[str, Any] | None],
+    checks: Mapping[str, Mapping[str, Any]],
+    settings: ChainSettings,
+    thresholds: DisagreementThresholds,
+    *,
+    scalars: Callable[[Mapping[str, Any]], dict[str, float]] = generic_scalars,
+) -> dict[str, Any]:
+    """鎖ごとに保存した結果から、判断・シナリオ1組の診断とholdを作る（規則はrun_chain_groupと同じ）。
+
+    chainsは鎖の番号順で、まだ済んでいない鎖はNone。checksは出発検査の結果（系統→結果）。
+    未訪問の系統の検査がまだないときは、pendingDeparturesにその系統を入れて返す（holdはまだ確定しない）。
+    """
+    record: dict[str, Any] = {"status": "ok", "holdReasons": [], "chains": len(chains), "settings": settings.to_dict(),
+                              "seeds": [None if c is None else c.get("seed") for c in chains],
+                              "initialization": [None if c is None else c.get("initialization") for c in chains],
+                              "pendingDepartures": []}
+
+    def held(reason: str, detail: Any = None) -> dict[str, Any]:
+        record["status"] = "held"
+        record["holdReasons"].append(reason)
+        if detail is not None:
+            record.setdefault("holdDetails", {})[reason] = detail
+        record["samples"] = None
+        return record
+
+    unresolved = [c for c in chains if c is not None and c["status"] == "rule_unresolved"]
+    if unresolved:
+        return held("rule_unresolved", unresolved[0].get("detail"))
+    if any(c is not None and c["status"] == "init_failed" for c in chains):
+        return held("init_failed", [c["initialization"] for c in chains if c is not None and c["status"] == "init_failed"])
+    if any(c is None for c in chains):
+        return held("resource_budget_exceeded", {"completedChains": sum(c is not None for c in chains)})
+    samples = [c["samples"] for c in chains]  # type: ignore[index]
+    stats = [MoveStatistics.from_dict(c["moves"]) for c in chains]  # type: ignore[index]
+    diagnostics = record["diagnostics"] = chain_diagnostics(samples, stats, chains[0]["support"], thresholds, scalars)  # type: ignore[index]
+    record["runtime"] = {"chainSeconds": [round(c["seconds"], 4) for c in chains]}  # type: ignore[index]
+    unknown = diagnostics["familyMassUnknown"]
+    record["pendingDepartures"] = [name for name in unknown if name not in checks]
+    holds = chain_group_holds(diagnostics, [checks[name] for name in unknown if name in checks] if unknown else None)
+    for reason, detail in holds:
+        held(reason, detail)
+    if not holds:
+        record["samples"] = [{"chain": chain, **sample} for chain, values in enumerate(samples) for sample in values]
+    return record
+
+
+def stage_a_summary(decisions: Sequence[Mapping[str, Any]], manifest: Mapping[str, Any]) -> dict[str, Any]:
+    """段階Aの報告（18.7節）。通過率を2つに分け、family_mass_unknownを含む判断と併存するhold理由を並べる。"""
+    sensitivity, unknown = "fixed_component_sensitivity_missing", "family_mass_unknown"
+    target = float(manifest["essTarget"])
+    thresholds = DisagreementThresholds(**manifest["thresholds"])
+    sample_iterations = int(manifest["sampleIterations"]) * int(manifest["chains"])
+    rows, near = [], []
+    for decision in decisions:
+        groups = []
+        for scenario in decision["scenarios"]:
+            group: dict[str, Any] = {"scenarioId": scenario["scenarioId"], "status": scenario["status"],
+                                     "holdReasons": scenario["holdReasons"], "holdDetails": scenario.get("holdDetails", {})}
+            diagnostics = scenario.get("diagnostics")
+            if diagnostics:
+                main = {name: diagnostics["scalars"][name] for name in diagnostics["mainStatistics"]}
+                defined = {name: item["ess"] for name, item in main.items() if item["ess"] is not None}
+                worst = min(defined, key=defined.get) if defined else None
+                sigmas = [item["maxSigmas"] for item in diagnostics["families"]["shareDeviation"].values() if item is not None]
+                seconds = scenario.get("runtime", {}).get("chainSeconds", [])
+                group.update({
+                    "maxRhat": diagnostics["maxRhat"],
+                    "minEss": None if worst is None else defined[worst],
+                    "minEssStatistic": worst,
+                    "iterationsPerEss": None if worst is None else sample_iterations / defined[worst],
+                    "undeterminedEss": sorted(name for name, item in main.items() if item["ess"] is None),
+                    "maxFamilyShareSigmas": max(sigmas) if sigmas else None,
+                    "familyStates": diagnostics["families"]["states"],
+                    "familyVisitsPerChain": diagnostics["families"]["visitsPerChain"],
+                    "departureChecks": [{key: check.get(key) for key in ("family", "status", "reason", "share")}
+                                        for check in diagnostics["families"].get("departureChecks", [])],
+                    "secondsPerIteration": sum(seconds) / (int(manifest["iterations"]) * len(seconds)) if seconds else None,
+                    "acceptanceRate": diagnostics["moves"]["acceptanceRate"],
+                })
+                close = []
+                if group["maxRhat"] is not None and thresholds.max_rhat is not None and group["maxRhat"] > thresholds.max_rhat - 0.01:
+                    close.append("rhat")
+                if group["minEss"] is not None and group["minEss"] < 1.25 * target:
+                    close.append("ess")
+                if group["maxFamilyShareSigmas"] is not None and thresholds.max_family_deviation is not None \
+                        and group["maxFamilyShareSigmas"] > 0.75 * thresholds.max_family_deviation:
+                    close.append("family_share")
+                if close:
+                    near.append({"decisionId": decision["decisionId"], "scenarioId": scenario["scenarioId"], "near": close})
+            groups.append(group)
+        rows.append({"decisionId": decision["decisionId"], "status": decision["status"],
+                     "holdReasons": decision["holdReasons"], "scenarios": groups})
+    count = len(rows)
+    with_unknown = {row["decisionId"]: [r for r in row["holdReasons"] if r != unknown] for row in rows if unknown in row["holdReasons"]}
+    return {
+        "schemaVersion": STAGE_A_SCHEMA,
+        "decisions": rows,
+        "mixingDiagnosticsPass": {
+            "passed": sum(set(row["holdReasons"]) <= {sensitivity} for row in rows), "of": count,
+            "definition": "感度シナリオの不足以外のhold理由がない判断",
+        },
+        "d33Eligible": {
+            "passed": sum(not row["holdReasons"] for row in rows), "of": count,
+            "definition": "hold理由がない判断。段階Aは感度シナリオがそろわないので0になる",
+        },
+        "familyMassUnknown": {
+            "decisions": len(with_unknown), "of": count, "coexistingHoldReasons": with_unknown,
+            "passedExceptFamilyMassUnknown": sum(set(row["holdReasons"]) <= {sensitivity, unknown} for row in rows),
+            "note": "全判断に感度シナリオの不足が付くので、「family_mass_unknownだけが理由」の件数は数えない",
+        },
+        "holdReasonCounts": dict(sorted(Counter(reason for row in rows for reason in row["holdReasons"]).items())),
+        "nearThreshold": near,
+        "selectionNote": "反復数は固定だが、診断を通った結果だけを使うことによる選択は残る。途中で止めることによる偏りとは別のもの",
+        "usage": manifest.get("usage"),
+    }
+
+
+def run_stage_a(dataset_dir: Any, model_dir: Any, manifest: Mapping[str, Any], variant_result: Mapping[str, Any],
+                output_dir: Any, *, log: Callable[[str], None] = print) -> dict[str, Any]:
+    """manifestの鎖を並列に走らせ、鎖ごとに保存する。上限の実時間を超えたらresource_budget_exceededで止める。
+
+    止めたときに走っていた鎖は捨て、済んだ鎖は残す。同じmanifestでもう一度呼ぶと、残りだけを走らせる。
+    """
+    import gzip
+    import multiprocessing
+    import time
+    from pathlib import Path
+
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    chains_path, progress_path = output_dir / "chains.jsonl.gz", output_dir / "progress.json"
+    # 親プロセスは標本を持ち続けない（数日の実行でメモリを増やさない）。集計のときだけファイルから読み直す。
+    done: dict[tuple[str, str, str], dict[str, Any]] = {}
+
+    def saved_rows(decision: str | None = None, scenario: str | None = None, *, samples: bool) -> list[dict[str, Any]]:
+        rows = []
+        if chains_path.is_file():
+            with gzip.open(chains_path, "rt", encoding="utf-8") as handle:
+                for line in handle:
+                    row = json.loads(line)
+                    if decision is not None and (row["decisionId"], row["scenarioId"]) != (decision, scenario):
+                        continue
+                    if not samples:
+                        row.pop("samples", None)
+                    rows.append(row)
+        return rows
+
+    for row in saved_rows(samples=False):
+        done[(row["decisionId"], row["scenarioId"], str(row["kind"]))] = row
+    progress = json.loads(progress_path.read_text(encoding="utf-8")) if progress_path.is_file() else {"elapsedSeconds": 0.0, "sessions": 0}
+    elapsed_before = float(progress["elapsedSeconds"])
+    limit = float(manifest["wallClockLimitSeconds"])
+    session_start = time.time()
+    settings = ChainSettings(int(manifest["iterations"]), int(manifest["burnIn"]), int(manifest["thin"]))
+    thresholds = DisagreementThresholds(**{**manifest["thresholds"],
+                                           "main_statistic_band": tuple(manifest["thresholds"]["main_statistic_band"])})
+    options = {key: manifest[key] for key in ("seed", "iterations", "burnIn", "thin", "cacheCapacityPerDecision",
+                                              "initAttempts", "initSeconds")}
+    options["deadline"] = session_start + (limit - elapsed_before)
+    groups = [(decision, scenario) for decision in manifest["decisions"] for scenario in manifest["scenarios"]]
+    chain_count = int(manifest["chains"])
+    state = {"exceeded": elapsed_before >= limit}
+
+    def save_progress() -> float:
+        elapsed = elapsed_before + time.time() - session_start
+        progress_path.write_text(json.dumps({
+            "elapsedSeconds": elapsed, "sessions": int(progress["sessions"]) + 1, "wallClockLimitSeconds": limit,
+            "savedRecords": len(done), "bodyChains": len(groups) * chain_count, "exceeded": state["exceeded"],
+        }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        return elapsed
+
+    def run_tasks(tasks: list[tuple[str, str, Any, Mapping[str, Any]]]) -> None:
+        if not tasks or state["exceeded"]:
+            return
+        context = multiprocessing.get_context("spawn")
+        with context.Pool(int(manifest["processes"]), initializer=_mixing_worker_init,
+                          initargs=(str(dataset_dir), str(model_dir), list(manifest["decisions"]), dict(variant_result))) as pool:
+            for row in pool.imap_unordered(_stage_a_worker_run, tasks):
+                if row["status"] == "resource_budget_exceeded":
+                    state["exceeded"] = True
+                    break  # withを抜けると残りの鎖を止める。走っていた鎖は保存しない
+                with gzip.open(chains_path, "at", encoding="utf-8") as handle:
+                    handle.write(json.dumps(_json_safe(row), ensure_ascii=False) + "\n")
+                row.pop("samples", None)
+                done[(row["decisionId"], row["scenarioId"], str(row["kind"]))] = row
+                elapsed = save_progress()
+                log(json.dumps({"saved": len(done), "decisionId": row["decisionId"], "scenarioId": row["scenarioId"],
+                                "kind": row["kind"], "status": row["status"], "chainHours": round(row.get("seconds", 0.0) / 3600, 2),
+                                "elapsedHours": round(elapsed / 3600, 2), "limitHours": round(limit / 3600, 2)}, ensure_ascii=False))
+
+    def group_record(decision: str, scenario: str) -> dict[str, Any]:
+        saved = {str(row["kind"]): row for row in saved_rows(decision, scenario, samples=True)}
+        chains = [saved.get(str(chain)) for chain in range(chain_count)]
+        checks = {}
+        for kind, row in saved.items():
+            if kind.startswith("departure:"):
+                family = kind.split(":", 1)[1]
+                # 出発点を作る途中で止まった検査は「検査未成立」として扱う
+                checks[family] = row.get("check") or {"family": family, "status": "not_established", "reason": row["status"],
+                                                      "detail": row.get("detail")}
+        return stage_a_group(chains, checks, settings, thresholds)
+
+    run_tasks([(decision, scenario, chain, options) for decision, scenario in groups for chain in range(chain_count)
+               if (decision, scenario, str(chain)) not in done])
+    pending = [(decision, scenario, f"departure:{family}", options) for decision, scenario in groups
+               for family in group_record(decision, scenario)["pendingDepartures"]] if not state["exceeded"] else []
+    run_tasks(pending)
+
+    fixed = json.loads((Path(model_dir) / "fixed-components.json").read_text(encoding="utf-8"))
+    required = [s["id"] for s in belief_scenarios(fixed)] + [THETA_VARIANT_ID]
+    posterior_dir = output_dir / "posterior"
+    posterior_dir.mkdir(exist_ok=True)
+    decisions = []
+    for decision in manifest["decisions"]:
+        outputs = []
+        for scenario in manifest["scenarios"]:
+            record = group_record(decision, scenario)
+            if record.pop("pendingDepartures") and "resource_budget_exceeded" not in record["holdReasons"]:
+                # 上限で止まり、出発検査を走らせられなかった組
+                record.update({"status": "held", "samples": None})
+                record["holdReasons"] = record["holdReasons"] + ["resource_budget_exceeded"]
+            header = next((row for key, row in done.items() if key[:2] == (decision, scenario)), {})
+            outputs.append({
+                "schemaVersion": POSTERIOR_SCHEMA, "beliefVersion": BELIEF_VERSION, "decisionId": decision,
+                **{key: header.get(key) for key in ("informationStateHash", "privatePrefixHash", "inputHash", "thetaId")},
+                "familyProbabilities": dict(TENPAI_FAMILY_PROBABILITIES), "scenarioId": scenario, **record,
+            })
+        present = {record["scenarioId"] for record in outputs if record["status"] == "ok"}
+        missing = sorted(set(required) - present)
+        holds = sorted({reason for record in outputs for reason in record["holdReasons"]}
+                       | ({"fixed_component_sensitivity_missing"} if missing else set()))
+        result = {"decisionId": decision, "status": "held" if holds else "ok", "holdReasons": holds,
+                  "missingScenarios": missing, "scenarios": outputs}
+        with gzip.open(posterior_dir / decision_file_name(decision), "wt", encoding="utf-8") as handle:
+            json.dump(_json_safe(result), handle, ensure_ascii=False)
+        decisions.append(result)
+    summary = stage_a_summary(decisions, manifest)
+    summary.update({"complete": not state["exceeded"], "resourceBudgetExceeded": state["exceeded"],
+                    "elapsedSeconds": save_progress(), "wallClockLimitSeconds": limit,
+                    "estimatedWallClockSeconds": manifest["estimatedWallClockSeconds"]})
     return summary

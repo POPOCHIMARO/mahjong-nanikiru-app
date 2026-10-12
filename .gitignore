@@ -28,3 +28,9 @@ __pycache__/
 scratch/d32a/
 scratch/data-analysis/
 scratch/d32b/
+
+# D.3.3 段階Aの鎖ごとの保存結果と事後分布の標本（数十MB。manifestと集計は管理対象）
+calibration/probes/d33-pilot/stage-a/chains.jsonl.gz
+calibration/probes/d33-pilot/stage-a/posterior/
+calibration/probes/d33-pilot/stage-a/progress.json
+calibration/probes/d33-pilot/stage-a/*.log

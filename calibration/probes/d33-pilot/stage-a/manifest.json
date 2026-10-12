@@ -1,0 +1,71 @@
+{
+  "schemaVersion": "ev-policy-belief-stage-a-manifest/v1",
+  "purpose": "改訂4.1の段階A：固定した反復数で事後分布の標本を作り、診断の通過率と計算量を測る",
+  "design": "calibration/PHASE_D33_DESIGN.md 17.8節、18.2〜18.7節",
+  "usage": "全判断がfixed_component_sensitivity_missingでheldになる。入出力の接続、実行器の動作確認、性能の測定にだけ使い、EVの差を使った方策の調整や閾値の選択には使わない（18.6節）",
+  "decisions": [
+    "mleague:2021-22:L001_S010_0029_01A:7:0:e35:s1",
+    "mleague:2021-22:L001_S010_0002_01A:5:0:e81:s0",
+    "mleague:2020-21:L001_S007_0044_01A:7:0:e87:s0",
+    "mleague:2021-22:L001_S010_0070_02A:3:0:e79:s1",
+    "mleague:2020-21:L001_S007_0028_01A:5:0:e65:s2",
+    "mleague:2022-23:L001_S013_0074_02A:11:0:e109:s3",
+    "mleague:2022-23:L001_S013_0036_01A:11:0:e93:s3",
+    "mleague:2022-23:L001_S013_0023_01A:2:0:e105:s2",
+    "mleague:2018-19:L001_S001_0010_01A:1:0:e123:s1"
+  ],
+  "decisionRule": "pilotのmanifestの先頭9件（リーチの時期3区分×親子3区分の9層から1件ずつ）",
+  "scenarios": [
+    "base",
+    "theta_riichi_response_recalibrated"
+  ],
+  "chains": 4,
+  "processes": 3,
+  "burnIn": 1000,
+  "sampleIterations": 12314,
+  "iterations": 13314,
+  "thin": 5,
+  "departureIterations": 1331,
+  "essTarget": 400,
+  "iterationsPerEss": 82.09205769338926,
+  "iterationsPerEssByBatchScale": {
+    "1": 49.22724810381248,
+    "2": 61.900693466017344,
+    "4": 82.09205769338926
+  },
+  "iterationsPerEssNote": "計算予算を決めるための暫定値（3つのバッチの大きさの最大）。混合が十分である証拠ではない",
+  "safetyFactor": 1.5,
+  "seed": 20261013,
+  "mixingSeed": 20261003,
+  "seedNote": "段階2とは別の乱数系列。段階2の鎖は事後分布の標本に使わない（18.4節）",
+  "familyProbabilities": {
+    "regular": 0.9,
+    "chiitoi": 0.05,
+    "kokushi": 0.05
+  },
+  "thresholds": {
+    "max_rhat": 1.05,
+    "min_shape_overlap": null,
+    "require_supported_families_visited": true,
+    "main_statistic_band": [
+      0.05,
+      0.95
+    ],
+    "ess_target": 400.0,
+    "max_family_deviation": 4.0
+  },
+  "secondsPerIteration": 1.2283218188543283,
+  "slowestSecondsPerIteration": 1.85132374728184,
+  "fastShape": true,
+  "cacheCapacityPerDecision": 60000,
+  "initAttempts": 10000,
+  "initSeconds": 60.0,
+  "estimatedWallClockSeconds": 392493.04070943664,
+  "estimatedWallClockSecondsAtSlowest": 591564.5849114499,
+  "wallClockLimitSeconds": 588739.561064155,
+  "wallClockNote": "上限は見積もりの1.5倍。出発検査（未訪問の系統ごとに1本）の時間も上限に含めて数える",
+  "pilotManifestSha256": "159f984a9309216b84ae9e31fe4bd5598a2aaa6af5a18680f1653254ce0c8e90",
+  "pooledEssSha256": "0b32352042893defc377edf3f7ad909ace0ea8377af13bddd4ee199481cb6932",
+  "mixingChainsSha256": "3d3c78d4c942f81ce09ca09f29e51c7b11d7d09e23c973782fc3cbc27f98a91e",
+  "thetaVariantResultSha256": "c466c34e78fbd99da04c15eee34b34d06b63956e0e1dd61d333c44fec72b8c55"
+}
