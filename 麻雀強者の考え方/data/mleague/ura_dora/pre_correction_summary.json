@@ -1,0 +1,1199 @@
+{
+  "acquired": "2026-10-12",
+  "definition": "P(uraCount >= 1 | riichi win, ura indicator disclosed)",
+  "yakuMethod": "mahjong 2.0.0 maximum score decomposition, with riichi/tsumo and no ippatsu/haitei/houtei/rinshan/chankan/double-riichi flags; structural roles reconstructed, not source labels",
+  "inputs": [
+    {
+      "path": "data/mleague/paifu/2018-19.jsonl",
+      "sha256": "bf54d09c07860529086027f94c92532ba95768fcd6451c39d5a1885a8cf41f32"
+    },
+    {
+      "path": "data/mleague/paifu/2019-20.jsonl",
+      "sha256": "19e0dee18ce20aa84c67e07e5a5b86bf2fbff48d45dfaac57821cbc20096600d"
+    },
+    {
+      "path": "data/mleague/paifu/2020-21.jsonl",
+      "sha256": "4cf1ee7ecdc7092bf683cc0a3f5f0fc1dc31c6765ae7bd503b11caea0e5dc365"
+    },
+    {
+      "path": "data/mleague/paifu/2021-22.jsonl",
+      "sha256": "7ce113263d53baa366aba950694a14ae759eab572da88f9c340d3f3281bcbd94"
+    },
+    {
+      "path": "data/mleague/paifu/2022-23.jsonl",
+      "sha256": "d0f68a06a190c18be6d7c5a3aac8fc2256d09057a58a7bf2527a1e812c9d0625"
+    },
+    {
+      "path": "data/mleague/paifu/2023-24.jsonl",
+      "sha256": "353acf25e5f2a51d630cbc3fe56a586fe11b0145630225ba14c70a70ba2f5941"
+    },
+    {
+      "path": "data/mleague/paifu/2024-25.jsonl",
+      "sha256": "5ecf9ac525443d6ba64a4804614661c47447cc693bf9fcf74743f4f95f10dccf"
+    },
+    {
+      "path": "data/mleague/paifu/2025-26.jsonl",
+      "sha256": "15fa214ddc03d8a3be84a22179982f3df128f7bf5e2a28d547a123b594ffa943"
+    },
+    {
+      "path": "data/mleague/paifu/2026-27.jsonl",
+      "sha256": "0dd8a3a8f3ae739dd1d809d32a91aaf398ef0384b6038a6c7a42ae85fca30328"
+    }
+  ],
+  "matches": 1964,
+  "rounds": 23939,
+  "allWins": 19150,
+  "dateRange": [
+    "2018-10-01",
+    "2026-10-06"
+  ],
+  "overall": {
+    "riichiWins": 10044,
+    "known": 10027,
+    "missing": 17,
+    "hit": 3229,
+    "rate": 0.3220305176024733,
+    "wilson95": [
+      0.31295448747418025,
+      0.33124285981201634
+    ],
+    "meanUra": 0.4265483195372494,
+    "twoOrMore": 794,
+    "distribution": {
+      "0": 6798,
+      "1": 2435,
+      "2": 568,
+      "3": 202,
+      "4": 20,
+      "5": 4
+    }
+  },
+  "oneIndicator": {
+    "riichiWins": 9535,
+    "known": 9535,
+    "missing": 0,
+    "hit": 2968,
+    "rate": 0.31127425275301523,
+    "wilson95": [
+      0.30205824817981985,
+      0.3206422636656774
+    ],
+    "meanUra": 0.40241216570529625,
+    "twoOrMore": 680,
+    "distribution": {
+      "0": 6567,
+      "1": 2288,
+      "2": 494,
+      "3": 183,
+      "4": 3
+    }
+  },
+  "twoOrMoreIndicators": {
+    "riichiWins": 492,
+    "known": 492,
+    "missing": 0,
+    "hit": 261,
+    "rate": 0.5304878048780488,
+    "wilson95": [
+      0.48632333593620575,
+      0.5741798742458387
+    ],
+    "meanUra": 0.8943089430894309,
+    "twoOrMore": 114,
+    "distribution": {
+      "0": 231,
+      "1": 147,
+      "2": 74,
+      "3": 19,
+      "4": 17,
+      "5": 4
+    }
+  },
+  "nonYakuman": {
+    "riichiWins": 10031,
+    "known": 10014,
+    "missing": 17,
+    "hit": 3226,
+    "rate": 0.3221489914120232,
+    "wilson95": [
+      0.3130661898170512,
+      0.331368191118009
+    ],
+    "meanUra": 0.4262033153584981,
+    "twoOrMore": 791,
+    "distribution": {
+      "0": 6788,
+      "1": 2435,
+      "2": 568,
+      "3": 199,
+      "4": 20,
+      "5": 4
+    }
+  },
+  "unknownBounds": [
+    0.32148546395858224,
+    0.32317801672640384
+  ],
+  "bySeason": {
+    "2018-19": {
+      "riichiWins": 842,
+      "known": 834,
+      "missing": 8,
+      "hit": 278,
+      "rate": 0.3333333333333333,
+      "wilson95": [
+        0.30216849050747274,
+        0.3660264918806039
+      ],
+      "meanUra": 0.45083932853717024,
+      "twoOrMore": 71,
+      "distribution": {
+        "0": 556,
+        "1": 207,
+        "2": 44,
+        "3": 27
+      }
+    },
+    "2019-20": {
+      "riichiWins": 1056,
+      "known": 1056,
+      "missing": 0,
+      "hit": 338,
+      "rate": 0.32007575757575757,
+      "wilson95": [
+        0.2926346954519746,
+        0.34882111207716926
+      ],
+      "meanUra": 0.42803030303030304,
+      "twoOrMore": 87,
+      "distribution": {
+        "0": 718,
+        "1": 251,
+        "2": 61,
+        "3": 25,
+        "4": 1
+      }
+    },
+    "2020-21": {
+      "riichiWins": 1049,
+      "known": 1048,
+      "missing": 1,
+      "hit": 329,
+      "rate": 0.3139312977099237,
+      "wilson95": [
+        0.2865564107781676,
+        0.3426652777857524
+      ],
+      "meanUra": 0.40458015267175573,
+      "twoOrMore": 78,
+      "distribution": {
+        "0": 719,
+        "1": 251,
+        "2": 62,
+        "3": 15,
+        "4": 1
+      }
+    },
+    "2021-22": {
+      "riichiWins": 1070,
+      "known": 1070,
+      "missing": 0,
+      "hit": 347,
+      "rate": 0.32429906542056075,
+      "wilson95": [
+        0.29692247578504977,
+        0.35293272685079585
+      ],
+      "meanUra": 0.41682242990654206,
+      "twoOrMore": 78,
+      "distribution": {
+        "0": 723,
+        "1": 269,
+        "2": 60,
+        "3": 15,
+        "4": 3
+      }
+    },
+    "2022-23": {
+      "riichiWins": 1219,
+      "known": 1218,
+      "missing": 1,
+      "hit": 389,
+      "rate": 0.319376026272578,
+      "wilson95": [
+        0.29379534020561543,
+        0.34609247271515214
+      ],
+      "meanUra": 0.4244663382594417,
+      "twoOrMore": 92,
+      "distribution": {
+        "0": 829,
+        "1": 297,
+        "2": 63,
+        "3": 23,
+        "4": 5,
+        "5": 1
+      }
+    },
+    "2023-24": {
+      "riichiWins": 1367,
+      "known": 1365,
+      "missing": 2,
+      "hit": 444,
+      "rate": 0.3252747252747253,
+      "wilson95": [
+        0.30094260139004475,
+        0.35058753241306756
+      ],
+      "meanUra": 0.4315018315018315,
+      "twoOrMore": 114,
+      "distribution": {
+        "0": 921,
+        "1": 330,
+        "2": 88,
+        "3": 23,
+        "4": 1,
+        "5": 2
+      }
+    },
+    "2024-25": {
+      "riichiWins": 1354,
+      "known": 1352,
+      "missing": 2,
+      "hit": 426,
+      "rate": 0.3150887573964497,
+      "wilson95": [
+        0.2908797799252523,
+        0.34034554015391233
+      ],
+      "meanUra": 0.3979289940828402,
+      "twoOrMore": 89,
+      "distribution": {
+        "0": 926,
+        "1": 337,
+        "2": 71,
+        "3": 14,
+        "4": 3,
+        "5": 1
+      }
+    },
+    "2025-26": {
+      "riichiWins": 1834,
+      "known": 1831,
+      "missing": 3,
+      "hit": 581,
+      "rate": 0.3173129437465866,
+      "wilson95": [
+        0.29639571635496287,
+        0.3389951252984703
+      ],
+      "meanUra": 0.4303659202621518,
+      "twoOrMore": 152,
+      "distribution": {
+        "0": 1250,
+        "1": 429,
+        "2": 100,
+        "3": 49,
+        "4": 3
+      }
+    },
+    "2026-27": {
+      "riichiWins": 253,
+      "known": 253,
+      "missing": 0,
+      "hit": 97,
+      "rate": 0.383399209486166,
+      "wilson95": [
+        0.32565508437523105,
+        0.44463122270734545
+      ],
+      "meanUra": 0.5810276679841897,
+      "twoOrMore": 33,
+      "distribution": {
+        "0": 156,
+        "1": 64,
+        "2": 19,
+        "3": 11,
+        "4": 3
+      }
+    }
+  },
+  "byYaku": [
+    {
+      "yaku": "一気通貫",
+      "riichiWins": 137,
+      "known": 136,
+      "missing": 1,
+      "hit": 48,
+      "rate": 0.35294117647058826,
+      "wilson95": [
+        0.27767284116036706,
+        0.4362889528789219
+      ],
+      "meanUra": 0.4117647058823529,
+      "twoOrMore": 7,
+      "distribution": {
+        "0": 88,
+        "1": 41,
+        "2": 6,
+        "3": 1
+      },
+      "noKan": {
+        "riichiWins": 134,
+        "known": 134,
+        "missing": 0,
+        "hit": 46,
+        "rate": 0.34328358208955223,
+        "wilson95": [
+          0.2682672592868976,
+          0.42703486273551866
+        ],
+        "meanUra": 0.40298507462686567,
+        "twoOrMore": 7,
+        "distribution": {
+          "0": 88,
+          "1": 39,
+          "2": 6,
+          "3": 1
+        }
+      },
+      "shareAmongHits": 0.01486528336946423,
+      "meanDistinctTileTypes": 12.64963503649635
+    },
+    {
+      "yaku": "一盃口",
+      "riichiWins": 628,
+      "known": 626,
+      "missing": 2,
+      "hit": 174,
+      "rate": 0.2779552715654952,
+      "wilson95": [
+        0.2442967219941584,
+        0.31432236205197106
+      ],
+      "meanUra": 0.4329073482428115,
+      "twoOrMore": 87,
+      "distribution": {
+        "0": 452,
+        "1": 87,
+        "2": 77,
+        "3": 10
+      },
+      "noKan": {
+        "riichiWins": 598,
+        "known": 598,
+        "missing": 0,
+        "hit": 164,
+        "rate": 0.27424749163879597,
+        "wilson95": [
+          0.24001645118518028,
+          0.3113604171863275
+        ],
+        "meanUra": 0.42642140468227424,
+        "twoOrMore": 81,
+        "distribution": {
+          "0": 434,
+          "1": 83,
+          "2": 71,
+          "3": 10
+        }
+      },
+      "shareAmongHits": 0.053886652214307836,
+      "meanDistinctTileTypes": 9.253184713375797
+    },
+    {
+      "yaku": "七対子",
+      "riichiWins": 463,
+      "known": 462,
+      "missing": 1,
+      "hit": 102,
+      "rate": 0.22077922077922077,
+      "wilson95": [
+        0.1853464042734848,
+        0.2608171023986292
+      ],
+      "meanUra": 0.45454545454545453,
+      "twoOrMore": 102,
+      "distribution": {
+        "0": 360,
+        "2": 99,
+        "4": 3
+      },
+      "noKan": {
+        "riichiWins": 441,
+        "known": 441,
+        "missing": 0,
+        "hit": 91,
+        "rate": 0.20634920634920634,
+        "wilson95": [
+          0.17119326213786507,
+          0.24657683355729082
+        ],
+        "meanUra": 0.4126984126984127,
+        "twoOrMore": 91,
+        "distribution": {
+          "0": 350,
+          "2": 91
+        }
+      },
+      "shareAmongHits": 0.03158872716011149,
+      "meanDistinctTileTypes": 7.0
+    },
+    {
+      "yaku": "三暗刻",
+      "riichiWins": 50,
+      "known": 50,
+      "missing": 0,
+      "hit": 17,
+      "rate": 0.34,
+      "wilson95": [
+        0.2243694922250009,
+        0.478461739497674
+      ],
+      "meanUra": 0.86,
+      "twoOrMore": 14,
+      "distribution": {
+        "0": 33,
+        "1": 3,
+        "2": 4,
+        "3": 9,
+        "5": 1
+      },
+      "noKan": {
+        "riichiWins": 42,
+        "known": 42,
+        "missing": 0,
+        "hit": 12,
+        "rate": 0.2857142857142857,
+        "wilson95": [
+          0.17167024626049074,
+          0.4356720926819536
+        ],
+        "meanUra": 0.6666666666666666,
+        "twoOrMore": 9,
+        "distribution": {
+          "0": 30,
+          "1": 3,
+          "2": 2,
+          "3": 7
+        }
+      },
+      "shareAmongHits": 0.0052647878600185815,
+      "meanDistinctTileTypes": 6.68
+    },
+    {
+      "yaku": "三色同順",
+      "riichiWins": 352,
+      "known": 352,
+      "missing": 0,
+      "hit": 99,
+      "rate": 0.28125,
+      "wilson95": [
+        0.2368369924701927,
+        0.33038600478713515
+      ],
+      "meanUra": 0.32386363636363635,
+      "twoOrMore": 14,
+      "distribution": {
+        "0": 253,
+        "1": 85,
+        "2": 13,
+        "3": 1
+      },
+      "noKan": {
+        "riichiWins": 340,
+        "known": 340,
+        "missing": 0,
+        "hit": 95,
+        "rate": 0.27941176470588236,
+        "wilson95": [
+          0.23438422106115347,
+          0.32936821148590095
+        ],
+        "meanUra": 0.3176470588235294,
+        "twoOrMore": 12,
+        "distribution": {
+          "0": 245,
+          "1": 83,
+          "2": 11,
+          "3": 1
+        }
+      },
+      "shareAmongHits": 0.030659646949519975,
+      "meanDistinctTileTypes": 12.363636363636363
+    },
+    {
+      "yaku": "二盃口",
+      "riichiWins": 4,
+      "known": 4,
+      "missing": 0,
+      "hit": 1,
+      "rate": 0.25,
+      "wilson95": [
+        0.04558726080970055,
+        0.6993581574175981
+      ],
+      "meanUra": 0.5,
+      "twoOrMore": 1,
+      "distribution": {
+        "0": 3,
+        "2": 1
+      },
+      "noKan": {
+        "riichiWins": 4,
+        "known": 4,
+        "missing": 0,
+        "hit": 1,
+        "rate": 0.25,
+        "wilson95": [
+          0.04558726080970055,
+          0.6993581574175981
+        ],
+        "meanUra": 0.5,
+        "twoOrMore": 1,
+        "distribution": {
+          "0": 3,
+          "2": 1
+        }
+      },
+      "shareAmongHits": 0.0003096934035305048,
+      "meanDistinctTileTypes": 7.0
+    },
+    {
+      "yaku": "対々和",
+      "riichiWins": 7,
+      "known": 7,
+      "missing": 0,
+      "hit": 0,
+      "rate": 0.0,
+      "wilson95": [
+        5.551115123125783e-17,
+        0.35433043506668743
+      ],
+      "meanUra": 0.0,
+      "twoOrMore": 0,
+      "distribution": {
+        "0": 7
+      },
+      "noKan": {
+        "riichiWins": 7,
+        "known": 7,
+        "missing": 0,
+        "hit": 0,
+        "rate": 0.0,
+        "wilson95": [
+          5.551115123125783e-17,
+          0.35433043506668743
+        ],
+        "meanUra": 0.0,
+        "twoOrMore": 0,
+        "distribution": {
+          "0": 7
+        }
+      },
+      "shareAmongHits": 0.0,
+      "meanDistinctTileTypes": 5.0
+    },
+    {
+      "yaku": "平和",
+      "riichiWins": 3728,
+      "known": 3724,
+      "missing": 4,
+      "hit": 1276,
+      "rate": 0.3426423200859291,
+      "wilson95": [
+        0.3275686708910858,
+        0.358040276553057
+      ],
+      "meanUra": 0.40628356605800214,
+      "twoOrMore": 223,
+      "distribution": {
+        "0": 2448,
+        "1": 1053,
+        "2": 209,
+        "3": 14
+      },
+      "noKan": {
+        "riichiWins": 3625,
+        "known": 3625,
+        "missing": 0,
+        "hit": 1215,
+        "rate": 0.3351724137931035,
+        "wilson95": [
+          0.3199872683129847,
+          0.3507065292638452
+        ],
+        "meanUra": 0.3953103448275862,
+        "twoOrMore": 205,
+        "distribution": {
+          "0": 2410,
+          "1": 1010,
+          "2": 192,
+          "3": 13
+        }
+      },
+      "shareAmongHits": 0.39516878290492413,
+      "meanDistinctTileTypes": 12.05096566523605
+    },
+    {
+      "yaku": "役満",
+      "riichiWins": 13,
+      "known": 13,
+      "missing": 0,
+      "hit": 3,
+      "rate": 0.23076923076923078,
+      "wilson95": [
+        0.08179528718498569,
+        0.5025637594672749
+      ],
+      "meanUra": 0.6923076923076923,
+      "twoOrMore": 3,
+      "distribution": {
+        "0": 10,
+        "3": 3
+      },
+      "noKan": {
+        "riichiWins": 9,
+        "known": 9,
+        "missing": 0,
+        "hit": 1,
+        "rate": 0.1111111111111111,
+        "wilson95": [
+          0.019890887638544907,
+          0.434999705576656
+        ],
+        "meanUra": 0.3333333333333333,
+        "twoOrMore": 1,
+        "distribution": {
+          "0": 8,
+          "3": 1
+        }
+      },
+      "shareAmongHits": 0.0009290802105915144,
+      "meanDistinctTileTypes": 5.0
+    },
+    {
+      "yaku": "役牌",
+      "riichiWins": 778,
+      "known": 776,
+      "missing": 2,
+      "hit": 224,
+      "rate": 0.28865979381443296,
+      "wilson95": [
+        0.257880175805536,
+        0.32152151374298554
+      ],
+      "meanUra": 0.42396907216494845,
+      "twoOrMore": 63,
+      "distribution": {
+        "0": 552,
+        "1": 161,
+        "2": 26,
+        "3": 33,
+        "4": 3,
+        "5": 1
+      },
+      "noKan": {
+        "riichiWins": 715,
+        "known": 715,
+        "missing": 0,
+        "hit": 194,
+        "rate": 0.27132867132867133,
+        "wilson95": [
+          0.24002308949724152,
+          0.30507827327548365
+        ],
+        "meanUra": 0.3804195804195804,
+        "twoOrMore": 49,
+        "distribution": {
+          "0": 521,
+          "1": 145,
+          "2": 20,
+          "3": 29
+        }
+      },
+      "shareAmongHits": 0.06937132239083307,
+      "meanDistinctTileTypes": 9.94987146529563
+    },
+    {
+      "yaku": "断么九",
+      "riichiWins": 1605,
+      "known": 1603,
+      "missing": 2,
+      "hit": 511,
+      "rate": 0.31877729257641924,
+      "wilson95": [
+        0.29642137966962434,
+        0.3419996998895177
+      ],
+      "meanUra": 0.42046163443543355,
+      "twoOrMore": 122,
+      "distribution": {
+        "0": 1092,
+        "1": 389,
+        "2": 86,
+        "3": 31,
+        "4": 5
+      },
+      "noKan": {
+        "riichiWins": 1520,
+        "known": 1520,
+        "missing": 0,
+        "hit": 469,
+        "rate": 0.30855263157894736,
+        "wilson95": [
+          0.28583907525661273,
+          0.33223142897391805
+        ],
+        "meanUra": 0.3973684210526316,
+        "twoOrMore": 105,
+        "distribution": {
+          "0": 1051,
+          "1": 364,
+          "2": 76,
+          "3": 28,
+          "4": 1
+        }
+      },
+      "shareAmongHits": 0.15825332920408794,
+      "meanDistinctTileTypes": 10.90778816199377
+    },
+    {
+      "yaku": "混一色",
+      "riichiWins": 32,
+      "known": 32,
+      "missing": 0,
+      "hit": 4,
+      "rate": 0.125,
+      "wilson95": [
+        0.04970134387480073,
+        0.2806830548165022
+      ],
+      "meanUra": 0.25,
+      "twoOrMore": 3,
+      "distribution": {
+        "0": 28,
+        "1": 1,
+        "2": 2,
+        "3": 1
+      },
+      "noKan": {
+        "riichiWins": 30,
+        "known": 30,
+        "missing": 0,
+        "hit": 3,
+        "rate": 0.1,
+        "wilson95": [
+          0.03459988874733419,
+          0.25621082579184085
+        ],
+        "meanUra": 0.23333333333333334,
+        "twoOrMore": 3,
+        "distribution": {
+          "0": 27,
+          "2": 2,
+          "3": 1
+        }
+      },
+      "shareAmongHits": 0.0012387736141220192,
+      "meanDistinctTileTypes": 8.09375
+    },
+    {
+      "yaku": "混全帯么九",
+      "riichiWins": 25,
+      "known": 25,
+      "missing": 0,
+      "hit": 11,
+      "rate": 0.44,
+      "wilson95": [
+        0.26665638881067344,
+        0.6293266813020123
+      ],
+      "meanUra": 0.72,
+      "twoOrMore": 3,
+      "distribution": {
+        "0": 14,
+        "1": 8,
+        "3": 2,
+        "4": 1
+      },
+      "noKan": {
+        "riichiWins": 23,
+        "known": 23,
+        "missing": 0,
+        "hit": 10,
+        "rate": 0.43478260869565216,
+        "wilson95": [
+          0.25634635325674215,
+          0.6318862491498354
+        ],
+        "meanUra": 0.6086956521739131,
+        "twoOrMore": 2,
+        "distribution": {
+          "0": 13,
+          "1": 8,
+          "3": 2
+        }
+      },
+      "shareAmongHits": 0.0034066274388355527,
+      "meanDistinctTileTypes": 11.28
+    },
+    {
+      "yaku": "混老頭",
+      "riichiWins": 1,
+      "known": 1,
+      "missing": 0,
+      "hit": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.7934506856227626
+      ],
+      "meanUra": 0.0,
+      "twoOrMore": 0,
+      "distribution": {
+        "0": 1
+      },
+      "noKan": {
+        "riichiWins": 1,
+        "known": 1,
+        "missing": 0,
+        "hit": 0,
+        "rate": 0.0,
+        "wilson95": [
+          0.0,
+          0.7934506856227626
+        ],
+        "meanUra": 0.0,
+        "twoOrMore": 0,
+        "distribution": {
+          "0": 1
+        }
+      },
+      "shareAmongHits": 0.0,
+      "meanDistinctTileTypes": 7.0
+    },
+    {
+      "yaku": "清一色",
+      "riichiWins": 3,
+      "known": 3,
+      "missing": 0,
+      "hit": 2,
+      "rate": 0.6666666666666666,
+      "wilson95": [
+        0.2076596008020477,
+        0.9385080552796037
+      ],
+      "meanUra": 1.0,
+      "twoOrMore": 1,
+      "distribution": {
+        "0": 1,
+        "1": 1,
+        "2": 1
+      },
+      "noKan": {
+        "riichiWins": 3,
+        "known": 3,
+        "missing": 0,
+        "hit": 2,
+        "rate": 0.6666666666666666,
+        "wilson95": [
+          0.2076596008020477,
+          0.9385080552796037
+        ],
+        "meanUra": 1.0,
+        "twoOrMore": 1,
+        "distribution": {
+          "0": 1,
+          "1": 1,
+          "2": 1
+        }
+      },
+      "shareAmongHits": 0.0006193868070610096,
+      "meanDistinctTileTypes": 8.333333333333334
+    },
+    {
+      "yaku": "純全帯么九",
+      "riichiWins": 9,
+      "known": 9,
+      "missing": 0,
+      "hit": 0,
+      "rate": 0.0,
+      "wilson95": [
+        0.0,
+        0.2991450484195441
+      ],
+      "meanUra": 0.0,
+      "twoOrMore": 0,
+      "distribution": {
+        "0": 9
+      },
+      "noKan": {
+        "riichiWins": 9,
+        "known": 9,
+        "missing": 0,
+        "hit": 0,
+        "rate": 0.0,
+        "wilson95": [
+          0.0,
+          0.2991450484195441
+        ],
+        "meanUra": 0.0,
+        "twoOrMore": 0,
+        "distribution": {
+          "0": 9
+        }
+      },
+      "shareAmongHits": 0.0,
+      "meanDistinctTileTypes": 12.666666666666666
+    },
+    {
+      "yaku": "門前清自摸和",
+      "riichiWins": 5268,
+      "known": 5261,
+      "missing": 7,
+      "hit": 1742,
+      "rate": 0.3311157574605588,
+      "wilson95": [
+        0.3185261817033168,
+        0.3439517838918633
+      ],
+      "meanUra": 0.435658620034214,
+      "twoOrMore": 404,
+      "distribution": {
+        "0": 3519,
+        "1": 1338,
+        "2": 276,
+        "3": 113,
+        "4": 12,
+        "5": 3
+      },
+      "noKan": {
+        "riichiWins": 4983,
+        "known": 4983,
+        "missing": 0,
+        "hit": 1593,
+        "rate": 0.31968693558097533,
+        "wilson95": [
+          0.3068815760371749,
+          0.3327700922905844
+        ],
+        "meanUra": 0.4089905679309653,
+        "twoOrMore": 341,
+        "distribution": {
+          "0": 3390,
+          "1": 1252,
+          "2": 238,
+          "3": 102,
+          "4": 1
+        }
+      },
+      "shareAmongHits": 0.5394859089501394,
+      "meanDistinctTileTypes": 11.08257403189066
+    }
+  ],
+  "yakuComparisons": [
+    {
+      "first": "一気通貫",
+      "second": "平和",
+      "difference": 0.01029885638465916,
+      "clusterBootstrap95": [
+        -0.07309900724443247,
+        0.09049768324010277
+      ],
+      "repetitions": 2000,
+      "seed": 20261012,
+      "cluster": "matchUrl"
+    },
+    {
+      "first": "平和",
+      "second": "七対子",
+      "difference": 0.12186309930670833,
+      "clusterBootstrap95": [
+        0.07857088045427946,
+        0.15985821294810057
+      ],
+      "repetitions": 2000,
+      "seed": 20261012,
+      "cluster": "matchUrl"
+    }
+  ],
+  "byDistinctTypes": {
+    "5": {
+      "riichiWins": 16,
+      "known": 16,
+      "missing": 0,
+      "hit": 1,
+      "rate": 0.0625,
+      "wilson95": [
+        0.01111934476464252,
+        0.28328737570298945
+      ],
+      "meanUra": 0.1875,
+      "twoOrMore": 1,
+      "distribution": {
+        "0": 15,
+        "3": 1
+      }
+    },
+    "6": {
+      "riichiWins": 13,
+      "known": 13,
+      "missing": 0,
+      "hit": 3,
+      "rate": 0.23076923076923078,
+      "wilson95": [
+        0.08179528718498569,
+        0.5025637594672749
+      ],
+      "meanUra": 0.6153846153846154,
+      "twoOrMore": 3,
+      "distribution": {
+        "0": 10,
+        "2": 1,
+        "3": 2
+      }
+    },
+    "7": {
+      "riichiWins": 544,
+      "known": 544,
+      "missing": 0,
+      "hit": 116,
+      "rate": 0.21323529411764705,
+      "wilson95": [
+        0.18088889081844578,
+        0.24960327990623077
+      ],
+      "meanUra": 0.4411764705882353,
+      "twoOrMore": 111,
+      "distribution": {
+        "0": 428,
+        "1": 5,
+        "2": 98,
+        "3": 13
+      }
+    },
+    "8": {
+      "riichiWins": 232,
+      "known": 232,
+      "missing": 0,
+      "hit": 48,
+      "rate": 0.20689655172413793,
+      "wilson95": [
+        0.15975205006566406,
+        0.26358937310879876
+      ],
+      "meanUra": 0.35344827586206895,
+      "twoOrMore": 25,
+      "distribution": {
+        "0": 184,
+        "1": 23,
+        "2": 16,
+        "3": 9
+      }
+    },
+    "9": {
+      "riichiWins": 973,
+      "known": 973,
+      "missing": 0,
+      "hit": 244,
+      "rate": 0.25077081192189105,
+      "wilson95": [
+        0.22455121937522182,
+        0.27895060723078313
+      ],
+      "meanUra": 0.40184994861253853,
+      "twoOrMore": 93,
+      "distribution": {
+        "0": 729,
+        "1": 151,
+        "2": 40,
+        "3": 52,
+        "4": 1
+      }
+    },
+    "10": {
+      "riichiWins": 1049,
+      "known": 1049,
+      "missing": 0,
+      "hit": 297,
+      "rate": 0.2831267874165872,
+      "wilson95": [
+        0.2566934664485342,
+        0.3111427009173926
+      ],
+      "meanUra": 0.38989513822688276,
+      "twoOrMore": 92,
+      "distribution": {
+        "0": 752,
+        "1": 205,
+        "2": 74,
+        "3": 16,
+        "4": 2
+      }
+    },
+    "11": {
+      "riichiWins": 2863,
+      "known": 2863,
+      "missing": 0,
+      "hit": 950,
+      "rate": 0.3318197694725812,
+      "wilson95": [
+        0.3148073455941207,
+        0.34928290361130965
+      ],
+      "meanUra": 0.4341599720572826,
+      "twoOrMore": 211,
+      "distribution": {
+        "0": 1913,
+        "1": 739,
+        "2": 129,
+        "3": 82
+      }
+    },
+    "12": {
+      "riichiWins": 1172,
+      "known": 1172,
+      "missing": 0,
+      "hit": 359,
+      "rate": 0.30631399317406144,
+      "wilson95": [
+        0.2805917153546706,
+        0.3333018103462026
+      ],
+      "meanUra": 0.35409556313993173,
+      "twoOrMore": 48,
+      "distribution": {
+        "0": 813,
+        "1": 311,
+        "2": 40,
+        "3": 8
+      }
+    },
+    "13": {
+      "riichiWins": 2673,
+      "known": 2673,
+      "missing": 0,
+      "hit": 950,
+      "rate": 0.3554059109614665,
+      "wilson95": [
+        0.3374803710402535,
+        0.3737464565879498
+      ],
+      "meanUra": 0.39132061354283576,
+      "twoOrMore": 96,
+      "distribution": {
+        "0": 1723,
+        "1": 854,
+        "2": 96
+      }
+    }
+  },
+  "quality": {
+    "reconstructionFailures": 0,
+    "multiDecompositionWins": 34,
+    "fuMismatches": 0,
+    "missingUraYakuman": 0,
+    "indicatorCountMismatch": 0
+  }
+}

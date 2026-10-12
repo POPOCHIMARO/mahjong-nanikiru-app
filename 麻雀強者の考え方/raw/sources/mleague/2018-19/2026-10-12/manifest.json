@@ -1,0 +1,41 @@
+{
+  "season": "2018-19",
+  "acquired": "2026-10-12",
+  "captures": [
+    {
+      "file": "season.html",
+      "url": "https://m-league.konoui.dev/seasons/2018-19/",
+      "sha256": "c03a372ded60028af221e51d6692603d967595b131412821696288a0dd5b4b77"
+    },
+    {
+      "file": "month-final-2019-03.html",
+      "url": "https://m-league.konoui.dev/seasons/2018-19/final/2019-03/",
+      "sha256": "f52dd071c1552fcbfe9883b35512e03f06a17bed8c8b9e6bd22b3a46809e5033"
+    },
+    {
+      "file": "month-regular-2018-10.html",
+      "url": "https://m-league.konoui.dev/seasons/2018-19/regular/2018-10/",
+      "sha256": "73cd5c2ca27eeeddd041ce0890591989ec568d35d5aa6838bd1fd791cd2a4208"
+    },
+    {
+      "file": "month-regular-2018-11.html",
+      "url": "https://m-league.konoui.dev/seasons/2018-19/regular/2018-11/",
+      "sha256": "150be784874cb70cf440ffee37bee93b0155d922b7b8a37482f2ff3e722f3c91"
+    },
+    {
+      "file": "month-regular-2018-12.html",
+      "url": "https://m-league.konoui.dev/seasons/2018-19/regular/2018-12/",
+      "sha256": "6435a7ecebe71b72051b33a17e771d3f62c446a64bde37b3086e8d9c8fb36ce4"
+    },
+    {
+      "file": "month-regular-2019-01.html",
+      "url": "https://m-league.konoui.dev/seasons/2018-19/regular/2019-01/",
+      "sha256": "fd6f956a55744c69f0b265b3d4e13417f643c9e69460566a1c5f8e1662af7a7a"
+    },
+    {
+      "file": "month-regular-2019-02.html",
+      "url": "https://m-league.konoui.dev/seasons/2018-19/regular/2019-02/",
+      "sha256": "b46dbf38ec4a2d4e98f0cdd819c05bf7c7b1311c1f413e25845727fd6c701257"
+    }
+  ]
+}

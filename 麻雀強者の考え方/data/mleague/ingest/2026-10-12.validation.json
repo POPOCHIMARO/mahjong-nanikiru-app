@@ -1,0 +1,19 @@
+{
+  "acquired": "2026-10-12",
+  "verifiedMatches": 1968,
+  "verifiedRounds": 23939,
+  "verifiedSourceCaptures": 127,
+  "uniqueMatchUrls": true,
+  "uniqueRoundKeys": true,
+  "roundIndicesContiguous": true,
+  "tenhouLinkPayloadsMatch": true,
+  "historicalPrefixesMatchBaselineHashes": true,
+  "unavailablePaifuMatches": 4,
+  "omittedMatches": 0,
+  "metadataChanges": 0,
+  "verifiedRoundLinkPageCaptures": 1968,
+  "roundLinkSourceBytes": 115421249,
+  "verifiedCorrections": 14,
+  "correctionOverlayIdsAndHashesVerified": true,
+  "allRoundLinkCaptureHashesVerified": true
+}

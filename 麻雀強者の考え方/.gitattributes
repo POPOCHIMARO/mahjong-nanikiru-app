@@ -1,0 +1,3 @@
+# 原本と検証用JSONのSHA-256をclone後も一致させるため改行変換しない。
+raw/sources/** -text
+data/mleague/** -text

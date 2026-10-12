@@ -1,0 +1,56 @@
+{
+  "season": "2022-23",
+  "acquired": "2026-10-12",
+  "captures": [
+    {
+      "file": "season.html",
+      "url": "https://m-league.konoui.dev/seasons/2022-23/",
+      "sha256": "7259e4c38acd7e7322dc7cfba0e34070c1886caff48e945c39be5172920b752b"
+    },
+    {
+      "file": "month-final-2023-05.html",
+      "url": "https://m-league.konoui.dev/seasons/2022-23/final/2023-05/",
+      "sha256": "a61cfa546fd51572458f15274f3435818c014b17d5008764c2d9530301809821"
+    },
+    {
+      "file": "month-regular-2022-10.html",
+      "url": "https://m-league.konoui.dev/seasons/2022-23/regular/2022-10/",
+      "sha256": "30043927e99f5d21e008a82fca87123677f95b751b99464655a4fb9888e7108d"
+    },
+    {
+      "file": "month-regular-2022-11.html",
+      "url": "https://m-league.konoui.dev/seasons/2022-23/regular/2022-11/",
+      "sha256": "d3e95b61791bc370ddb90b007dce95c307653ed4a75045ae1df9a0db653055a5"
+    },
+    {
+      "file": "month-regular-2022-12.html",
+      "url": "https://m-league.konoui.dev/seasons/2022-23/regular/2022-12/",
+      "sha256": "bd21f4571c25cf5b083bf78146d42d89b7717a2e2083c94c80761ea2fb4bf4b1"
+    },
+    {
+      "file": "month-regular-2023-01.html",
+      "url": "https://m-league.konoui.dev/seasons/2022-23/regular/2023-01/",
+      "sha256": "1cb64e4806b94d9ccb82c766fac65ffea8387378827f4e7e0c6f84c56515f925"
+    },
+    {
+      "file": "month-regular-2023-02.html",
+      "url": "https://m-league.konoui.dev/seasons/2022-23/regular/2023-02/",
+      "sha256": "c7e2215dac9c26f885312224e6a8a639608a345620f6092f50ca289559202cf1"
+    },
+    {
+      "file": "month-regular-2023-03.html",
+      "url": "https://m-league.konoui.dev/seasons/2022-23/regular/2023-03/",
+      "sha256": "6c3a3081e095f75bd0073b7a173633a90903888cdd3c8b1496d841602fbadf31"
+    },
+    {
+      "file": "month-semifinal-2023-04.html",
+      "url": "https://m-league.konoui.dev/seasons/2022-23/semifinal/2023-04/",
+      "sha256": "343b6b240cb6c4ccb31af8b2c91f45ceb5b68403a9e5016079b1064cfe142944"
+    },
+    {
+      "file": "month-semifinal-2023-05.html",
+      "url": "https://m-league.konoui.dev/seasons/2022-23/semifinal/2023-05/",
+      "sha256": "9de0baabd3b94865935696dd1383d6dce8fbb53745e2b1dd3f1db6e21c0cb2f2"
+    }
+  ]
+}

@@ -1,0 +1,282 @@
+{
+  "acquired": "2026-10-12",
+  "sourceAudit": "data/mleague/ingest/2026-10-12.round-links.json",
+  "snapshot": "data/mleague/ingest/2026-10-12.paifu-corrections.jsonl",
+  "hashFormat": "SHA256 of UTF-8 canonical JSON array containing one row (sorted keys, compact separators)",
+  "historicalRowsPreserved": true,
+  "summary": {
+    "correctionRows": 14,
+    "correctedMatches": 12,
+    "uraIndicatorChanges": 4,
+    "resultChanges": 0
+  },
+  "entries": [
+    {
+      "gameId": "L001_S013_0056_01A",
+      "roundIndex": 4,
+      "matchUrl": "https://m-league.konoui.dev/seasons/2022-23/regular/01-13/A-1",
+      "round": [
+        2,
+        0
+      ],
+      "oldRowHash": "acc834194ec725e16a88258069a38c7698626ff0111e25f13c8fe03e1f697007",
+      "newRowHash": "a202475f7a53adff4079b666c3cc2f48c2ffa2b5c415a457ff878adb114a3b1d",
+      "changedPaifuFields": [
+        "log"
+      ],
+      "changedLogIndices": [
+        3
+      ],
+      "uraIndicatorsChanged": true,
+      "resultChanged": false
+    },
+    {
+      "gameId": "L001_S019_0087_01A",
+      "roundIndex": 7,
+      "matchUrl": "https://m-league.konoui.dev/seasons/2024-25/regular/02-20/A-1",
+      "round": [
+        5,
+        0
+      ],
+      "oldRowHash": "703210b7870e3bc6f8606ca7b41a9dc6deb138269455db1113792c0c979ec289",
+      "newRowHash": "8dcf3aa4a14e4c55251528a294f49a30d149469070c3938e697fe3061c2bf9d1",
+      "changedPaifuFields": [
+        "log"
+      ],
+      "changedLogIndices": [
+        3
+      ],
+      "uraIndicatorsChanged": true,
+      "resultChanged": false
+    },
+    {
+      "gameId": "L001_S020_0007_02A",
+      "roundIndex": 14,
+      "matchUrl": "https://m-league.konoui.dev/seasons/2024-25/semifinal/04-17/A-2",
+      "round": [
+        6,
+        0
+      ],
+      "oldRowHash": "fc41ca33d47de29f33beb563c1c92a5182ac5d2a69b75bae110dd4fdf5717396",
+      "newRowHash": "2a1b3ea4ed1d26537848809733a2459e61349aa427780dca3caf47cb03b4b2a7",
+      "changedPaifuFields": [
+        "log"
+      ],
+      "changedLogIndices": [
+        3
+      ],
+      "uraIndicatorsChanged": true,
+      "resultChanged": false
+    },
+    {
+      "gameId": "L001_S022_0087_01A",
+      "roundIndex": 8,
+      "matchUrl": "https://m-league.konoui.dev/seasons/2025-26/regular/02-19/A-1",
+      "round": [
+        3,
+        2
+      ],
+      "oldRowHash": "32997e31cadb1d6a653b50e127e2d09630c6909bfda09180130a0f58044bde12",
+      "newRowHash": "d18cbb0f7f319974ec00ca2b0b96f62b5a39960e0bf69857604fcefc53f48158",
+      "changedPaifuFields": [
+        "log"
+      ],
+      "changedLogIndices": [
+        8
+      ],
+      "uraIndicatorsChanged": false,
+      "resultChanged": false
+    },
+    {
+      "gameId": "L001_S022_0087_02A",
+      "roundIndex": 5,
+      "matchUrl": "https://m-league.konoui.dev/seasons/2025-26/regular/02-19/A-2",
+      "round": [
+        4,
+        0
+      ],
+      "oldRowHash": "c29163581df51f167c2184ec309b2418e49da3349a49fedc393e0c24b0b0c57f",
+      "newRowHash": "76093ba0dea01520394889ac4275dd3c30f53c1fea70f5138ae3a28edc95aad0",
+      "changedPaifuFields": [
+        "log"
+      ],
+      "changedLogIndices": [
+        4
+      ],
+      "uraIndicatorsChanged": false,
+      "resultChanged": false
+    },
+    {
+      "gameId": "L001_S022_0095_01A",
+      "roundIndex": 2,
+      "matchUrl": "https://m-league.konoui.dev/seasons/2025-26/regular/03-05/A-1",
+      "round": [
+        0,
+        2
+      ],
+      "oldRowHash": "0a32ef8ff0de7cb4bf03054207fb372d22083f5d1e11e863bf92667b770c427a",
+      "newRowHash": "d49795a7db744e9996a7230cfee52ae62794034c6f680b73b554f0108ed62ba7",
+      "changedPaifuFields": [
+        "log"
+      ],
+      "changedLogIndices": [
+        2
+      ],
+      "uraIndicatorsChanged": false,
+      "resultChanged": false
+    },
+    {
+      "gameId": "L001_S022_0096_02A",
+      "roundIndex": 9,
+      "matchUrl": "https://m-league.konoui.dev/seasons/2025-26/regular/03-06/A-2",
+      "round": [
+        3,
+        1
+      ],
+      "oldRowHash": "08926573b2a577862d1f3b3c654571b79f262dcdad74e3c52b758d40aed86d91",
+      "newRowHash": "a9c275022f1d1c45d786a1962a76a5c5dcad263ff665b94ff15b64c03d58ebbd",
+      "changedPaifuFields": [
+        "log"
+      ],
+      "changedLogIndices": [
+        14
+      ],
+      "uraIndicatorsChanged": false,
+      "resultChanged": false
+    },
+    {
+      "gameId": "L001_S022_0096_02A",
+      "roundIndex": 16,
+      "matchUrl": "https://m-league.konoui.dev/seasons/2025-26/regular/03-06/A-2",
+      "round": [
+        5,
+        2
+      ],
+      "oldRowHash": "4fe38bc588ce7c534bd487b7c57ebbe6a553e8f0481077d26375655c108093b9",
+      "newRowHash": "8c94794e43040ff28b01af8e656791378c27623538b581c459953c7cfd253af1",
+      "changedPaifuFields": [
+        "log"
+      ],
+      "changedLogIndices": [
+        4
+      ],
+      "uraIndicatorsChanged": false,
+      "resultChanged": false
+    },
+    {
+      "gameId": "L001_S022_0039_02B",
+      "roundIndex": 7,
+      "matchUrl": "https://m-league.konoui.dev/seasons/2025-26/regular/11-20/B-2",
+      "round": [
+        6,
+        0
+      ],
+      "oldRowHash": "d3121072a2eb76abf07b5c2381566d5a8a69cbe2063ff76cdf6b1fa8414a367c",
+      "newRowHash": "fbc11269f20ac858fdcbb3574a8362eab7fc758d83e7e076fa403e6259a42873",
+      "changedPaifuFields": [
+        "log"
+      ],
+      "changedLogIndices": [
+        5
+      ],
+      "uraIndicatorsChanged": false,
+      "resultChanged": false
+    },
+    {
+      "gameId": "L001_S022_0051_01B",
+      "roundIndex": 11,
+      "matchUrl": "https://m-league.konoui.dev/seasons/2025-26/regular/12-11/B-1",
+      "round": [
+        6,
+        1
+      ],
+      "oldRowHash": "a04f877f148df90e9fa68d669bcf3eedee555deb483f300304a36620dfb48211",
+      "newRowHash": "ca846d232ee4d4ad75e36aa4bd38486fa55b2ed707244be5eb696c3f59ef4c0c",
+      "changedPaifuFields": [
+        "log"
+      ],
+      "changedLogIndices": [
+        5,
+        8
+      ],
+      "uraIndicatorsChanged": false,
+      "resultChanged": false
+    },
+    {
+      "gameId": "L001_S022_0055_02B",
+      "roundIndex": 10,
+      "matchUrl": "https://m-league.konoui.dev/seasons/2025-26/regular/12-18/B-2",
+      "round": [
+        4,
+        1
+      ],
+      "oldRowHash": "3a11fc8eb1018eb8239253e1abd2030013e70307b696c6f1056f049106572654",
+      "newRowHash": "b38b95f5b482cd1a87581922aec72179382e27b27ccdac8a1263bebd18fceb5a",
+      "changedPaifuFields": [
+        "log"
+      ],
+      "changedLogIndices": [
+        2
+      ],
+      "uraIndicatorsChanged": false,
+      "resultChanged": false
+    },
+    {
+      "gameId": "L001_S023_0001_02A",
+      "roundIndex": 0,
+      "matchUrl": "https://m-league.konoui.dev/seasons/2025-26/semifinal/04-06/A-2",
+      "round": [
+        0,
+        0
+      ],
+      "oldRowHash": "4e63a53a56e3c4b1b8a1c846db9c42aa607b984711f34d14b0dc3ba23ea7785f",
+      "newRowHash": "46d9c061b9755b3d815676f63460b418d3cb004cca53106a02654d2c7a5bf9a3",
+      "changedPaifuFields": [
+        "log"
+      ],
+      "changedLogIndices": [
+        3
+      ],
+      "uraIndicatorsChanged": true,
+      "resultChanged": false
+    },
+    {
+      "gameId": "L001_S023_0001_02A",
+      "roundIndex": 2,
+      "matchUrl": "https://m-league.konoui.dev/seasons/2025-26/semifinal/04-06/A-2",
+      "round": [
+        2,
+        0
+      ],
+      "oldRowHash": "68e858fd2860cb39f8848057a0ba2a8cd52a150d4654dd0a62b61dbee00d0c8c",
+      "newRowHash": "abbcca775028937ba79e4256df3f871fd5fd7f23d2bb44eea935321ae9d34743",
+      "changedPaifuFields": [
+        "log"
+      ],
+      "changedLogIndices": [
+        11
+      ],
+      "uraIndicatorsChanged": false,
+      "resultChanged": false
+    },
+    {
+      "gameId": "L001_S023_0005_01A",
+      "roundIndex": 10,
+      "matchUrl": "https://m-league.konoui.dev/seasons/2025-26/semifinal/04-13/A-1",
+      "round": [
+        5,
+        1
+      ],
+      "oldRowHash": "fd151e572b5d342c7ea09f9f94a9d8d30065f2e48983d4fd0643b81d36786533",
+      "newRowHash": "da23ca2f5a9f799ae2feb7924873186696737763ef660ec30d1aa467aeef41b5",
+      "changedPaifuFields": [
+        "log"
+      ],
+      "changedLogIndices": [
+        13
+      ],
+      "uraIndicatorsChanged": false,
+      "resultChanged": false
+    }
+  ]
+}

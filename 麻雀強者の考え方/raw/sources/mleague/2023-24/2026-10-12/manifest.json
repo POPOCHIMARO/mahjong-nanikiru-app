@@ -1,0 +1,61 @@
+{
+  "season": "2023-24",
+  "acquired": "2026-10-12",
+  "captures": [
+    {
+      "file": "season.html",
+      "url": "https://m-league.konoui.dev/seasons/2023-24/",
+      "sha256": "3344a6892ebbcffa8deabde71241b84695e1105e1175fea08eecf8bf7ce61b30"
+    },
+    {
+      "file": "month-final-2024-05.html",
+      "url": "https://m-league.konoui.dev/seasons/2023-24/final/2024-05/",
+      "sha256": "0ed754831b14cd80797fff951b883d907d148dad0eb36cf21f56050bbcd10273"
+    },
+    {
+      "file": "month-regular-2023-09.html",
+      "url": "https://m-league.konoui.dev/seasons/2023-24/regular/2023-09/",
+      "sha256": "74688ad497cd0076338a5fe05a4ebaaf5f045b0f2ebf97628aaac4bf5899cab3"
+    },
+    {
+      "file": "month-regular-2023-10.html",
+      "url": "https://m-league.konoui.dev/seasons/2023-24/regular/2023-10/",
+      "sha256": "89ca066b19a23e4232863d2fe8931ce37d890a387b9ba961579e105f96c9d122"
+    },
+    {
+      "file": "month-regular-2023-11.html",
+      "url": "https://m-league.konoui.dev/seasons/2023-24/regular/2023-11/",
+      "sha256": "582f41b24af357b4b7a31fa5fe525312206ef3431858191d599e1cbfaf9d923c"
+    },
+    {
+      "file": "month-regular-2023-12.html",
+      "url": "https://m-league.konoui.dev/seasons/2023-24/regular/2023-12/",
+      "sha256": "bafcf59ef5c90b94c807486d431cf258ae5b25b01ea91c1c91e6bc2b1b03da20"
+    },
+    {
+      "file": "month-regular-2024-01.html",
+      "url": "https://m-league.konoui.dev/seasons/2023-24/regular/2024-01/",
+      "sha256": "0d99f29adafb16960f1156503ab4507af4547fcda89f1bf0f0e7457a756a5a67"
+    },
+    {
+      "file": "month-regular-2024-02.html",
+      "url": "https://m-league.konoui.dev/seasons/2023-24/regular/2024-02/",
+      "sha256": "06ea01dbac5fcf29eab1c1eab89be95d2af943b37aa39546f4ab2004d5cdba88"
+    },
+    {
+      "file": "month-regular-2024-03.html",
+      "url": "https://m-league.konoui.dev/seasons/2023-24/regular/2024-03/",
+      "sha256": "01d6e3b8d0455a4de2c9ed95a3517034c77c3750b45d9aaad77b7a4eeb4696a8"
+    },
+    {
+      "file": "month-semifinal-2024-04.html",
+      "url": "https://m-league.konoui.dev/seasons/2023-24/semifinal/2024-04/",
+      "sha256": "eb7bef01a7d8cf64238923ac18558f9bbfb02f0a8b11b84ffb5d68edd8a67f22"
+    },
+    {
+      "file": "month-semifinal-2024-05.html",
+      "url": "https://m-league.konoui.dev/seasons/2023-24/semifinal/2024-05/",
+      "sha256": "9c46074df7693a645b69d3d907d3a49a61804da86a1235e17e6afad0c2e3d7b7"
+    }
+  ]
+}

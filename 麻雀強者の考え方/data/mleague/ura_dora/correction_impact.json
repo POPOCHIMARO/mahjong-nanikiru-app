@@ -1,0 +1,116 @@
+{
+  "acquired": "2026-10-12",
+  "sourceCorrectionRounds": 14,
+  "changedRiichiWins": [
+    {
+      "matchUrl": "https://m-league.konoui.dev/seasons/2022-23/regular/01-13/A-1",
+      "roundIndex": 4,
+      "winner": 1,
+      "changes": {
+        "uraIndicators": {
+          "before": [],
+          "after": [
+            44
+          ]
+        },
+        "uraCount": {
+          "before": null,
+          "after": 0
+        }
+      }
+    },
+    {
+      "matchUrl": "https://m-league.konoui.dev/seasons/2024-25/regular/02-20/A-1",
+      "roundIndex": 7,
+      "winner": 0,
+      "changes": {
+        "uraIndicators": {
+          "before": [],
+          "after": [
+            11
+          ]
+        },
+        "uraCount": {
+          "before": null,
+          "after": 0
+        }
+      }
+    },
+    {
+      "matchUrl": "https://m-league.konoui.dev/seasons/2024-25/semifinal/04-17/A-2",
+      "roundIndex": 14,
+      "winner": 2,
+      "changes": {
+        "uraIndicators": {
+          "before": [],
+          "after": [
+            27
+          ]
+        },
+        "uraCount": {
+          "before": null,
+          "after": 1
+        }
+      }
+    },
+    {
+      "matchUrl": "https://m-league.konoui.dev/seasons/2025-26/semifinal/04-06/A-2",
+      "roundIndex": 0,
+      "winner": 3,
+      "changes": {
+        "uraIndicators": {
+          "before": [
+            11
+          ],
+          "after": [
+            19
+          ]
+        }
+      }
+    }
+  ],
+  "beforeSummary": "pre_correction_summary.json",
+  "afterSummary": "summary.json",
+  "overallBefore": {
+    "riichiWins": 10044,
+    "known": 10027,
+    "missing": 17,
+    "hit": 3229,
+    "rate": 0.3220305176024733,
+    "wilson95": [
+      0.31295448747418025,
+      0.33124285981201634
+    ],
+    "meanUra": 0.4265483195372494,
+    "twoOrMore": 794,
+    "distribution": {
+      "0": 6798,
+      "1": 2435,
+      "2": 568,
+      "3": 202,
+      "4": 20,
+      "5": 4
+    }
+  },
+  "overallAfter": {
+    "riichiWins": 10044,
+    "known": 10030,
+    "missing": 14,
+    "hit": 3230,
+    "rate": 0.3220338983050847,
+    "wilson95": [
+      0.31295918850023174,
+      0.33124487684688075
+    ],
+    "meanUra": 0.4265204386839482,
+    "twoOrMore": 794,
+    "distribution": {
+      "0": 6800,
+      "1": 2436,
+      "2": 568,
+      "3": 202,
+      "4": 20,
+      "5": 4
+    }
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "season": "2025-26",
+  "acquired": "2026-10-12",
+  "captures": [
+    {
+      "file": "season.html",
+      "url": "https://m-league.konoui.dev/seasons/2025-26/",
+      "sha256": "859e5588ef81165892671202090a18e361aba95edd24c9fd211aa2e722861422"
+    },
+    {
+      "file": "month-final-2026-05.html",
+      "url": "https://m-league.konoui.dev/seasons/2025-26/final/2026-05/",
+      "sha256": "3d1dec5672a8a7bd10f49384ced4191c6b1c0cfc007b5249a3bf3f1df865de7c"
+    },
+    {
+      "file": "month-regular-2025-09.html",
+      "url": "https://m-league.konoui.dev/seasons/2025-26/regular/2025-09/",
+      "sha256": "a2e4774fecd92b7f03176d542f1b9534d9e751bfad3d0a8fabe89ac8f2cd4a7f"
+    },
+    {
+      "file": "month-regular-2025-10.html",
+      "url": "https://m-league.konoui.dev/seasons/2025-26/regular/2025-10/",
+      "sha256": "c809ead27888ee1f13274df85037268033499c93e773150febd67c80b5ed835a"
+    },
+    {
+      "file": "month-regular-2025-11.html",
+      "url": "https://m-league.konoui.dev/seasons/2025-26/regular/2025-11/",
+      "sha256": "7581981f0a9e69bfffbf9c4754ad6ca8fd6ec6c91cffe03afad805e22199b841"
+    },
+    {
+      "file": "month-regular-2025-12.html",
+      "url": "https://m-league.konoui.dev/seasons/2025-26/regular/2025-12/",
+      "sha256": "61ab4f89e73eb99b5bc58d13e755174735f8ebf841e7643a66245ee7d52eaf54"
+    },
+    {
+      "file": "month-regular-2026-01.html",
+      "url": "https://m-league.konoui.dev/seasons/2025-26/regular/2026-01/",
+      "sha256": "3c9594589bc01cbe4d311355a8f02c1cb193e4804d4b4094d6275620e29b4986"
+    },
+    {
+      "file": "month-regular-2026-02.html",
+      "url": "https://m-league.konoui.dev/seasons/2025-26/regular/2026-02/",
+      "sha256": "59055c44b10f15b7dba544c1ad08e865c53a3ee301e3068fa258f5f0d9b9f92f"
+    },
+    {
+      "file": "month-regular-2026-03.html",
+      "url": "https://m-league.konoui.dev/seasons/2025-26/regular/2026-03/",
+      "sha256": "7d5b6bff88a3e4370ab637fda19f162c78e96afec4f9c21eb2d36a994b680404"
+    },
+    {
+      "file": "month-semifinal-2026-04.html",
+      "url": "https://m-league.konoui.dev/seasons/2025-26/semifinal/2026-04/",
+      "sha256": "4b8be4ff0f59b3e37dff60df5236503189bd757fb4fe03e012b3c5a109f23a86"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "season": "2019-20",
+  "acquired": "2026-10-12",
+  "captures": [
+    {
+      "file": "season.html",
+      "url": "https://m-league.konoui.dev/seasons/2019-20/",
+      "sha256": "7e5c2a99008c372182f730a3d03f75fab53e50f705deb125709d00528808fc30"
+    },
+    {
+      "file": "month-final-2020-06.html",
+      "url": "https://m-league.konoui.dev/seasons/2019-20/final/2020-06/",
+      "sha256": "bb8ccf3ea49d7ec6318b2e5fb7e6b21663e91d3daa9071bce96400dff1046ee9"
+    },
+    {
+      "file": "month-regular-2019-09.html",
+      "url": "https://m-league.konoui.dev/seasons/2019-20/regular/2019-09/",
+      "sha256": "df07d419315ebb36a2ac74f60f0534d0e0df49ec54a85f5ae2cb1cf780a79406"
+    },
+    {
+      "file": "month-regular-2019-10.html",
+      "url": "https://m-league.konoui.dev/seasons/2019-20/regular/2019-10/",
+      "sha256": "139cd5fa218f27bbbb4e418f10e0b4199e07aee0071f86091134d69ae5eaeef1"
+    },
+    {
+      "file": "month-regular-2019-11.html",
+      "url": "https://m-league.konoui.dev/seasons/2019-20/regular/2019-11/",
+      "sha256": "2ba7272198e28970a99b9fc70122875c17086cefd1e3445196cf97161ffd6706"
+    },
+    {
+      "file": "month-regular-2019-12.html",
+      "url": "https://m-league.konoui.dev/seasons/2019-20/regular/2019-12/",
+      "sha256": "06b978f08cefa4b8b48771f31d3570e5d971e1412d7b9edb71ee016782c3640e"
+    },
+    {
+      "file": "month-regular-2020-01.html",
+      "url": "https://m-league.konoui.dev/seasons/2019-20/regular/2020-01/",
+      "sha256": "66aebcd6c96d4ec37170f8d0c1cf1b7614c518bb563b2647578231f5370d73dd"
+    },
+    {
+      "file": "month-regular-2020-02.html",
+      "url": "https://m-league.konoui.dev/seasons/2019-20/regular/2020-02/",
+      "sha256": "adf09a2fa6e8f9152b915a3614f4d074c6074eb254970194b315734301132124"
+    },
+    {
+      "file": "month-regular-2020-03.html",
+      "url": "https://m-league.konoui.dev/seasons/2019-20/regular/2020-03/",
+      "sha256": "a88b2c6574073465df49173e0f7adca5e0337466c5eb7b08da29f1407d690c50"
+    },
+    {
+      "file": "month-semifinal-2020-02.html",
+      "url": "https://m-league.konoui.dev/seasons/2019-20/semifinal/2020-02/",
+      "sha256": "ecc35808aeb000d36e461d3baadedd184c668ff4c50a3aa23c50eb48b7e8d619"
+    },
+    {
+      "file": "month-semifinal-2020-03.html",
+      "url": "https://m-league.konoui.dev/seasons/2019-20/semifinal/2020-03/",
+      "sha256": "e5c70e5ec018f9c5760734543c1402409a5041102a979e7898c613494e5269b0"
+    }
+  ]
+}

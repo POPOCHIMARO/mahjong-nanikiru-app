@@ -1,0 +1,9 @@
+{
+  "stagedPathsChecked": 2157,
+  "sourceAndDataBlobsVerified": 2138,
+  "sourceAndDataBytes": 198957915,
+  "scopedToVault": true,
+  "localAndStagedSha256Match": true,
+  "noDependencyOrObsidianFiles": true,
+  "gitHubIndividualFileLimitCheck": true
+}

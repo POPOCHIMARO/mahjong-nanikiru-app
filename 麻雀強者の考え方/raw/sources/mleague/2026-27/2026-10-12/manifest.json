@@ -1,0 +1,241 @@
+{
+  "season": "2026-27",
+  "acquired": "2026-10-12",
+  "captures": [
+    {
+      "file": "season.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/",
+      "sha256": "ddc4ff8cd894d0f03be7cbf769a084f60313f5dfa14434d5ef2ead3f68211a50"
+    },
+    {
+      "file": "month-regular-2026-09.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/2026-09/",
+      "sha256": "1715945b9a1938ae6b20fbeed553da335422ee504bb92f047563bcbc1b5519c8"
+    },
+    {
+      "file": "month-regular-2026-10.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/2026-10/",
+      "sha256": "903163cf67ba5f3320a6c69a48433f33fe816dff959e3deb3f325cbe07443f57"
+    },
+    {
+      "file": "2026-27_regular_09-21_A-1.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/09-21/A-1/",
+      "sha256": "7eef2b215446f9aa5276a02f2b340e222e85f5cc5303459c4391e1914942a2a1"
+    },
+    {
+      "file": "2026-27_regular_09-21_A-2.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/09-21/A-2/",
+      "sha256": "305985a53cf6e1070ab20485b79c0be8adddbb1a68fab11e441feea2ab12afc1"
+    },
+    {
+      "file": "2026-27_regular_09-21_B-1.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/09-21/B-1/",
+      "sha256": "a2cc17879ca021bcac970bc3507c88f4a72f965527cc8595d56bb7b731b36b1f"
+    },
+    {
+      "file": "2026-27_regular_09-21_B-2.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/09-21/B-2/",
+      "sha256": "6ae0d5462ef27f62efc42f102ce70387bcba025bc82fa9d9bdf3dc2854b109df"
+    },
+    {
+      "file": "2026-27_regular_09-22_A-1.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/09-22/A-1/",
+      "sha256": "9d43f586c20b76a64535ae681b68ca8ab779e332542f192c35a98eacf5e9b97d"
+    },
+    {
+      "file": "2026-27_regular_09-22_A-2.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/09-22/A-2/",
+      "sha256": "e953c8fd7a126bd356fee6846050b93fd0a4b8bb5a891de1173771b747f4a236"
+    },
+    {
+      "file": "2026-27_regular_09-22_B-1.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/09-22/B-1/",
+      "sha256": "5e3921682df9562d1ff32c7848ed5211e3ca73a5bd956973982cb227a61be76a"
+    },
+    {
+      "file": "2026-27_regular_09-22_B-2.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/09-22/B-2/",
+      "sha256": "285aba7b5e9ff1fca684772c59b1cc62774036d3f01bb884701c8e20a34f502a"
+    },
+    {
+      "file": "2026-27_regular_09-24_A-1.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/09-24/A-1/",
+      "sha256": "ed0de295b8bf270dfef3930bd5548fd4c5f852079966d62ef35b84fea3f9bc98"
+    },
+    {
+      "file": "2026-27_regular_09-24_A-2.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/09-24/A-2/",
+      "sha256": "b1cb1abfc370f819decb376b46361d690f9c4bbfca0514e007a141bd649d70e1"
+    },
+    {
+      "file": "2026-27_regular_09-24_B-1.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/09-24/B-1/",
+      "sha256": "2ff4401c1f845e32827b18b2ccb83b5e8eedb4218a98270fa9863b154bf0b029"
+    },
+    {
+      "file": "2026-27_regular_09-24_B-2.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/09-24/B-2/",
+      "sha256": "23410600decfec0eeddd6ba0c41fcad0beb6708c3858cd9e8a9e045c42d7d7ac"
+    },
+    {
+      "file": "2026-27_regular_09-25_A-1.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/09-25/A-1/",
+      "sha256": "868d325bca9833e1e2927685975cbb44e29802d1d08765a446f2b43b338387f5"
+    },
+    {
+      "file": "2026-27_regular_09-25_A-2.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/09-25/A-2/",
+      "sha256": "179b08ed562981180222712e0d213fa9edc1366df53733eb303c406e1667efe7"
+    },
+    {
+      "file": "2026-27_regular_09-25_B-1.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/09-25/B-1/",
+      "sha256": "bbbe27b250410b834a58d9a5989809fd9ee8738304c024ecd7a065ad7392451d"
+    },
+    {
+      "file": "2026-27_regular_09-25_B-2.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/09-25/B-2/",
+      "sha256": "d8ce05335494e8e18ddead20ce5fe8296c1df5cc9f4afeac5d5f681fe7210f26"
+    },
+    {
+      "file": "2026-27_regular_09-28_A-1.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/09-28/A-1/",
+      "sha256": "c993b91de6ff02a56ed9647a61860ced7d475a54e8c1c790ed34dd5960b4c33e"
+    },
+    {
+      "file": "2026-27_regular_09-28_A-2.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/09-28/A-2/",
+      "sha256": "568d680f03c6430d7de97f275461067c65eeabf6dbe6d33771000bcec4b35a32"
+    },
+    {
+      "file": "2026-27_regular_09-28_B-1.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/09-28/B-1/",
+      "sha256": "7446f2771b5ccc8e9228accd301112ae3e1a90a80afb8c3e5c3448d9cf652798"
+    },
+    {
+      "file": "2026-27_regular_09-28_B-2.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/09-28/B-2/",
+      "sha256": "2bd1f2382e4947d1720bf8fd89c8e7df658555482db8eefef9970a1b2870016b"
+    },
+    {
+      "file": "2026-27_regular_09-29_A-1.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/09-29/A-1/",
+      "sha256": "f0a2c0d88fe86464417ed64b969c57e196a93d76a4cc6532a1d295559d2ad98e"
+    },
+    {
+      "file": "2026-27_regular_09-29_A-2.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/09-29/A-2/",
+      "sha256": "775c0cbabf2716d60f66b349dfb0f09c99d570e9ae42f00259fb227f62504eb8"
+    },
+    {
+      "file": "2026-27_regular_09-29_B-1.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/09-29/B-1/",
+      "sha256": "a06170ba6ae8fcfee4c53078581434261954a074086c0347688fcb3a19331f22"
+    },
+    {
+      "file": "2026-27_regular_09-29_B-2.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/09-29/B-2/",
+      "sha256": "c1eed318969a5626f12c0ac58cd4b180bbcf176c8ab4c2f286cc2d8fbe6468fb"
+    },
+    {
+      "file": "2026-27_regular_10-01_A-1.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/10-01/A-1/",
+      "sha256": "890c91285d482e8b2f619a16c11689e010aeab3d447d6494e17c75430bc2a4f1"
+    },
+    {
+      "file": "2026-27_regular_10-01_A-2.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/10-01/A-2/",
+      "sha256": "48bdab3fe2a644f345adb32674ae55edad63aa8ffb72754c328367caecd6ed28"
+    },
+    {
+      "file": "2026-27_regular_10-01_B-1.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/10-01/B-1/",
+      "sha256": "bdd2e905afb310c9c1d8919cebe41f5e58ac5120347fbded8e8531c3b137983a"
+    },
+    {
+      "file": "2026-27_regular_10-01_B-2.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/10-01/B-2/",
+      "sha256": "ad8ea087182dcd4cc791e0237e889cec0414940eab852952818829b84d5c36df"
+    },
+    {
+      "file": "2026-27_regular_10-02_A-1.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/10-02/A-1/",
+      "sha256": "739148796fbe1759de9dc16aa6dbf787deed52825e0a4392b5280ccdb75aac50"
+    },
+    {
+      "file": "2026-27_regular_10-02_A-2.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/10-02/A-2/",
+      "sha256": "3c0c122d0689833d63c9720293cc06b328a154de51dc39392903a631a8a3f614"
+    },
+    {
+      "file": "2026-27_regular_10-02_B-1.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/10-02/B-1/",
+      "sha256": "b234553bf6f9949153b61dfd32b48ddd48a2b9582d97bce456dde118f89b66a2"
+    },
+    {
+      "file": "2026-27_regular_10-02_B-2.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/10-02/B-2/",
+      "sha256": "451639b0079ad9a584891516e7db9f54db39e1ba8a874304558478bdbcad19e5"
+    },
+    {
+      "file": "2026-27_regular_10-05_A-1.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/10-05/A-1/",
+      "sha256": "29da6d2674b802f6ec2867c96998401b79f490decfc8850d32614b557990c850"
+    },
+    {
+      "file": "2026-27_regular_10-05_A-2.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/10-05/A-2/",
+      "sha256": "50328a8c55ceac171274b1f90ec48aa04a9e3ed28b38e962f90c76b9d756f89c"
+    },
+    {
+      "file": "2026-27_regular_10-05_B-1.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/10-05/B-1/",
+      "sha256": "f0f766239d74832869b95c810a65a6762fa9bcd1359760540d3dd29dc1a2a726"
+    },
+    {
+      "file": "2026-27_regular_10-05_B-2.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/10-05/B-2/",
+      "sha256": "14ab83ce7e2fc268454a0997b77a9ba3fd7ee8fb53e1feddddd6683dc7fbccf8"
+    },
+    {
+      "file": "2026-27_regular_10-06_A-1.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/10-06/A-1/",
+      "sha256": "00734af97143e655349af6cb8ac76834bfd7d43a3cd413806afae20d79b0f917"
+    },
+    {
+      "file": "2026-27_regular_10-06_A-2.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/10-06/A-2/",
+      "sha256": "33955c694b5ce0a6d61ebe04a347aab308a04276ae18c203a9cc4b26f2e85bb6"
+    },
+    {
+      "file": "2026-27_regular_10-06_B-1.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/10-06/B-1/",
+      "sha256": "540b6543c81a9a5d59eb27d3a498cd30012940643d8bd3c772a8b9ae9132b8e8"
+    },
+    {
+      "file": "2026-27_regular_10-06_B-2.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/10-06/B-2/",
+      "sha256": "c22e16cd97943badbfdee1727d4e1b076217b7cf9270a580ba7e6dcc4791826e"
+    },
+    {
+      "file": "2026-27_regular_10-08_A-1.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/10-08/A-1/",
+      "sha256": "40d42f948cfdd90dd5ba71e0ef7aaf21df833c9ed2dae84ff53b73eada892d6e"
+    },
+    {
+      "file": "2026-27_regular_10-08_A-2.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/10-08/A-2/",
+      "sha256": "12bbf5f4844ca5e6f084a2681245988218bd7e63ae4ad5b01bbfb430b8993cb9"
+    },
+    {
+      "file": "2026-27_regular_10-08_B-1.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/10-08/B-1/",
+      "sha256": "85ed7d782b9faad4c08906d0c0c4eebdaa31e3d8c36d5f24d62b43838fdfda3f"
+    },
+    {
+      "file": "2026-27_regular_10-08_B-2.html",
+      "url": "https://m-league.konoui.dev/seasons/2026-27/regular/10-08/B-2/",
+      "sha256": "4c2e7a75f4c486282ddfd825e0bf1aa18f5292cd1820d180e16b5818e15bff6a"
+    }
+  ]
+}

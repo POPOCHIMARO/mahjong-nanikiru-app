@@ -1,0 +1,309 @@
+{
+  "acquired": "2026-10-12",
+  "source": "https://m-league.konoui.dev/",
+  "identity": "matchUrl with trailing slash removed",
+  "scope": "All season/month match lists plus current round links from every previously acquired and newly listed match page",
+  "limitations": [
+    "Only site-published rounds can be acquired; changed historical payloads are preserved and logged as source revisions.",
+    "Site-listed fixtures only; this is not a completeness check against the official M-League schedule."
+  ],
+  "siteManifest": {
+    "path": "raw/sources/mleague/site/2026-10-12/manifest.json",
+    "captureCount": 1,
+    "hashesVerified": true
+  },
+  "baseline": "data/mleague/ingest/2026-10-12.baseline.json",
+  "seasons": [
+    {
+      "season": "2026-27",
+      "publishedMatches": 52,
+      "beforeMatches": 8,
+      "afterMatches": 52,
+      "addedMatches": 44,
+      "beforeRounds": 87,
+      "afterRounds": 581,
+      "addedRounds": 494,
+      "addedPaifuMatches": 40,
+      "publishedMatchesWithoutPaifu": [
+        {
+          "matchUrl": "https://m-league.konoui.dev/seasons/2026-27/regular/10-08/A-1/",
+          "gameId": "2026-27_regular_10-08_A-1",
+          "reason": "Results page exists but contains no Tenhou paifu links"
+        },
+        {
+          "matchUrl": "https://m-league.konoui.dev/seasons/2026-27/regular/10-08/A-2/",
+          "gameId": "2026-27_regular_10-08_A-2",
+          "reason": "Results page exists but contains no Tenhou paifu links"
+        },
+        {
+          "matchUrl": "https://m-league.konoui.dev/seasons/2026-27/regular/10-08/B-1/",
+          "gameId": "2026-27_regular_10-08_B-1",
+          "reason": "Results page exists but contains no Tenhou paifu links"
+        },
+        {
+          "matchUrl": "https://m-league.konoui.dev/seasons/2026-27/regular/10-08/B-2/",
+          "gameId": "2026-27_regular_10-08_B-2",
+          "reason": "Results page exists but contains no Tenhou paifu links"
+        }
+      ],
+      "preservedOmittedMatchUrls": [],
+      "publishedMetadataChanges": [],
+      "repairedMatchesWithoutPaifu": [],
+      "historicalRowsPreserved": true,
+      "manifest": {
+        "path": "raw/sources/mleague/2026-27/2026-10-12/manifest.json",
+        "captureCount": 47,
+        "hashesVerified": true
+      },
+      "addedMatchUrls": [
+        "https://m-league.konoui.dev/seasons/2026-27/regular/09-21/A-1/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/09-21/A-2/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/09-21/B-1/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/09-21/B-2/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/09-22/A-1/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/09-22/A-2/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/09-22/B-1/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/09-22/B-2/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/09-24/A-1/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/09-24/A-2/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/09-24/B-1/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/09-24/B-2/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/09-25/A-1/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/09-25/A-2/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/09-25/B-1/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/09-25/B-2/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/09-28/A-1/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/09-28/A-2/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/09-28/B-1/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/09-28/B-2/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/09-29/A-1/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/09-29/A-2/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/09-29/B-1/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/09-29/B-2/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/10-01/A-1/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/10-01/A-2/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/10-01/B-1/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/10-01/B-2/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/10-02/A-1/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/10-02/A-2/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/10-02/B-1/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/10-02/B-2/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/10-05/A-1/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/10-05/A-2/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/10-05/B-1/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/10-05/B-2/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/10-06/A-1/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/10-06/A-2/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/10-06/B-1/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/10-06/B-2/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/10-08/A-1/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/10-08/A-2/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/10-08/B-1/",
+        "https://m-league.konoui.dev/seasons/2026-27/regular/10-08/B-2/"
+      ]
+    },
+    {
+      "season": "2025-26",
+      "publishedMatches": 346,
+      "beforeMatches": 346,
+      "afterMatches": 346,
+      "addedMatches": 0,
+      "beforeRounds": 4216,
+      "afterRounds": 4216,
+      "addedRounds": 0,
+      "addedPaifuMatches": 0,
+      "publishedMatchesWithoutPaifu": [],
+      "preservedOmittedMatchUrls": [],
+      "publishedMetadataChanges": [],
+      "repairedMatchesWithoutPaifu": [],
+      "historicalRowsPreserved": true,
+      "manifest": {
+        "path": "raw/sources/mleague/2025-26/2026-10-12/manifest.json",
+        "captureCount": 10,
+        "hashesVerified": true
+      },
+      "addedMatchUrls": []
+    },
+    {
+      "season": "2024-25",
+      "publishedMatches": 262,
+      "beforeMatches": 262,
+      "afterMatches": 262,
+      "addedMatches": 0,
+      "beforeRounds": 3190,
+      "afterRounds": 3190,
+      "addedRounds": 0,
+      "addedPaifuMatches": 0,
+      "publishedMatchesWithoutPaifu": [],
+      "preservedOmittedMatchUrls": [],
+      "publishedMetadataChanges": [],
+      "repairedMatchesWithoutPaifu": [],
+      "historicalRowsPreserved": true,
+      "manifest": {
+        "path": "raw/sources/mleague/2024-25/2026-10-12/manifest.json",
+        "captureCount": 11,
+        "hashesVerified": true
+      },
+      "addedMatchUrls": []
+    },
+    {
+      "season": "2023-24",
+      "publishedMatches": 262,
+      "beforeMatches": 262,
+      "afterMatches": 262,
+      "addedMatches": 0,
+      "beforeRounds": 3173,
+      "afterRounds": 3173,
+      "addedRounds": 0,
+      "addedPaifuMatches": 0,
+      "publishedMatchesWithoutPaifu": [],
+      "preservedOmittedMatchUrls": [],
+      "publishedMetadataChanges": [],
+      "repairedMatchesWithoutPaifu": [],
+      "historicalRowsPreserved": true,
+      "manifest": {
+        "path": "raw/sources/mleague/2023-24/2026-10-12/manifest.json",
+        "captureCount": 11,
+        "hashesVerified": true
+      },
+      "addedMatchUrls": []
+    },
+    {
+      "season": "2022-23",
+      "publishedMatches": 234,
+      "beforeMatches": 234,
+      "afterMatches": 234,
+      "addedMatches": 0,
+      "beforeRounds": 2913,
+      "afterRounds": 2913,
+      "addedRounds": 0,
+      "addedPaifuMatches": 0,
+      "publishedMatchesWithoutPaifu": [],
+      "preservedOmittedMatchUrls": [],
+      "publishedMetadataChanges": [],
+      "repairedMatchesWithoutPaifu": [],
+      "historicalRowsPreserved": true,
+      "manifest": {
+        "path": "raw/sources/mleague/2022-23/2026-10-12/manifest.json",
+        "captureCount": 10,
+        "hashesVerified": true
+      },
+      "addedMatchUrls": []
+    },
+    {
+      "season": "2021-22",
+      "publishedMatches": 216,
+      "beforeMatches": 216,
+      "afterMatches": 216,
+      "addedMatches": 0,
+      "beforeRounds": 2633,
+      "afterRounds": 2633,
+      "addedRounds": 0,
+      "addedPaifuMatches": 0,
+      "publishedMatchesWithoutPaifu": [],
+      "preservedOmittedMatchUrls": [],
+      "publishedMetadataChanges": [],
+      "repairedMatchesWithoutPaifu": [],
+      "historicalRowsPreserved": true,
+      "manifest": {
+        "path": "raw/sources/mleague/2021-22/2026-10-12/manifest.json",
+        "captureCount": 10,
+        "hashesVerified": true
+      },
+      "addedMatchUrls": []
+    },
+    {
+      "season": "2020-21",
+      "publishedMatches": 216,
+      "beforeMatches": 216,
+      "afterMatches": 216,
+      "addedMatches": 0,
+      "beforeRounds": 2580,
+      "afterRounds": 2580,
+      "addedRounds": 0,
+      "addedPaifuMatches": 0,
+      "publishedMatchesWithoutPaifu": [],
+      "preservedOmittedMatchUrls": [],
+      "publishedMetadataChanges": [],
+      "repairedMatchesWithoutPaifu": [],
+      "historicalRowsPreserved": true,
+      "manifest": {
+        "path": "raw/sources/mleague/2020-21/2026-10-12/manifest.json",
+        "captureCount": 9,
+        "hashesVerified": true
+      },
+      "addedMatchUrls": []
+    },
+    {
+      "season": "2019-20",
+      "publishedMatches": 216,
+      "beforeMatches": 216,
+      "afterMatches": 216,
+      "addedMatches": 0,
+      "beforeRounds": 2660,
+      "afterRounds": 2660,
+      "addedRounds": 0,
+      "addedPaifuMatches": 0,
+      "publishedMatchesWithoutPaifu": [],
+      "preservedOmittedMatchUrls": [],
+      "publishedMetadataChanges": [],
+      "repairedMatchesWithoutPaifu": [],
+      "historicalRowsPreserved": true,
+      "manifest": {
+        "path": "raw/sources/mleague/2019-20/2026-10-12/manifest.json",
+        "captureCount": 11,
+        "hashesVerified": true
+      },
+      "addedMatchUrls": []
+    },
+    {
+      "season": "2018-19",
+      "publishedMatches": 164,
+      "beforeMatches": 164,
+      "afterMatches": 164,
+      "addedMatches": 0,
+      "beforeRounds": 1993,
+      "afterRounds": 1993,
+      "addedRounds": 0,
+      "addedPaifuMatches": 0,
+      "publishedMatchesWithoutPaifu": [],
+      "preservedOmittedMatchUrls": [],
+      "publishedMetadataChanges": [],
+      "repairedMatchesWithoutPaifu": [],
+      "historicalRowsPreserved": true,
+      "manifest": {
+        "path": "raw/sources/mleague/2018-19/2026-10-12/manifest.json",
+        "captureCount": 7,
+        "hashesVerified": true
+      },
+      "addedMatchUrls": []
+    }
+  ],
+  "totals": {
+    "publishedMatches": 1968,
+    "beforeMatches": 1924,
+    "afterMatches": 1968,
+    "addedMatches": 44,
+    "beforeRounds": 23445,
+    "afterRounds": 23939,
+    "addedRounds": 494,
+    "addedPaifuMatches": 40
+  },
+  "allIndexMatches": 1968,
+  "publishedMissingPaifuAfter": 4,
+  "historicalRowsPreserved": true,
+  "allManifestsVerified": true,
+  "roundLinkAudit": "data/mleague/ingest/2026-10-12.round-links.json",
+  "roundLinkVerification": {
+    "verifiedMatches": 1968,
+    "storedRoundsBefore": 23939,
+    "publishedRounds": 23939,
+    "addedRounds": 0,
+    "changedRounds": 14,
+    "missingStoredRounds": 0,
+    "matchesWithoutPublishedPaifu": 4,
+    "sourceBytes": 115421249
+  },
+  "correctionsSnapshot": "data/mleague/ingest/2026-10-12.paifu-corrections.jsonl",
+  "correctionsAudit": "data/mleague/ingest/2026-10-12.paifu-corrections.audit.json"
+}

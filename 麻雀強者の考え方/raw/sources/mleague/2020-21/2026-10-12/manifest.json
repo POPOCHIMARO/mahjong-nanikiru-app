@@ -1,0 +1,51 @@
+{
+  "season": "2020-21",
+  "acquired": "2026-10-12",
+  "captures": [
+    {
+      "file": "season.html",
+      "url": "https://m-league.konoui.dev/seasons/2020-21/",
+      "sha256": "581e2183cd628304103b703157c674cde465212c1b35cef2c4dc8c4d374ee205"
+    },
+    {
+      "file": "month-final-2021-05.html",
+      "url": "https://m-league.konoui.dev/seasons/2020-21/final/2021-05/",
+      "sha256": "d62d76c6bf81a1b951e5e0dc0e8a52352e1b2156a7634b887ece3e75d294b5fb"
+    },
+    {
+      "file": "month-regular-2020-10.html",
+      "url": "https://m-league.konoui.dev/seasons/2020-21/regular/2020-10/",
+      "sha256": "41aadb6573a4252d36551f8d6cf18f061abd729d2188cf6141325740a84961b6"
+    },
+    {
+      "file": "month-regular-2020-11.html",
+      "url": "https://m-league.konoui.dev/seasons/2020-21/regular/2020-11/",
+      "sha256": "b0069b0857f8712b9c63d46751a5c2abb224369c474c799b0bd9b183f6239767"
+    },
+    {
+      "file": "month-regular-2020-12.html",
+      "url": "https://m-league.konoui.dev/seasons/2020-21/regular/2020-12/",
+      "sha256": "2c1dd9843dd08dc3c6a929392b9d0a4ac40f754923b091d578996824921b1c2a"
+    },
+    {
+      "file": "month-regular-2021-01.html",
+      "url": "https://m-league.konoui.dev/seasons/2020-21/regular/2021-01/",
+      "sha256": "3e63d85e63a880302ce0d0390b046a604774aef208f32c6f922f7f7ef31c6514"
+    },
+    {
+      "file": "month-regular-2021-02.html",
+      "url": "https://m-league.konoui.dev/seasons/2020-21/regular/2021-02/",
+      "sha256": "21cccc6eb30ceb6758adabcf437969daf632c705438783e8d8aed10303a7e6a1"
+    },
+    {
+      "file": "month-regular-2021-03.html",
+      "url": "https://m-league.konoui.dev/seasons/2020-21/regular/2021-03/",
+      "sha256": "a1528e1fb38722f0aa7cc39166c66e08ab586be04cdaa3011ab9cb55b2f3d70c"
+    },
+    {
+      "file": "month-semifinal-2021-04.html",
+      "url": "https://m-league.konoui.dev/seasons/2020-21/semifinal/2021-04/",
+      "sha256": "cd030bc113980edb84a25e0d84f8d13681e0d6a27c1214319707a8eb919a34ac"
+    }
+  ]
+}
